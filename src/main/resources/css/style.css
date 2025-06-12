@@ -1,0 +1,42 @@
+.top-bar {
+    -fx-background-color: #033076;
+    -fx-padding: 10 20;
+    -fx-spacing: 15;
+    -fx-alignment: center-left;
+}
+
+.top-title {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.sidebar {
+    -fx-background-color: #f0f0f0;
+    -fx-padding: 20;
+}
+
+.sidebar-button {
+    -fx-background-color: #e3e3e3;
+    -fx-text-fill: #333;
+    -fx-font-size: 14px;
+    -fx-pref-width: 180px;
+    -fx-alignment: center-left;
+    -fx-padding: 10 15;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: #d0d0d0;
+}
+
+.welcome-text {
+    -fx-font-size: 16px;
+    -fx-padding: 20;
+}
+
+.main-content {
+    -fx-padding: 20;
+}
