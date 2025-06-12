@@ -1,4 +1,7 @@
+# Java build output
 target/
+
+# Maven backup files
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -6,45 +9,26 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-.mvn/timing.properties
-# https://github.com/takari/maven-wrapper#usage-without-binary-jar
+
+# Maven wrapper
 .mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
 
-data/
-resources/
-*.tsv
-*.db
-
-### Eclipse ###
-
+# Eclipse files
 .metadata
 bin/
 tmp/
+.settings/
+.loadpath
+.project
+.classpath
+*.launch
 *.tmp
 *.bak
 *.swp
-*~.nib
-local.properties
-.settings/
-.loadpath
-.recommenders
 
-# Locally stored "Eclipse launch configurations"
-*.launch
-
-### Eclipse Patch ###
-# Eclipse Core
-.project
-
-# JDT-specific (Eclipse Java Development Tools)
-.classpath
-
-### Git ###
-# Created by git for backups. To disable backups in Git:
-# $ git config --global mergetool.keepBackup false
+# Git merge conflict files
 *.orig
-
-# Created by git when using merge tools for conflicts
 *.BACKUP.*
 *.BASE.*
 *.LOCAL.*
@@ -54,14 +38,9 @@ local.properties
 *_LOCAL_*.txt
 *_REMOTE_*.txt
 
-### Java ###
-# Compiled class file
+# Java compiled and packaged files
 *.class
-
-# Log file
 *.log
-
-# Package Files #
 *.jar
 *.war
 *.nar
@@ -69,3 +48,13 @@ local.properties
 *.zip
 *.tar.gz
 *.rar
+
+# TSV/DB files (if in root or ignored on purpose)
+*.tsv
+*.db
+
+# Avoid ignoring actual resources!
+# resources/     ❌ NO: deja de ignorarlo
+
+# Optional: if you want to ignore only the SQLite database (inside /data)
+data/database.db
