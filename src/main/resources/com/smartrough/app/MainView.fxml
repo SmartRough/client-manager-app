@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane fx:id="root"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.smartrough.app.MainController"
+            stylesheets="@/css/style.css">
+
+    <!-- 🔝 TOP BAR -->
+    <top>
+        <HBox fx:id="topBar" styleClass="top-bar">
+            <ImageView fitHeight="40" fitWidth="40">
+                <image>
+                    <Image url="/img/logo_gcs.png" />
+                </image>
+            </ImageView>
+            <Label text="Smart Rough - Client Manager" styleClass="top-title"/>
+        </HBox>
+    </top>
+
+    <!-- 📋 LATERAL MENU -->
+    <left>
+        <VBox spacing="10" styleClass="sidebar">
+            <Button text="Clientes" onAction="#showCompanyForm" graphicTextGap="10" styleClass="sidebar-button">
+                <graphic><Label text="📋" /></graphic>
+            </Button>
+            <Button text="Contratos" styleClass="sidebar-button">
+                <graphic><Label text="📄" /></graphic>
+            </Button>
+            <Button text="Facturas" styleClass="sidebar-button">
+                <graphic><Label text="💰" /></graphic>
+            </Button>
+        </VBox>
+    </left>
+
+    <!-- 🖥️ MAIN CONTENT -->
+    <center>
+        <StackPane fx:id="vistaHolder" styleClass="main-content">
+            <Label text="Bienvenido a Client Manager App" styleClass="welcome-text"/>
+        </StackPane>
+    </center>
+</BorderPane>
