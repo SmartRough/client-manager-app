@@ -29,14 +29,17 @@
     </HBox>
 
     <!-- 📋 Tabla de compañías -->
-    <TableView fx:id="companyTable" VBox.vgrow="ALWAYS">
+    <TableView fx:id="companyTable" VBox.vgrow="ALWAYS" prefWidth="Infinity">
         <columns>
-            <TableColumn fx:id="nameCol" text="Name" prefWidth="150" />
+            <TableColumn fx:id="nameCol" text="Name" prefWidth="200" />
             <TableColumn fx:id="repCol" text="Representative" prefWidth="150" />
             <TableColumn fx:id="phoneCol" text="Phone" prefWidth="120" />
             <TableColumn fx:id="emailCol" text="Email" prefWidth="180" />
             <TableColumn fx:id="ownCol" text="Own?" prefWidth="50" />
             <TableColumn fx:id="actionCol" text="Actions" prefWidth="100" />
         </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+         </columnResizePolicy>
     </TableView>
 </VBox>
