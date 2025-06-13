@@ -2,8 +2,12 @@ package com.smartrough.app.dao;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.smartrough.app.model.Address;
 
 public class CRUDHelper {
 
@@ -94,4 +98,29 @@ public class CRUDHelper {
 			return -1;
 		}
 	}
+
+	public static List<Address> findAllAddresses() {
+		List<Address> addresses = new ArrayList<>();
+		String query = "SELECT * FROM Address";
+
+		try (Connection conn = Database.connect();
+				PreparedStatement stmt = conn.prepareStatement(query);
+				ResultSet rs = stmt.executeQuery()) {
+
+			while (rs.next()) {
+				Address addr = new Address();
+				addr.setId(rs.getLong("id"));
+				addr.setStreet(rs.getString("street"));
+				addr.setCity(rs.getString("city"));
+				addr.setState(rs.getString("state"));
+				addr.setZipCode(rs.getString("zip_code"));
+				addresses.add(addr);
+			}
+
+		} catch (SQLException e) {
+			LOGGER.log(Level.SEVERE, LocalDateTime.now() + ": Failed to load addresses", e);
+		}
+		return addresses;
+	}
+
 }
