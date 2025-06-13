@@ -35,7 +35,7 @@
             <TableColumn fx:id="repCol" text="Representative" prefWidth="150" />
             <TableColumn fx:id="phoneCol" text="Phone" prefWidth="120" />
             <TableColumn fx:id="emailCol" text="Email" prefWidth="180" />
-            <TableColumn fx:id="ownCol" text="Own?" prefWidth="50" />
+            <TableColumn fx:id="typeCol" text="Type" prefWidth="100" />
             <TableColumn fx:id="actionCol" text="Actions" prefWidth="100" />
         </columns>
         <columnResizePolicy>

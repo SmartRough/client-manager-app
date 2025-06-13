@@ -3,6 +3,8 @@ package com.smartrough.app.controller;
 import com.smartrough.app.dao.CompanyDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.util.ViewNavigator;
+
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -25,7 +27,7 @@ public class CompanyListController {
 	@FXML
 	private TableColumn<Company, String> emailCol;
 	@FXML
-	private TableColumn<Company, Boolean> ownCol;
+	private TableColumn<Company, String> typeCol;
 	@FXML
 	private TableColumn<Company, Void> actionCol;
 
@@ -37,7 +39,9 @@ public class CompanyListController {
 		repCol.setCellValueFactory(new PropertyValueFactory<>("representative"));
 		phoneCol.setCellValueFactory(new PropertyValueFactory<>("phone"));
 		emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
-		ownCol.setCellValueFactory(new PropertyValueFactory<>("ownCompany"));
+		typeCol.setCellValueFactory(cellData -> {
+			return new ReadOnlyStringWrapper(cellData.getValue().getType().name());
+		});
 
 		// Agrega botones con íconos
 		actionCol.setCellFactory(col -> new TableCell<>() {
@@ -94,11 +98,27 @@ public class CompanyListController {
 	}
 
 	private void handleDelete(Company company) {
-		if (CompanyDAO.deleteById(company.getId())) {
-			companies.remove(company);
-		} else {
-			Alert alert = new Alert(Alert.AlertType.ERROR, "Failed to delete company");
-			alert.showAndWait();
-		}
+		Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+		confirmation.setTitle("Delete Confirmation");
+		confirmation.setHeaderText("Are you sure you want to delete this company?");
+		confirmation.setContentText("This action cannot be undone.");
+
+		ButtonType yesBtn = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+		ButtonType noBtn = new ButtonType("No", ButtonBar.ButtonData.NO);
+
+		confirmation.getButtonTypes().setAll(yesBtn, noBtn);
+
+		confirmation.showAndWait().ifPresent(response -> {
+			if (response == yesBtn) {
+				boolean success = CompanyDAO.deleteById(company.getId());
+				if (success) {
+					companies.remove(company);
+				} else {
+					Alert errorAlert = new Alert(Alert.AlertType.ERROR, "Failed to delete company.");
+					errorAlert.showAndWait();
+				}
+			}
+		});
 	}
+
 }
