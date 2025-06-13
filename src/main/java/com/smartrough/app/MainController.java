@@ -1,8 +1,8 @@
 package com.smartrough.app;
 
+import com.smartrough.app.util.ViewNavigator;
+
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 
@@ -16,28 +16,27 @@ public class MainController {
 
 	@FXML
 	public void initialize() {
-		// Al iniciar el controlador, carga el listado de compañías
-		loadCompanyList();
+		ViewNavigator.setMainLayout(root);
+		ViewNavigator.loadView("CompanyListView.fxml");
 	}
 
 	@FXML
 	private void showCompanyForm() {
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/smartrough/app/form/CompanyForm.fxml"));
-			Parent view = loader.load();
-			root.setCenter(view);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		ViewNavigator.loadView("CompanyFormView.fxml");
 	}
 
-	private void loadCompanyList() {
-		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/smartrough/app/view/CompanyListView.fxml"));
-			Parent view = loader.load();
-			root.setCenter(view);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	@FXML
+	private void showCompanyList() {
+		ViewNavigator.loadView("CompanyListView.fxml");
+	}
+
+	@FXML
+	private void showContracts() {
+		ViewNavigator.loadView("ContractListView.fxml");
+	}
+
+	@FXML
+	private void showInvoices() {
+		ViewNavigator.loadView("InvoiceListView.fxml");
 	}
 }
