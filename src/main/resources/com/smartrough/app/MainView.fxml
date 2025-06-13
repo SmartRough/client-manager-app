@@ -24,14 +24,17 @@
     <!-- 📋 LATERAL MENU -->
     <left>
         <VBox spacing="10" styleClass="sidebar">
-    <Button text="Clientes" onAction="#showCompanyList" graphicTextGap="10" styleClass="sidebar-button">
+    <Button text="Customers" onAction="#showCompanyList" graphicTextGap="10" styleClass="sidebar-button">
         <graphic><Label text="📋" /></graphic>
     </Button>
-    <Button text="Contratos" onAction="#showContracts" styleClass="sidebar-button">
-        <graphic><Label text="📄" /></graphic>
-    </Button>
-    <Button text="Facturas" onAction="#showInvoices" styleClass="sidebar-button">
+    <Button text="Invoices" onAction="#showInvoices" styleClass="sidebar-button">
         <graphic><Label text="💰" /></graphic>
+    </Button>
+    <Button text="Contracts" onAction="#showContracts" styleClass="sidebar-button">
+        <graphic><Label text="📄" /></graphic>
+    </Button>    
+     <Button text="Estimates" onAction="#showEstimates" styleClass="sidebar-button">
+        <graphic><Label text="📝" /></graphic>
     </Button>
 </VBox>
     </left>

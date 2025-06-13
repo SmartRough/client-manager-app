@@ -39,4 +39,9 @@ public class MainController {
 	private void showInvoices() {
 		ViewNavigator.loadView("InvoiceListView.fxml");
 	}
+
+	@FXML
+	private void showEstimates() {
+		ViewNavigator.loadView("EstimateListView.fxml");
+	}
 }
