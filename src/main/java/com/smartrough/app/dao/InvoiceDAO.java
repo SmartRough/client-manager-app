@@ -104,16 +104,43 @@ public class InvoiceDAO {
 
 	private static Invoice mapResultSet(ResultSet rs) throws SQLException {
 		Invoice i = new Invoice();
+
 		i.setId(rs.getLong("id"));
 		i.setInvoiceNumber(rs.getString("invoice_number"));
-		i.setDate(rs.getDate("date").toLocalDate());
+
+		Date dateSql = rs.getDate("date");
+		if (dateSql != null) {
+			i.setDate(dateSql.toLocalDate());
+		} else {
+			System.err.println(">> WARNING: Invoice with id " + rs.getLong("id") + " has NULL date");
+			i.setDate(null);
+		}
+
 		i.setCompanyId(rs.getLong("company_id"));
 		i.setCustomerId(rs.getLong("customer_id"));
+
 		i.setSubtotal(rs.getBigDecimal("subtotal"));
-		i.setTaxRate(rs.getBigDecimal("tax_rate"));
-		i.setAdditionalCosts(rs.getBigDecimal("additional_costs"));
+
+		try {
+			i.setTaxRate(rs.getBigDecimal("tax_rate"));
+		} catch (SQLException e) {
+			System.err.println(">> tax_rate could not be retrieved: " + e.getMessage());
+			i.setTaxRate(null);
+		}
+
+		try {
+			i.setAdditionalCosts(rs.getBigDecimal("additional_costs"));
+		} catch (SQLException e) {
+			System.err.println(">> additional_costs could not be retrieved: " + e.getMessage());
+			i.setAdditionalCosts(null);
+		}
+
 		i.setTotal(rs.getBigDecimal("total"));
 		i.setNotes(rs.getString("notes"));
+
+		System.out.println(">> Invoice mapped: " + i.getId() + ", " + i.getInvoiceNumber());
+
 		return i;
 	}
+
 }

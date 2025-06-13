@@ -68,19 +68,23 @@ public class CRUDHelper {
 		}
 		query.append(") VALUES (");
 		query.append("?,".repeat(columns.length));
-		query.setLength(query.length() - 1); // remove last comma
+		query.setLength(query.length() - 1);
 		query.append(")");
 
-		try (Connection conn = Database.connect();
-				PreparedStatement stmt = conn.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS)) {
-			for (int i = 0; i < values.length; i++) {
-				stmt.setObject(i + 1, values[i], types[i]);
-			}
-			int affectedRows = stmt.executeUpdate();
-			if (affectedRows > 0) {
-				ResultSet rs = stmt.getGeneratedKeys();
-				if (rs.next())
-					return rs.getLong(1);
+		try (Connection conn = Database.connect()) {
+			conn.setAutoCommit(true);
+
+			try (PreparedStatement stmt = conn.prepareStatement(query.toString(), Statement.RETURN_GENERATED_KEYS)) {
+				for (int i = 0; i < values.length; i++) {
+					stmt.setObject(i + 1, values[i], types[i]);
+				}
+
+				int affectedRows = stmt.executeUpdate();
+				if (affectedRows > 0) {
+					ResultSet rs = stmt.getGeneratedKeys();
+					if (rs.next())
+						return rs.getLong(1);
+				}
 			}
 		} catch (SQLException e) {
 			LOGGER.log(Level.SEVERE, LocalDateTime.now() + ": Failed to insert into " + tableName, e);

@@ -34,6 +34,21 @@ public class CompanyDAO {
 		return null;
 	}
 
+	public static Company findById(long id) {
+		String sql = "SELECT * FROM Company WHERE id = ?";
+		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setLong(1, id);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					return mapResultSet(rs);
+				}
+			}
+		} catch (SQLException e) {
+			System.err.println("Error fetching company by ID: " + e.getMessage());
+		}
+		return null;
+	}
+
 	public static List<Company> findAll() {
 		List<Company> list = new ArrayList<>();
 		String sql = "SELECT * FROM Company WHERE is_own_company = FALSE";

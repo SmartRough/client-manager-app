@@ -9,6 +9,7 @@
 
     <Label text="Invoice Details" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
 
+    <!-- Cabecera -->
     <GridPane hgap="10" vgap="10">
         <columnConstraints>
             <ColumnConstraints percentWidth="25"/>
@@ -19,13 +20,13 @@
         <TextField fx:id="invoiceNumberField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
         <Label text="Date:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <DatePicker fx:id="datePicker" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <DatePicker fx:id="datePicker" GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="300"/>
 
         <Label text="My Company:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="companyComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <ComboBox fx:id="companyComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1" prefWidth="300"/>
 
         <Label text="Customer:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="customerComboBox" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <ComboBox fx:id="customerComboBox" GridPane.rowIndex="3" GridPane.columnIndex="1" prefWidth="300"/>
     </GridPane>
 
     <Label text="Items" style="-fx-font-size: 16px; -fx-font-weight: bold;" />

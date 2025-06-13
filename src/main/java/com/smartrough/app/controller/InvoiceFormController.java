@@ -6,11 +6,14 @@ import com.smartrough.app.dao.InvoiceItemDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Invoice;
 import com.smartrough.app.model.InvoiceItem;
+import com.smartrough.app.util.InvoiceExporter;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -53,19 +56,23 @@ public class InvoiceFormController {
 	private final ObservableList<InvoiceItem> items = FXCollections.observableArrayList();
 
 	@FXML
+	private void initializeInvoiceNumber() {
+		long lastInvoiceNumber = InvoiceDAO.findLastInvoiceNumber();
+		invoiceNumberField.setText(String.valueOf(Math.max(lastInvoiceNumber + 1, 300)));
+	}
+
+	@FXML
 	public void initialize() {
-		// Auto-asignar empresa propia
 		Company own = CompanyDAO.findOwnCompany();
 		if (own != null) {
 			companyComboBox.setItems(FXCollections.observableArrayList(own));
 			companyComboBox.getSelectionModel().selectFirst();
 		}
 
-		// Clientes (solo los que no son own_company)
 		List<Company> clients = CompanyDAO.findAll();
 		customerComboBox.setItems(FXCollections.observableArrayList(clients));
+		customerComboBox.getSelectionModel().clearSelection();
 
-		// Mostrar nombre legible en los combos
 		companyComboBox.setCellFactory(cb -> new ListCell<>() {
 			@Override
 			protected void updateItem(Company c, boolean empty) {
@@ -84,21 +91,18 @@ public class InvoiceFormController {
 		});
 		customerComboBox.setButtonCell(customerComboBox.getCellFactory().call(null));
 
-		// Inicializar tabla
 		descriptionColumn.setCellValueFactory(
 				data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
 		amountColumn.setCellValueFactory(
 				data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getAmount()));
 		itemTable.setItems(items);
 
-		// Fecha por defecto
 		datePicker.setValue(LocalDate.now());
 
-		// Número de factura autogenerado
-		long lastInvoiceNumber = InvoiceDAO.findLastInvoiceNumber();
-		invoiceNumberField.setText(String.valueOf(Math.max(lastInvoiceNumber + 1, 300)));
+		initializeInvoiceNumber();
 
-		recalculateTotals();
+		subtotalField.clear();
+		totalField.clear();
 	}
 
 	@FXML
@@ -164,25 +168,33 @@ public class InvoiceFormController {
 		invoice.setNotes(notesField.getText());
 
 		long invoiceId = InvoiceDAO.save(invoice);
+		invoice.setId(invoiceId);
+		
+		System.out.println("Fetching invoice with ID: " + invoiceId);
 
 		for (InvoiceItem item : items) {
 			item.setInvoiceId(invoiceId);
 			InvoiceItemDAO.save(item);
 		}
 
-		showAlert("Invoice saved successfully.");
+		showExportDialog(invoice);
 		handleCancel();
 	}
 
 	@FXML
 	private void handleCancel() {
 		invoiceNumberField.clear();
+		initializeInvoiceNumber();
 		items.clear();
-		subtotalField.setText("0.00");
-		totalField.setText("0.00");
+		subtotalField.clear();
+		totalField.clear();
+		taxRateField.clear();
+		additionalCostsField.clear();
 		newDescriptionField.clear();
 		newAmountField.clear();
 		notesField.clear();
+		datePicker.setValue(LocalDate.now());
+		customerComboBox.getSelectionModel().clearSelection();
 	}
 
 	private void showAlert(String msg) {
@@ -210,6 +222,35 @@ public class InvoiceFormController {
 			showAlert("Invalid number format: " + value + ". Please check all numeric fields.");
 			throw e;
 		}
+	}
+
+	private void showExportDialog(Invoice invoice) {
+		Dialog<Void> dialog = new Dialog<>();
+		dialog.setTitle("Export Invoice");
+
+		CheckBox exportPdf = new CheckBox("Export as PDF");
+		CheckBox exportWord = new CheckBox("Export as Word");
+
+		VBox content = new VBox(10, exportPdf, exportWord);
+		content.setPadding(new Insets(10));
+		dialog.getDialogPane().setContent(content);
+
+		ButtonType exportBtn = new ButtonType("Export", ButtonBar.ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().addAll(exportBtn, ButtonType.CANCEL);
+
+		dialog.setResultConverter(dialogButton -> {
+			if (dialogButton == exportBtn) {
+				if (exportPdf.isSelected()) {
+					InvoiceExporter.exportToPdf(invoice);
+				}
+				if (exportWord.isSelected()) {
+					InvoiceExporter.exportToWord(invoice);
+				}
+			}
+			return null;
+		});
+
+		dialog.showAndWait();
 	}
 
 }
