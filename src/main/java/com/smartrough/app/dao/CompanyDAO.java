@@ -43,4 +43,33 @@ public class CompanyDAO {
 
 		return list;
 	}
+
+	public static boolean updateCompany(Company company) {
+		String sql = "UPDATE Company SET name=?, representative=?, phone=?, email=?, address_id=?, is_own_company=? WHERE id=?";
+		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setString(1, company.getName());
+			stmt.setString(2, company.getRepresentative());
+			stmt.setString(3, company.getPhone());
+			stmt.setString(4, company.getEmail());
+			stmt.setLong(5, company.getAddressId());
+			stmt.setInt(6, company.isOwnCompany() ? 1 : 0);
+			stmt.setLong(7, company.getId());
+			return stmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static boolean deleteById(long id) {
+		String sql = "DELETE FROM Company WHERE id = ?";
+		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setLong(1, id);
+			return stmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			System.err.println("Error deleting company: " + e.getMessage());
+			return false;
+		}
+	}
+
 }
