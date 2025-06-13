@@ -5,69 +5,74 @@
 <?import javafx.geometry.Pos?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.collections.FXCollections?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.smartrough.app.controller.CompanyFormController"
-      spacing="10" style="-fx-padding: 20;">
-    
-    <Label text="Register a Company" style="-fx-font-size: 18;" />
-    
-    <TextField fx:id="nameField" promptText="Company name"/>
-    <TextField fx:id="repField" promptText="Representative"/>
-    <TextField fx:id="phoneField" promptText="Phone"/>
-    <TextField fx:id="emailField" promptText="Email"/>
-    
-    <CheckBox fx:id="ownCompanyCheck" text="¿Is it my company?" />
-    
-    <Separator />
-    
-    <Label text="Address" />
+      spacing="15" style="-fx-padding: 20; -fx-background-color: white;">
 
-<HBox spacing="10" alignment="CENTER_LEFT">
-    <ComboBox fx:id="addressComboBox" promptText="Select or create an address..." HBox.hgrow="ALWAYS"/>
-    <Button fx:id="addAddressButton" onAction="#handleToggleAddressForm" prefHeight="30" prefWidth="30" styleClass="icon-button">
-            <graphic>
-                <ImageView fitHeight="20" fitWidth="20">
-                    <image>
-                        <Image url="@/img/add.png" />
-                    </image>
-                </ImageView>
-            </graphic>
-            <tooltip>
-                <Tooltip text="Add New Address" />
-            </tooltip>
-     </Button>
-</HBox>
+    <Label text="Register a Company" style="-fx-font-size: 20; -fx-font-weight: bold;" />
 
-<GridPane fx:id="addressGrid" hgap="10" vgap="10" visible="false" managed="false">
-    <columnConstraints>
-        <ColumnConstraints halignment="RIGHT" />
-        <ColumnConstraints />
-    </columnConstraints>
-    <children>
-        <Label text="Street:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField fx:id="streetField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+    <!-- Company Type Selector -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Type:" style="-fx-font-weight: bold;" />
+        <ComboBox fx:id="typeComboBox" promptText="Select type"/>
+    </HBox>
 
-        <Label text="City:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <TextField fx:id="cityField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    <!-- General Info Group -->
+    <TitledPane text="General Information" expanded="true">
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <TextField fx:id="nameField" promptText="Company name"/>
+            <TextField fx:id="repField" promptText="Representative" visible="false" managed="false"/>
+            <TextField fx:id="phoneField" promptText="Phone"/>
+            <TextField fx:id="emailField" promptText="Email"/>
+        </VBox>
+    </TitledPane>
 
-        <Label text="State:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="stateField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+    <!-- Address Group -->
+    <TitledPane text="Address" expanded="true">
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <ComboBox fx:id="addressComboBox" promptText="Select or create an address..." HBox.hgrow="ALWAYS"/>
+                <Button fx:id="addAddressButton" onAction="#handleToggleAddressForm" prefHeight="30" prefWidth="30" styleClass="icon-button">
+                    <graphic>
+                        <ImageView fitHeight="20" fitWidth="20">
+                            <image>
+                                <Image url="@/img/add.png" />
+                            </image>
+                        </ImageView>
+                    </graphic>
+                    <tooltip>
+                        <Tooltip text="Add New Address" />
+                    </tooltip>
+                </Button>
+            </HBox>
 
-        <Label text="Zip Code:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField fx:id="zipField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-    </children>
-</GridPane>
+            <GridPane fx:id="addressGrid" hgap="10" vgap="10" visible="false" managed="false">
+			    <columnConstraints>
+			        <ColumnConstraints halignment="RIGHT" />
+			        <ColumnConstraints hgrow="ALWAYS" />
+			    </columnConstraints>
+			    <children>
+			        <Label text="Street:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+			        <TextField fx:id="streetField" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+			
+			        <Label text="City:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+			        <TextField fx:id="cityField" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+			
+			        <Label text="State:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+			        <TextField fx:id="stateField" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+			
+			        <Label text="Zip Code:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+			        <TextField fx:id="zipField" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS"/>
+			    </children>
+			</GridPane>
+        </VBox>
+    </TitledPane>
 
-
-    
-    <!-- Botones alineados a la derecha -->
+    <!-- Action Buttons -->
     <HBox spacing="10" alignment="CENTER_RIGHT">
-	    <children>
-	        <Button text="Cancel" onAction="#handleCancel" styleClass="form-button" />
-	        <Button text="Save" onAction="#handleSave" styleClass="form-button" />
-	    </children>
-	</HBox>
-
-
+        <Button text="Cancel" onAction="#handleCancel" styleClass="form-button" />
+        <Button text="Save" onAction="#handleSave" styleClass="form-button" />
+    </HBox>
 </VBox>

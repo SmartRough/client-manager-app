@@ -4,6 +4,7 @@ import com.smartrough.app.dao.CRUDHelper;
 import com.smartrough.app.dao.CompanyDAO;
 import com.smartrough.app.model.Address;
 import com.smartrough.app.model.Company;
+import com.smartrough.app.enums.CompanyType;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -18,7 +19,7 @@ public class CompanyFormController {
 	@FXML
 	private TextField nameField, repField, phoneField, emailField;
 	@FXML
-	private CheckBox ownCompanyCheck;
+	private ComboBox<String> typeComboBox;
 	@FXML
 	private TextField streetField, cityField, stateField, zipField;
 	@FXML
@@ -29,18 +30,17 @@ public class CompanyFormController {
 	private Button addAddressButton;
 
 	private boolean creatingNewAddress = false;
-
 	private Company companyBeingEdited;
 
 	@FXML
 	public void initialize() {
+		// Dirección
 		List<Address> addresses = CRUDHelper.findAllAddresses();
 		addressGrid.setVisible(false);
 		addressGrid.setManaged(false);
 		addressComboBox.setItems(FXCollections.observableArrayList(addresses));
 		addressComboBox.setPromptText("Select or create an address...");
 
-		// Muestra calle y ciudad como preview
 		addressComboBox.setCellFactory(cb -> new ListCell<>() {
 			@Override
 			protected void updateItem(Address addr, boolean empty) {
@@ -52,15 +52,13 @@ public class CompanyFormController {
 				}
 			}
 		});
+
 		addressComboBox.setButtonCell(new ListCell<>() {
 			@Override
 			protected void updateItem(Address addr, boolean empty) {
 				super.updateItem(addr, empty);
-				if (empty || addr == null) {
-					setText("Select or create an address...");
-				} else {
-					setText(addr.getStreet() + ", " + addr.getCity());
-				}
+				setText((empty || addr == null) ? "Select or create an address..."
+						: addr.getStreet() + ", " + addr.getCity());
 			}
 		});
 
@@ -75,6 +73,19 @@ public class CompanyFormController {
 				clearAddressFields();
 			}
 		});
+
+		// Tipo de empresa
+		typeComboBox.getItems().addAll("INDIVIDUAL", "BUSINESS");
+		typeComboBox.setValue("BUSINESS"); // ← Selección por defecto
+
+		typeComboBox.setOnAction(e -> {
+			boolean isBusiness = "BUSINESS".equals(typeComboBox.getValue());
+			repField.setVisible(isBusiness);
+			repField.setManaged(isBusiness);
+		});
+
+		// Ejecuta lógica una vez para reflejar el estado inicial en pantalla
+		typeComboBox.getOnAction().handle(null);
 	}
 
 	@FXML
@@ -104,7 +115,8 @@ public class CompanyFormController {
 			company.setPhone(phoneField.getText());
 			company.setEmail(emailField.getText());
 			company.setAddressId(addressId);
-			company.setOwnCompany(ownCompanyCheck.isSelected());
+			company.setOwnCompany(false);
+			company.setType(CompanyType.valueOf(typeComboBox.getValue()));
 
 			long companyId = CompanyDAO.saveCompany(company);
 			if (companyId > 0) {
@@ -116,8 +128,9 @@ public class CompanyFormController {
 			companyBeingEdited.setRepresentative(repField.getText());
 			companyBeingEdited.setPhone(phoneField.getText());
 			companyBeingEdited.setEmail(emailField.getText());
-			companyBeingEdited.setOwnCompany(ownCompanyCheck.isSelected());
 			companyBeingEdited.setAddressId(addressId);
+			companyBeingEdited.setOwnCompany(false);
+			companyBeingEdited.setType(CompanyType.valueOf(typeComboBox.getValue()));
 
 			CompanyDAO.updateCompany(companyBeingEdited);
 			showAlert("Company updated successfully");
@@ -148,9 +161,12 @@ public class CompanyFormController {
 		repField.setText(company.getRepresentative());
 		phoneField.setText(company.getPhone());
 		emailField.setText(company.getEmail());
-		ownCompanyCheck.setSelected(company.isOwnCompany());
 
-		// Buscar dirección por ID para preseleccionar en el ComboBox
+		typeComboBox.setValue(company.getType().name());
+		boolean isBusiness = company.getType() == CompanyType.BUSINESS;
+		repField.setVisible(isBusiness);
+		repField.setManaged(isBusiness);
+
 		for (Address addr : addressComboBox.getItems()) {
 			if (addr != null && addr.getId() == company.getAddressId()) {
 				addressComboBox.getSelectionModel().select(addr);
@@ -168,7 +184,7 @@ public class CompanyFormController {
 		repField.clear();
 		phoneField.clear();
 		emailField.clear();
-		ownCompanyCheck.setSelected(false);
+		typeComboBox.setValue("INDIVIDUAL");
 		addressComboBox.getSelectionModel().clearSelection();
 		clearAddressFields();
 	}

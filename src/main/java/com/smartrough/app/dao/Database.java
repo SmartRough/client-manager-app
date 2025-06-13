@@ -20,9 +20,19 @@ public class Database {
 	}
 
 	public static void initializeSchema() {
-		String sqlCompany = "CREATE TABLE IF NOT EXISTS Company (" + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ "name TEXT NOT NULL," + "representative TEXT," + "phone TEXT," + "email TEXT," + "address_id INTEGER,"
-				+ "is_own_company INTEGER DEFAULT 0," + "FOREIGN KEY(address_id) REFERENCES Address(id)" + ");";
+		String sqlCompany = """
+					CREATE TABLE IF NOT EXISTS Company (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						name TEXT NOT NULL,
+						representative TEXT,
+						phone TEXT,
+						email TEXT,
+						address_id INTEGER,
+						is_own_company INTEGER DEFAULT 0,
+						type TEXT DEFAULT 'BUSINESS',
+						FOREIGN KEY(address_id) REFERENCES Address(id)
+					);
+				""";
 
 		String sqlAddress = "CREATE TABLE IF NOT EXISTS Address (" + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ "street TEXT NOT NULL," + "city TEXT NOT NULL," + "state TEXT NOT NULL," + "zip_code TEXT NOT NULL"

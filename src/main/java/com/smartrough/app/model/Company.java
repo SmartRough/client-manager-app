@@ -1,5 +1,7 @@
 package com.smartrough.app.model;
 
+import com.smartrough.app.enums.CompanyType;
+
 public class Company {
 	private long id;
 	private String name;
@@ -8,12 +10,14 @@ public class Company {
 	private String email;
 	private long addressId;
 	private boolean isOwnCompany;
+	private CompanyType type;
 
 	public Company() {
+		this.type = CompanyType.BUSINESS;
 	}
 
 	public Company(long id, String name, String representative, String phone, String email, long addressId,
-			boolean isOwnCompany) {
+			boolean isOwnCompany, CompanyType type) {
 		this.id = id;
 		this.name = name;
 		this.representative = representative;
@@ -21,6 +25,7 @@ public class Company {
 		this.email = email;
 		this.addressId = addressId;
 		this.isOwnCompany = isOwnCompany;
+		this.type = type;
 	}
 
 	// Getters and Setters
@@ -79,5 +84,13 @@ public class Company {
 
 	public void setOwnCompany(boolean ownCompany) {
 		isOwnCompany = ownCompany;
+	}
+
+	public CompanyType getType() {
+		return type;
+	}
+
+	public void setType(CompanyType type) {
+		this.type = type;
 	}
 }
