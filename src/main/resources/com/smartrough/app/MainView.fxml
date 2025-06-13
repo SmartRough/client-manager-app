@@ -17,7 +17,7 @@
                     <Image url="/img/logo_gcs.png" />
                 </image>
             </ImageView>
-            <Label text="Smart Rough - Client Manager" styleClass="top-title"/>
+            <Label text="G Construction Service Inc." styleClass="top-title"/>
         </HBox>
     </top>
 
