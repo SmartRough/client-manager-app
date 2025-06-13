@@ -138,3 +138,26 @@
     -fx-border-color: derive(-fx-pie-color, 1%);
     -fx-border-width: 0;
 }
+
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 3;
+}
+.form-button {
+    -fx-background-color: white;
+    -fx-text-fill: #2d75e8;
+    -fx-border-color: #2d75e8;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+    -fx-padding: 6 16;
+    -fx-font-weight: bold;
+    -fx-transition: all 0.2s ease-in-out;
+}
+
+.form-button:hover {
+    -fx-background-color: #e7f0fe; /* color sutil al pasar mouse */
+    -fx-border-color: #1a5ecc;
+    -fx-text-fill: #1a5ecc;
+}
