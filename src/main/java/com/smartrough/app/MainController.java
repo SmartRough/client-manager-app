@@ -19,6 +19,11 @@ public class MainController {
 		ViewNavigator.setMainLayout(root);
 		ViewNavigator.loadView("CompanyListView.fxml");
 	}
+	
+	@FXML
+	private void showOwnCompanyForm() {
+		ViewNavigator.loadView("OwnCompanyFormView.fxml");
+	}
 
 	@FXML
 	private void showCompanyForm() {

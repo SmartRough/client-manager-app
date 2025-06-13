@@ -23,7 +23,7 @@
 
     <!-- 📋 LATERAL MENU -->
     <left>
-        <VBox spacing="10" styleClass="sidebar">
+        <VBox spacing="10" styleClass="sidebar">   
     <Button text="Customers" onAction="#showCompanyList" graphicTextGap="10" styleClass="sidebar-button">
         <graphic><Label text="📋" /></graphic>
     </Button>
@@ -36,6 +36,9 @@
      <Button text="Estimates" onAction="#showEstimates" styleClass="sidebar-button">
         <graphic><Label text="📝" /></graphic>
     </Button>
+    <Button text="My Company" onAction="#showOwnCompanyForm" styleClass="sidebar-button">
+    	<graphic><Label text="🏢" /></graphic>
+	</Button>
 </VBox>
     </left>
 

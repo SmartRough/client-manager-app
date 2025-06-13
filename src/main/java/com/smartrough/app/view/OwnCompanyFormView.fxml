@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.smartrough.app.controller.OwnCompanyFormController"
+      spacing="15" style="-fx-padding: 20; -fx-background-color: white;">
+
+    <Label text="My Company Information" style="-fx-font-size: 20; -fx-font-weight: bold;" />
+
+    <!-- Datos generales -->
+    <TextField fx:id="nameField" promptText="Business Name"/>
+    <TextField fx:id="repField" promptText="Representative"/>
+    <TextField fx:id="phoneField" promptText="Phone"/>
+    <TextField fx:id="emailField" promptText="Email"/>
+
+    <!-- Dirección -->
+    <TextField fx:id="streetField" promptText="Street"/>
+    <TextField fx:id="cityField" promptText="City"/>
+    <TextField fx:id="stateField" promptText="State"/>
+    <TextField fx:id="zipField" promptText="Zip Code"/>
+
+    <!-- Botones -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Cancel" onAction="#handleCancel" styleClass="form-button" />
+        <Button text="Save" onAction="#handleSave" styleClass="form-button" />
+    </HBox>
+</VBox>

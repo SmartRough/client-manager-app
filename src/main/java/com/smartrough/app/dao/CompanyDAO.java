@@ -19,9 +19,24 @@ public class CompanyDAO {
 		return CRUDHelper.create("Company", columns, values, types);
 	}
 
+	public static Company findOwnCompany() {
+		String sql = "SELECT * FROM Company WHERE is_own_company = TRUE LIMIT 1";
+		try (Connection conn = Database.connect();
+				PreparedStatement stmt = conn.prepareStatement(sql);
+				ResultSet rs = stmt.executeQuery()) {
+
+			if (rs.next()) {
+				return mapResultSet(rs);
+			}
+		} catch (SQLException e) {
+			System.err.println("Error fetching own company: " + e.getMessage());
+		}
+		return null;
+	}
+
 	public static List<Company> findAll() {
 		List<Company> list = new ArrayList<>();
-		String sql = "SELECT * FROM Company";
+		String sql = "SELECT * FROM Company WHERE is_own_company = FALSE";
 
 		try (Connection conn = Database.connect();
 				PreparedStatement stmt = conn.prepareStatement(sql);
@@ -74,6 +89,19 @@ public class CompanyDAO {
 			System.err.println("Error deleting company: " + e.getMessage());
 			return false;
 		}
+	}
+
+	private static Company mapResultSet(ResultSet rs) throws SQLException {
+		Company c = new Company();
+		c.setId(rs.getLong("id"));
+		c.setName(rs.getString("name"));
+		c.setRepresentative(rs.getString("representative"));
+		c.setPhone(rs.getString("phone"));
+		c.setEmail(rs.getString("email"));
+		c.setAddressId(rs.getLong("address_id"));
+		c.setOwnCompany(rs.getInt("is_own_company") == 1);
+		c.setType(CompanyType.valueOf(rs.getString("type")));
+		return c;
 	}
 
 }
