@@ -1,15 +1,16 @@
 package com.smartrough.app.util;
 
-import com.itextpdf.text.*;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.pdf.*;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.smartrough.app.dao.AddressDAO;
 import com.smartrough.app.dao.CompanyDAO;
 import com.smartrough.app.dao.InvoiceItemDAO;
+import com.smartrough.app.model.Address;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Invoice;
 import com.smartrough.app.model.InvoiceItem;
 import javafx.scene.control.Alert;
-import org.apache.poi.xwpf.usermodel.*;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.convert.in.xhtml.XHTMLImporterImpl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,51 +22,25 @@ public class InvoiceExporter {
 		try {
 			Company company = CompanyDAO.findById(invoice.getCompanyId());
 			Company customer = CompanyDAO.findById(invoice.getCustomerId());
+			Address companyAddress = AddressDAO.findById(company.getAddressId());
+			Address customerAddress = AddressDAO.findById(customer.getAddressId());
 			List<InvoiceItem> items = InvoiceItemDAO.findByInvoiceId(invoice.getId());
+
+			String html = InvoiceHtmlTemplate.generateHtml(invoice, company, companyAddress, customer, customerAddress,
+					items);
 
 			File file = FileSaveHelper.showSaveDialog(null, "Invoice_" + invoice.getInvoiceNumber() + ".pdf",
 					"PDF Documents", "*.pdf");
 
-			if (file == null) {
-				System.out.println("Export canceled by user.");
+			if (file == null)
 				return;
-			}
 
-			Document doc = new Document();
-			PdfWriter.getInstance(doc, new FileOutputStream(file));
-			doc.open();
+			PdfRendererBuilder builder = new PdfRendererBuilder();
+			builder.withHtmlContent(html, null);
+			builder.toStream(new FileOutputStream(file));
+			builder.run();
 
-			doc.add(new Paragraph("INVOICE #" + invoice.getInvoiceNumber()));
-			doc.add(new Paragraph("Date: " + invoice.getDate()));
-			doc.add(new Paragraph("From: " + company.getName()));
-			doc.add(new Paragraph("To: " + customer.getName()));
-			doc.add(new Paragraph("\nItems:"));
-
-			PdfPTable table = new PdfPTable(2);
-			table.addCell("Description");
-			table.addCell("Amount");
-
-			for (InvoiceItem item : items) {
-				table.addCell(item.getDescription());
-				table.addCell(item.getAmount().toString());
-			}
-
-			doc.add(table);
-			doc.add(new Paragraph("\nSubtotal: " + invoice.getSubtotal()));
-			doc.add(new Paragraph("Tax Rate: " + (invoice.getTaxRate() != null ? invoice.getTaxRate() : "N/A")));
-			doc.add(new Paragraph("Additional Costs: "
-					+ (invoice.getAdditionalCosts() != null ? invoice.getAdditionalCosts() : "N/A")));
-			doc.add(new Paragraph("Total: " + invoice.getTotal()));
-			doc.add(new Paragraph("\nNotes: " + invoice.getNotes()));
-
-			doc.close();
-			System.out.println("PDF exported to: " + file.getAbsolutePath());
-
-			Alert alert = new Alert(Alert.AlertType.INFORMATION);
-			alert.setTitle("Export Successful");
-			alert.setHeaderText(null);
-			alert.setContentText("Invoice was exported to:\n" + file.getAbsolutePath());
-			alert.showAndWait();
+			showSuccess("PDF exported to: " + file.getAbsolutePath());
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,74 +51,37 @@ public class InvoiceExporter {
 		try {
 			Company company = CompanyDAO.findById(invoice.getCompanyId());
 			Company customer = CompanyDAO.findById(invoice.getCustomerId());
+			Address companyAddress = AddressDAO.findById(company.getAddressId());
+			Address customerAddress = AddressDAO.findById(customer.getAddressId());
 			List<InvoiceItem> items = InvoiceItemDAO.findByInvoiceId(invoice.getId());
+
+			String html = InvoiceHtmlTemplate.generateHtml(invoice, company, companyAddress, customer, customerAddress,
+					items);
 
 			File file = FileSaveHelper.showSaveDialog(null, "Invoice_" + invoice.getInvoiceNumber() + ".docx",
 					"Word Documents", "*.docx");
 
-			if (file == null) {
-				System.out.println("Export canceled by user.");
+			if (file == null)
 				return;
-			}
 
-			XWPFDocument doc = new XWPFDocument();
-			FileOutputStream out = new FileOutputStream(file);
+			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+			XHTMLImporterImpl importer = new XHTMLImporterImpl(wordMLPackage);
+			wordMLPackage.getMainDocumentPart().getContent().addAll(importer.convert(html, null));
 
-			XWPFParagraph title = doc.createParagraph();
-			title.setAlignment(ParagraphAlignment.CENTER);
-			XWPFRun run = title.createRun();
-			run.setText("INVOICE #" + invoice.getInvoiceNumber());
-			run.setBold(true);
-			run.setFontSize(16);
+			wordMLPackage.save(file);
 
-			XWPFParagraph info = doc.createParagraph();
-			info.setSpacingAfter(200);
-			XWPFRun r1 = info.createRun();
-			r1.setText("Date: " + invoice.getDate());
-			r1.addBreak();
-			r1.setText("From: " + company.getName());
-			r1.addBreak();
-			r1.setText("To: " + customer.getName());
-
-			XWPFTable table = doc.createTable();
-			XWPFTableRow header = table.getRow(0);
-			header.getCell(0).setText("Description");
-			header.addNewTableCell().setText("Amount");
-
-			for (InvoiceItem item : items) {
-				XWPFTableRow row = table.createRow();
-				row.getCell(0).setText(item.getDescription());
-				row.getCell(1).setText(item.getAmount().toString());
-			}
-
-			XWPFParagraph totals = doc.createParagraph();
-			totals.setSpacingBefore(400);
-			XWPFRun r2 = totals.createRun();
-			r2.addBreak();
-			r2.setText("Subtotal: " + invoice.getSubtotal());
-			r2.addBreak();
-			r2.setText("Tax Rate: " + (invoice.getTaxRate() != null ? invoice.getTaxRate() : "N/A"));
-			r2.addBreak();
-			r2.setText("Additional Costs: "
-					+ (invoice.getAdditionalCosts() != null ? invoice.getAdditionalCosts() : "N/A"));
-			r2.addBreak();
-			r2.setText("Total: " + invoice.getTotal());
-			r2.addBreak();
-			r2.setText("Notes: " + invoice.getNotes());
-
-			doc.write(out);
-			out.close();
-
-			System.out.println("Word document exported to: " + file.getAbsolutePath());
-
-			Alert alert = new Alert(Alert.AlertType.INFORMATION);
-			alert.setTitle("Export Successful");
-			alert.setHeaderText(null);
-			alert.setContentText("Invoice was exported to:\n" + file.getAbsolutePath());
-			alert.showAndWait();
+			showSuccess("Word document exported to: " + file.getAbsolutePath());
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private static void showSuccess(String msg) {
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		alert.setTitle("Export Successful");
+		alert.setHeaderText(null);
+		alert.setContentText(msg);
+		alert.showAndWait();
 	}
 }
