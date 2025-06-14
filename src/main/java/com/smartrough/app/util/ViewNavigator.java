@@ -1,7 +1,10 @@
 package com.smartrough.app.util;
 
 import com.smartrough.app.controller.CompanyFormController;
+import com.smartrough.app.controller.InvoiceFormController;
 import com.smartrough.app.model.Company;
+import com.smartrough.app.model.Invoice;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.layout.BorderPane;
@@ -30,6 +33,18 @@ public class ViewNavigator {
 			Parent view = loader.load();
 			CompanyFormController controller = loader.getController();
 			controller.loadCompany(company);
+			mainLayout.setCenter(view);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void loadView(String fxml, Invoice invoice) {
+		try {
+			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
+			Parent view = loader.load();
+			InvoiceFormController controller = loader.getController();
+			controller.loadInvoice(invoice);
 			mainLayout.setCenter(view);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -30,19 +30,25 @@
 			<artifactId>sqlite-jdbc</artifactId>
 			<version>3.42.0.0</version>
 		</dependency>
-		<!-- Apache POI para exportar a Word -->
+		<!-- https://mvnrepository.com/artifact/org.docx4j/docx4j-ImportXHTML -->
 		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
-			<version>5.2.5</version>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-ImportXHTML</artifactId>
+			<version>11.4.8</version>
+		</dependency>
+		<!-- XHTML import support -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+			<version>11.4.9</version>
+		</dependency>
+		<dependency>
+			<groupId>com.openhtmltopdf</groupId>
+			<artifactId>openhtmltopdf-pdfbox</artifactId>
+			<version>1.0.10</version>
 		</dependency>
 
-		<!-- iText para exportar a PDF -->
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itextpdf</artifactId>
-			<version>5.5.13.3</version>
-		</dependency>
+
 	</dependencies>
 
 	<build>
