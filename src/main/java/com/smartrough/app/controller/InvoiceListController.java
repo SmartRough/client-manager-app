@@ -173,6 +173,24 @@ public class InvoiceListController {
 		ViewNavigator.loadView("InvoiceFormView.fxml");
 	}
 
+	@FXML
+	private void handleSendEmail() {
+		Invoice selected = invoiceTable.getSelectionModel().getSelectedItem();
+		if (selected == null) {
+			new Alert(Alert.AlertType.INFORMATION, "Please select an invoice to send by email.").showAndWait();
+			return;
+		}
+	}
+
+	@FXML
+	private void handleExport() {
+		Invoice selected = invoiceTable.getSelectionModel().getSelectedItem();
+		if (selected == null) {
+			new Alert(Alert.AlertType.INFORMATION, "Please select an invoice to export.").showAndWait();
+			return;
+		}
+	}
+
 	private void handleEdit(Invoice invoice) {
 		ViewNavigator.loadView("InvoiceFormView.fxml", invoice);
 	}
@@ -198,23 +216,5 @@ public class InvoiceListController {
 				}
 			}
 		});
-	}
-
-	private void handleExport() {
-		Invoice selected = invoiceTable.getSelectionModel().getSelectedItem();
-		if (selected == null) {
-			new Alert(Alert.AlertType.INFORMATION, "Please select an invoice to export.").showAndWait();
-			return;
-		}
-		// TODO: Add export logic here
-	}
-
-	private void handleSendEmail() {
-		Invoice selected = invoiceTable.getSelectionModel().getSelectedItem();
-		if (selected == null) {
-			new Alert(Alert.AlertType.INFORMATION, "Please select an invoice to send by email.").showAndWait();
-			return;
-		}
-		// TODO: Add email logic here
 	}
 }
