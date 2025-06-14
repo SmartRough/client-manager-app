@@ -7,12 +7,14 @@ import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Invoice;
 import com.smartrough.app.model.InvoiceItem;
 import com.smartrough.app.util.InvoiceExporter;
-
+import com.smartrough.app.util.ViewNavigator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
@@ -35,6 +37,8 @@ public class InvoiceFormController {
 	private TableColumn<InvoiceItem, String> descriptionColumn;
 	@FXML
 	private TableColumn<InvoiceItem, BigDecimal> amountColumn;
+	@FXML
+	private TableColumn<InvoiceItem, Void> actionColumn;
 	@FXML
 	private TextField newDescriptionField;
 	@FXML
@@ -93,14 +97,50 @@ public class InvoiceFormController {
 				data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
 		amountColumn.setCellValueFactory(
 				data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getAmount()));
+
+		actionColumn.setCellFactory(col -> new TableCell<>() {
+			private final Button deleteButton = new Button();
+
+			{
+				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
+				deleteIcon.setFitHeight(16);
+				deleteIcon.setFitWidth(16);
+				deleteButton.setGraphic(deleteIcon);
+				deleteButton.getStyleClass().add("icon-button");
+				deleteButton.setTooltip(new Tooltip("Delete item"));
+
+				deleteButton.setOnAction(e -> {
+					InvoiceItem item = getTableView().getItems().get(getIndex());
+					items.remove(item);
+					recalculateTotals();
+				});
+
+				deleteButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+			}
+
+			@Override
+			protected void updateItem(Void item, boolean empty) {
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : deleteButton);
+			}
+		});
+
 		itemTable.setItems(items);
 	}
 
 	private void prepareNewInvoice() {
 		datePicker.setValue(LocalDate.now());
 		initializeInvoiceNumber();
+
+		if (!companyComboBox.getItems().isEmpty()) {
+			companyComboBox.getSelectionModel().select(0);
+		}
+
 		customerComboBox.getSelectionModel().clearSelection();
+
 		items.clear();
+		itemTable.getItems().clear();
+
 		subtotalField.clear();
 		taxRateField.clear();
 		additionalCostsField.clear();
@@ -108,6 +148,10 @@ public class InvoiceFormController {
 		newDescriptionField.clear();
 		newAmountField.clear();
 		notesField.clear();
+
+		invoiceBeingEdited = null;
+		editing = false;
+		invoiceNumberField.setDisable(false);
 	}
 
 	private void initializeInvoiceNumber() {
@@ -120,7 +164,12 @@ public class InvoiceFormController {
 		this.editing = true;
 
 		invoiceNumberField.setText(invoice.getInvoiceNumber());
+		invoiceNumberField.setDisable(true);
 		datePicker.setValue(invoice.getDate());
+
+		if (!companyComboBox.getItems().isEmpty()) {
+			companyComboBox.getSelectionModel().select(0);
+		}
 
 		for (Company c : companyComboBox.getItems()) {
 			if (c.getId() == invoice.getCompanyId()) {
@@ -174,6 +223,12 @@ public class InvoiceFormController {
 
 	@FXML
 	private void recalculateTotals() {
+		if (items.isEmpty()) {
+			subtotalField.clear();
+			totalField.clear();
+			return;
+		}
+
 		BigDecimal subtotal = items.stream().map(InvoiceItem::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 		subtotalField.setText(subtotal.toString());
 
@@ -195,9 +250,13 @@ public class InvoiceFormController {
 
 	@FXML
 	private void handleSave() {
+		if (!validateForm()) {
+			return;
+		}
+
 		Invoice invoice = invoiceBeingEdited != null ? invoiceBeingEdited : new Invoice();
 		invoice.setInvoiceNumber(invoiceNumberField.getText());
-		invoice.setDate(datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now());
+		invoice.setDate(datePicker.getValue());
 		invoice.setCompanyId(companyComboBox.getValue().getId());
 		invoice.setCustomerId(customerComboBox.getValue().getId());
 		invoice.setSubtotal(parseDecimalOrZero(subtotalField.getText()));
@@ -207,27 +266,39 @@ public class InvoiceFormController {
 		invoice.setNotes(notesField.getText());
 
 		if (invoiceBeingEdited == null) {
+			// Guardar factura nueva
 			long invoiceId = InvoiceDAO.save(invoice);
 			invoice.setId(invoiceId);
+
+			// Guardar ítems asociados
+			for (InvoiceItem item : items) {
+				item.setInvoiceId(invoice.getId());
+				InvoiceItemDAO.save(item);
+			}
+
+			showExportDialog(invoice);
+			prepareNewInvoice(); // limpiar formulario
+
 		} else {
+			// Actualizar factura existente
 			InvoiceDAO.update(invoice);
-			InvoiceItemDAO.delete(invoice.getId());
-		}
+			InvoiceItemDAO.delete(invoice.getId()); // eliminar ítems antiguos
 
-		for (InvoiceItem item : items) {
-			item.setInvoiceId(invoice.getId());
-			InvoiceItemDAO.save(item);
-		}
+			for (InvoiceItem item : items) {
+				item.setInvoiceId(invoice.getId());
+				InvoiceItemDAO.save(item);
+			}
 
-		showExportDialog(invoice);
-		handleCancel();
+			showExportDialog(invoice);
+			handleCancel(); // volver al listado
+		}
 	}
 
 	@FXML
 	private void handleCancel() {
 		editing = false;
 		invoiceBeingEdited = null;
-		prepareNewInvoice();
+		ViewNavigator.loadView("InvoiceListView.fxml");
 	}
 
 	private void showAlert(String msg) {
@@ -281,5 +352,25 @@ public class InvoiceFormController {
 		});
 
 		dialog.showAndWait();
+	}
+
+	private boolean validateForm() {
+		if (invoiceNumberField.getText().isBlank()) {
+			showAlert("Invoice number is required.");
+			return false;
+		}
+		if (datePicker.getValue() == null) {
+			showAlert("Date is required.");
+			return false;
+		}
+		if (companyComboBox.getValue() == null) {
+			showAlert("Please select your company.");
+			return false;
+		}
+		if (customerComboBox.getValue() == null) {
+			showAlert("Please select a customer.");
+			return false;
+		}
+		return true;
 	}
 }

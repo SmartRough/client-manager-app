@@ -3,7 +3,6 @@ package com.smartrough.app.dao;
 import com.smartrough.app.model.Invoice;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +36,7 @@ public class InvoiceDAO {
 
 		} catch (SQLException e) {
 			System.err.println("Error fetching invoices: " + e.getMessage());
+			e.printStackTrace();
 		}
 		return list;
 	}
@@ -105,17 +105,17 @@ public class InvoiceDAO {
 
 	private static Invoice mapResultSet(ResultSet rs) throws SQLException {
 		Invoice i = new Invoice();
-
 		i.setId(rs.getLong("id"));
 		i.setInvoiceNumber(rs.getString("invoice_number"));
 
 		try {
-			String dateString = rs.getString("date");
-			if (dateString != null && !dateString.isBlank()) {
-				i.setDate(LocalDate.parse(dateString.substring(0, 10)));
+			String dateStr = rs.getString("date");
+			if (dateStr != null && !dateStr.isBlank()) {
+				i.setDate(java.time.LocalDate.parse(dateStr));
 			}
 		} catch (Exception ex) {
 			System.err.println(">> ERROR parsing invoice date: " + ex.getMessage());
+			ex.printStackTrace();
 			i.setDate(null);
 		}
 
@@ -144,5 +144,4 @@ public class InvoiceDAO {
 
 		return i;
 	}
-
 }
