@@ -3,10 +3,10 @@ package com.smartrough.app.controller;
 import com.smartrough.app.dao.CompanyDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.util.ViewNavigator;
-
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -30,8 +30,11 @@ public class CompanyListController {
 	private TableColumn<Company, String> typeCol;
 	@FXML
 	private TableColumn<Company, Void> actionCol;
+	@FXML
+	private TextField searchField;
 
 	private final ObservableList<Company> companies = FXCollections.observableArrayList();
+	private FilteredList<Company> filteredCompanies;
 
 	@FXML
 	public void initialize() {
@@ -39,37 +42,26 @@ public class CompanyListController {
 		repCol.setCellValueFactory(new PropertyValueFactory<>("representative"));
 		phoneCol.setCellValueFactory(new PropertyValueFactory<>("phone"));
 		emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
-		typeCol.setCellValueFactory(cellData -> {
-			return new ReadOnlyStringWrapper(cellData.getValue().getType().name());
-		});
+		typeCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getType().name()));
 
-		// Agrega botones con íconos
 		actionCol.setCellFactory(col -> new TableCell<>() {
 			private final Button editBtn = new Button();
 			private final Button deleteBtn = new Button();
 			private final HBox box = new HBox(5, editBtn, deleteBtn);
 
 			{
-				// Icono de editar
-				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/edit.png")));
-				editIcon.setFitHeight(16);
-				editIcon.setFitWidth(16);
-				editBtn.setGraphic(editIcon);
+				editBtn.setGraphic(
+						new ImageView(new Image(getClass().getResourceAsStream("/img/edit.png"), 16, 16, true, true)));
 				editBtn.getStyleClass().add("icon-button");
 				editBtn.setTooltip(new Tooltip("Edit"));
 
-				// Icono de eliminar
-				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
-				deleteIcon.setFitHeight(16);
-				deleteIcon.setFitWidth(16);
-				deleteBtn.setGraphic(deleteIcon);
+				deleteBtn.setGraphic(new ImageView(
+						new Image(getClass().getResourceAsStream("/img/delete.png"), 16, 16, true, true)));
 				deleteBtn.getStyleClass().add("icon-button");
 				deleteBtn.setTooltip(new Tooltip("Delete"));
 
-				// Acciones
 				editBtn.setOnAction(e -> handleEdit(getTableView().getItems().get(getIndex())));
 				deleteBtn.setOnAction(e -> handleDelete(getTableView().getItems().get(getIndex())));
-
 				box.setStyle("-fx-alignment: center;");
 			}
 
@@ -81,11 +73,21 @@ public class CompanyListController {
 		});
 
 		loadCompanies();
+
+		// Buscador
+		searchField.textProperty().addListener((obs, old, newValue) -> {
+			filteredCompanies.setPredicate(company -> {
+				if (newValue == null || newValue.isBlank())
+					return true;
+				return company.getName().toLowerCase().contains(newValue.toLowerCase());
+			});
+		});
 	}
 
 	private void loadCompanies() {
 		companies.setAll(CompanyDAO.findAll());
-		companyTable.setItems(companies);
+		filteredCompanies = new FilteredList<>(companies, p -> true);
+		companyTable.setItems(filteredCompanies);
 	}
 
 	@FXML
@@ -105,7 +107,6 @@ public class CompanyListController {
 
 		ButtonType yesBtn = new ButtonType("Yes", ButtonBar.ButtonData.YES);
 		ButtonType noBtn = new ButtonType("No", ButtonBar.ButtonData.NO);
-
 		confirmation.getButtonTypes().setAll(yesBtn, noBtn);
 
 		confirmation.showAndWait().ifPresent(response -> {
@@ -114,11 +115,9 @@ public class CompanyListController {
 				if (success) {
 					companies.remove(company);
 				} else {
-					Alert errorAlert = new Alert(Alert.AlertType.ERROR, "Failed to delete company.");
-					errorAlert.showAndWait();
+					new Alert(Alert.AlertType.ERROR, "Failed to delete company.").showAndWait();
 				}
 			}
 		});
 	}
-
 }
