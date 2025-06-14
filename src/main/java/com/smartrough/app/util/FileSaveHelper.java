@@ -4,6 +4,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
 
 public class FileSaveHelper {
 
@@ -16,5 +19,15 @@ public class FileSaveHelper {
 		fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
 
 		return fileChooser.showSaveDialog(parentWindow);
+	}
+
+	public static String encodeImageToBase64(String path) {
+		try {
+			byte[] bytes = Files.readAllBytes(Paths.get(path));
+			return Base64.getEncoder().encodeToString(bytes);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
 	}
 }
