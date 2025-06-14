@@ -42,7 +42,7 @@ public class MainController {
 
 	@FXML
 	private void showInvoices() {
-		ViewNavigator.loadView("InvoiceFormView.fxml");
+		ViewNavigator.loadView("InvoiceListView.fxml");
 	}
 
 	@FXML

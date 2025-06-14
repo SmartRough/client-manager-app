@@ -2,7 +2,6 @@ package com.smartrough.app.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class Invoice {
@@ -16,8 +15,6 @@ public class Invoice {
 	private BigDecimal additionalCosts;
 	private BigDecimal total;
 	private String notes;
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
 
 	private List<InvoiceItem> items;
 
@@ -26,8 +23,7 @@ public class Invoice {
 	}
 
 	public Invoice(Long id, String invoiceNumber, LocalDate date, Long companyId, Long customerId, BigDecimal subtotal,
-			BigDecimal taxRate, BigDecimal additionalCosts, BigDecimal total, String notes, LocalDateTime createdAt,
-			LocalDateTime updatedAt, List<InvoiceItem> items) {
+			BigDecimal taxRate, BigDecimal additionalCosts, BigDecimal total, String notes, List<InvoiceItem> items) {
 		super();
 		this.id = id;
 		this.invoiceNumber = invoiceNumber;
@@ -39,8 +35,6 @@ public class Invoice {
 		this.additionalCosts = additionalCosts;
 		this.total = total;
 		this.notes = notes;
-		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
 		this.items = items;
 	}
 
@@ -122,22 +116,6 @@ public class Invoice {
 
 	public void setNotes(String notes) {
 		this.notes = notes;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public LocalDateTime getUpdatedAt() {
-		return updatedAt;
-	}
-
-	public void setUpdatedAt(LocalDateTime updatedAt) {
-		this.updatedAt = updatedAt;
 	}
 
 	public List<InvoiceItem> getItems() {

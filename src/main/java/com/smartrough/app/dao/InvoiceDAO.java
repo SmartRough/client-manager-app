@@ -3,6 +3,7 @@ package com.smartrough.app.dao;
 import com.smartrough.app.model.Invoice;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,17 +109,18 @@ public class InvoiceDAO {
 		i.setId(rs.getLong("id"));
 		i.setInvoiceNumber(rs.getString("invoice_number"));
 
-		Date dateSql = rs.getDate("date");
-		if (dateSql != null) {
-			i.setDate(dateSql.toLocalDate());
-		} else {
-			System.err.println(">> WARNING: Invoice with id " + rs.getLong("id") + " has NULL date");
+		try {
+			String dateString = rs.getString("date");
+			if (dateString != null && !dateString.isBlank()) {
+				i.setDate(LocalDate.parse(dateString.substring(0, 10)));
+			}
+		} catch (Exception ex) {
+			System.err.println(">> ERROR parsing invoice date: " + ex.getMessage());
 			i.setDate(null);
 		}
 
 		i.setCompanyId(rs.getLong("company_id"));
 		i.setCustomerId(rs.getLong("customer_id"));
-
 		i.setSubtotal(rs.getBigDecimal("subtotal"));
 
 		try {
