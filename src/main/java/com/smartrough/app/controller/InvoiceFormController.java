@@ -17,7 +17,6 @@ import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 public class InvoiceFormController {
 
@@ -49,30 +48,24 @@ public class InvoiceFormController {
 	private TextField additionalCostsField;
 	@FXML
 	private TextField totalField;
-
 	@FXML
 	private TextArea notesField;
 
 	private final ObservableList<InvoiceItem> items = FXCollections.observableArrayList();
-
-	@FXML
-	private void initializeInvoiceNumber() {
-		long lastInvoiceNumber = InvoiceDAO.findLastInvoiceNumber();
-		invoiceNumberField.setText(String.valueOf(Math.max(lastInvoiceNumber + 1, 300)));
-	}
+	private Invoice invoiceBeingEdited;
+	private boolean editing = false;
 
 	@FXML
 	public void initialize() {
-		Company own = CompanyDAO.findOwnCompany();
-		if (own != null) {
-			companyComboBox.setItems(FXCollections.observableArrayList(own));
-			companyComboBox.getSelectionModel().selectFirst();
+		setupCompanyCombos();
+		setupItemTable();
+
+		if (!editing) {
+			prepareNewInvoice();
 		}
+	}
 
-		List<Company> clients = CompanyDAO.findAll();
-		customerComboBox.setItems(FXCollections.observableArrayList(clients));
-		customerComboBox.getSelectionModel().clearSelection();
-
+	private void setupCompanyCombos() {
 		companyComboBox.setCellFactory(cb -> new ListCell<>() {
 			@Override
 			protected void updateItem(Company c, boolean empty) {
@@ -91,18 +84,66 @@ public class InvoiceFormController {
 		});
 		customerComboBox.setButtonCell(customerComboBox.getCellFactory().call(null));
 
+		companyComboBox.setItems(FXCollections.observableArrayList(CompanyDAO.findOwnCompany()));
+		customerComboBox.setItems(FXCollections.observableArrayList(CompanyDAO.findAll()));
+	}
+
+	private void setupItemTable() {
 		descriptionColumn.setCellValueFactory(
 				data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
 		amountColumn.setCellValueFactory(
 				data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getAmount()));
 		itemTable.setItems(items);
+	}
 
+	private void prepareNewInvoice() {
 		datePicker.setValue(LocalDate.now());
-
 		initializeInvoiceNumber();
-
+		customerComboBox.getSelectionModel().clearSelection();
+		items.clear();
 		subtotalField.clear();
+		taxRateField.clear();
+		additionalCostsField.clear();
 		totalField.clear();
+		newDescriptionField.clear();
+		newAmountField.clear();
+		notesField.clear();
+	}
+
+	private void initializeInvoiceNumber() {
+		long lastInvoiceNumber = InvoiceDAO.findLastInvoiceNumber();
+		invoiceNumberField.setText(String.valueOf(Math.max(lastInvoiceNumber + 1, 300)));
+	}
+
+	public void loadInvoice(Invoice invoice) {
+		this.invoiceBeingEdited = invoice;
+		this.editing = true;
+
+		invoiceNumberField.setText(invoice.getInvoiceNumber());
+		datePicker.setValue(invoice.getDate());
+
+		for (Company c : companyComboBox.getItems()) {
+			if (c.getId() == invoice.getCompanyId()) {
+				companyComboBox.getSelectionModel().select(c);
+				break;
+			}
+		}
+
+		for (Company c : customerComboBox.getItems()) {
+			if (c.getId() == invoice.getCustomerId()) {
+				customerComboBox.getSelectionModel().select(c);
+				break;
+			}
+		}
+
+		subtotalField.setText(invoice.getSubtotal() != null ? invoice.getSubtotal().toString() : "");
+		taxRateField.setText(invoice.getTaxRate() != null ? invoice.getTaxRate().toString() : "");
+		additionalCostsField
+				.setText(invoice.getAdditionalCosts() != null ? invoice.getAdditionalCosts().toString() : "");
+		totalField.setText(invoice.getTotal() != null ? invoice.getTotal().toString() : "");
+		notesField.setText(invoice.getNotes() != null ? invoice.getNotes() : "");
+
+		items.setAll(InvoiceItemDAO.findByInvoiceId(invoice.getId()));
 	}
 
 	@FXML
@@ -123,9 +164,7 @@ public class InvoiceFormController {
 			}
 		}
 
-		InvoiceItem item = new InvoiceItem();
-		item.setDescription(desc);
-		item.setAmount(amt);
+		InvoiceItem item = new InvoiceItem(null, null, desc, amt);
 		items.add(item);
 
 		newDescriptionField.clear();
@@ -156,7 +195,7 @@ public class InvoiceFormController {
 
 	@FXML
 	private void handleSave() {
-		Invoice invoice = new Invoice();
+		Invoice invoice = invoiceBeingEdited != null ? invoiceBeingEdited : new Invoice();
 		invoice.setInvoiceNumber(invoiceNumberField.getText());
 		invoice.setDate(datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now());
 		invoice.setCompanyId(companyComboBox.getValue().getId());
@@ -167,13 +206,16 @@ public class InvoiceFormController {
 		invoice.setTotal(parseDecimalOrZero(totalField.getText()));
 		invoice.setNotes(notesField.getText());
 
-		long invoiceId = InvoiceDAO.save(invoice);
-		invoice.setId(invoiceId);
-		
-		System.out.println("Fetching invoice with ID: " + invoiceId);
+		if (invoiceBeingEdited == null) {
+			long invoiceId = InvoiceDAO.save(invoice);
+			invoice.setId(invoiceId);
+		} else {
+			InvoiceDAO.update(invoice);
+			InvoiceItemDAO.delete(invoice.getId());
+		}
 
 		for (InvoiceItem item : items) {
-			item.setInvoiceId(invoiceId);
+			item.setInvoiceId(invoice.getId());
 			InvoiceItemDAO.save(item);
 		}
 
@@ -183,23 +225,13 @@ public class InvoiceFormController {
 
 	@FXML
 	private void handleCancel() {
-		invoiceNumberField.clear();
-		initializeInvoiceNumber();
-		items.clear();
-		subtotalField.clear();
-		totalField.clear();
-		taxRateField.clear();
-		additionalCostsField.clear();
-		newDescriptionField.clear();
-		newAmountField.clear();
-		notesField.clear();
-		datePicker.setValue(LocalDate.now());
-		customerComboBox.getSelectionModel().clearSelection();
+		editing = false;
+		invoiceBeingEdited = null;
+		prepareNewInvoice();
 	}
 
 	private void showAlert(String msg) {
-		Alert alert = new Alert(Alert.AlertType.INFORMATION, msg);
-		alert.showAndWait();
+		new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
 	}
 
 	private BigDecimal parseDecimalOrZero(String value) {
@@ -208,7 +240,7 @@ public class InvoiceFormController {
 		try {
 			return new BigDecimal(value);
 		} catch (NumberFormatException e) {
-			showAlert("Invalid number format: " + value + ". Please check all numeric fields.");
+			showAlert("Invalid number format: " + value);
 			throw e;
 		}
 	}
@@ -219,7 +251,7 @@ public class InvoiceFormController {
 		try {
 			return new BigDecimal(value);
 		} catch (NumberFormatException e) {
-			showAlert("Invalid number format: " + value + ". Please check all numeric fields.");
+			showAlert("Invalid number format: " + value);
 			throw e;
 		}
 	}
@@ -238,19 +270,16 @@ public class InvoiceFormController {
 		ButtonType exportBtn = new ButtonType("Export", ButtonBar.ButtonData.OK_DONE);
 		dialog.getDialogPane().getButtonTypes().addAll(exportBtn, ButtonType.CANCEL);
 
-		dialog.setResultConverter(dialogButton -> {
-			if (dialogButton == exportBtn) {
-				if (exportPdf.isSelected()) {
+		dialog.setResultConverter(button -> {
+			if (button == exportBtn) {
+				if (exportPdf.isSelected())
 					InvoiceExporter.exportToPdf(invoice);
-				}
-				if (exportWord.isSelected()) {
+				if (exportWord.isSelected())
 					InvoiceExporter.exportToWord(invoice);
-				}
 			}
 			return null;
 		});
 
 		dialog.showAndWait();
 	}
-
 }
