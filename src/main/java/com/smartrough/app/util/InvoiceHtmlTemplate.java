@@ -13,7 +13,7 @@ public class InvoiceHtmlTemplate {
 			Address customerAddress, List<InvoiceItem> items) {
 
 		StringBuilder sb = new StringBuilder();
-		String logoBase64 = FileSaveHelper.encodeImageToBase64("src/main/resources/img/logo.png");
+		String logoBase64 = FileSaveHelper.encodeImageToBase64("/img/logo_gcs.png");
 
 		sb.append("<!DOCTYPE html>");
 		sb.append("<html lang='en' xmlns='http://www.w3.org/1999/xhtml'>");

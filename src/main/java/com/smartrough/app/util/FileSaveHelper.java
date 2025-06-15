@@ -4,8 +4,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Base64;
 
 public class FileSaveHelper {
@@ -21,13 +22,16 @@ public class FileSaveHelper {
 		return fileChooser.showSaveDialog(parentWindow);
 	}
 
-	public static String encodeImageToBase64(String path) {
-		try {
-			byte[] bytes = Files.readAllBytes(Paths.get(path));
-			return Base64.getEncoder().encodeToString(bytes);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "";
+	public static String encodeImageToBase64(String resourcePath) {
+		try (InputStream is = FileSaveHelper.class.getResourceAsStream(resourcePath)) {
+			if (is == null) {
+				throw new FileNotFoundException("Resource not found: " + resourcePath);
+			}
+			byte[] imageBytes = is.readAllBytes();
+			return Base64.getEncoder().encodeToString(imageBytes);
+		} catch (IOException e) {
+			throw new RuntimeException("Error reading image: " + resourcePath, e);
 		}
 	}
+
 }

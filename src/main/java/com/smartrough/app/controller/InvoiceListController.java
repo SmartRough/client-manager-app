@@ -4,16 +4,19 @@ import com.smartrough.app.dao.CompanyDAO;
 import com.smartrough.app.dao.InvoiceDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Invoice;
+import com.smartrough.app.util.InvoiceExporter;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
@@ -189,6 +192,32 @@ public class InvoiceListController {
 			new Alert(Alert.AlertType.INFORMATION, "Please select an invoice to export.").showAndWait();
 			return;
 		}
+
+		// Mostrar diálogo de elección
+		Dialog<Void> dialog = new Dialog<>();
+		dialog.setTitle("Export Invoice");
+
+		CheckBox exportPdf = new CheckBox("Export as PDF");
+		CheckBox exportWord = new CheckBox("Export as Word");
+
+		VBox content = new VBox(10, exportPdf, exportWord);
+		content.setPadding(new Insets(10));
+		dialog.getDialogPane().setContent(content);
+
+		ButtonType exportBtn = new ButtonType("Export", ButtonBar.ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().addAll(exportBtn, ButtonType.CANCEL);
+
+		dialog.setResultConverter(button -> {
+			if (button == exportBtn) {
+				if (exportPdf.isSelected())
+					InvoiceExporter.exportToPdf(selected);
+				if (exportWord.isSelected())
+					InvoiceExporter.exportToWord(selected);
+			}
+			return null;
+		});
+
+		dialog.showAndWait();
 	}
 
 	private void handleEdit(Invoice invoice) {
