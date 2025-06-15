@@ -58,3 +58,5 @@ tmp/
 
 # Optional: if you want to ignore only the SQLite database (inside /data)
 data/database.db
+
+email.properties
