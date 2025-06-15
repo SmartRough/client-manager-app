@@ -20,13 +20,13 @@
             </columnConstraints>
 
             <Label text="Date:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="datePicker" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <DatePicker fx:id="datePicker" GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="300"/>
 
             <Label text="My Company:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="companyComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <ComboBox fx:id="companyComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="300"/>
 
             <Label text="Customer:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="customerComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <ComboBox fx:id="customerComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1" prefWidth="300"/>
 
             <Label text="Job Description:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
             <TextArea fx:id="jobDescriptionArea" GridPane.rowIndex="3" GridPane.columnIndex="1" prefRowCount="3"/>
@@ -55,7 +55,14 @@
 
         <HBox spacing="10" alignment="CENTER_LEFT">
             <Label text="Attach Images:"/>
-            <Button fx:id="btnAddImage" text="Add Image" onAction="#handleAddImage"/>
+            <Button fx:id="btnAddImage" onAction="#handleAddImage" prefHeight="30" prefWidth="30" styleClass="icon-button">
+                <graphic>
+                    <ImageView fitHeight="20" fitWidth="20">
+                        <image><Image url="@/img/upload.png" /></image>
+                    </ImageView>
+                </graphic>
+                <tooltip><Tooltip text="Add Image" /></tooltip>
+            </Button>
             <Label fx:id="imageCountLabel" text="0 images attached"/>
         </HBox>
 

@@ -54,8 +54,8 @@
                            AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" prefWidth="1000">
                     <columns>
                         <TableColumn fx:id="dateCol" text="Date" prefWidth="120" />
-                        <TableColumn fx:id="clientCol" text="Client" prefWidth="180" />
-                        <TableColumn fx:id="jobCol" text="Job Description" prefWidth="250" />
+                        <TableColumn fx:id="clientCol" text="Client" prefWidth="250" />
+                        <TableColumn fx:id="jobCol" text="Job Description" prefWidth="300" />
                         <TableColumn fx:id="totalCol" text="Total" prefWidth="120" />
                         <TableColumn fx:id="actionCol" text="Actions" prefWidth="150" />
                     </columns>
