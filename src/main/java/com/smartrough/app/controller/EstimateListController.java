@@ -17,6 +17,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -182,7 +183,20 @@ public class EstimateListController {
 			return;
 		}
 
-		// TODO: Generate PDF and open EmailDialog with it
+		try {
+			File pdf = EstimateExporter.generatePdfTemp(selected);
+
+			Company customer = CompanyDAO.findById(selected.getCustomerId());
+			String customerEmail = (customer != null && customer.getEmail() != null) ? customer.getEmail() : "";
+
+			ViewNavigator.openDialog("EmailDialog.fxml", controller -> {
+				controller.setData(customerEmail, List.of(pdf));
+			});
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			new Alert(Alert.AlertType.ERROR, "Error opening email dialog: " + e.getMessage()).showAndWait();
+		}
 	}
 
 	private void handleEdit(Estimate estimate) {

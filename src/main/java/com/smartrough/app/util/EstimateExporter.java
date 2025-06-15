@@ -62,6 +62,23 @@ public class EstimateExporter {
 		}
 	}
 
+	public static File generatePdfTemp(Estimate estimate) throws Exception {
+		Company company = CompanyDAO.findById(estimate.getCompanyId());
+		Company customer = CompanyDAO.findById(estimate.getCustomerId());
+
+		String html = EstimateHtmlTemplate.generateHtml(estimate, company, customer);
+
+		File tempFile = File.createTempFile("Estimate_" + estimate.getId(), ".pdf");
+		tempFile.deleteOnExit();
+
+		PdfRendererBuilder builder = new PdfRendererBuilder();
+		builder.withHtmlContent(html, null);
+		builder.toStream(new FileOutputStream(tempFile));
+		builder.run();
+
+		return tempFile;
+	}
+
 	private static void showSuccess(String msg) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
 		alert.setTitle("Export Successful");
