@@ -60,3 +60,4 @@ tmp/
 data/database.db
 
 email.properties
+/src/main/resources/config/email.properties
