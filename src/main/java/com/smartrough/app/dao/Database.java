@@ -100,6 +100,126 @@ public class Database {
 					);
 				""";
 
+		String sqlContractTemplate = """
+					CREATE TABLE IF NOT EXISTS Contract_Template (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						name TEXT NOT NULL,
+						legal_notice TEXT,
+						contractor_id INTEGER NOT NULL,
+						FOREIGN KEY(contractor_id) REFERENCES Company(id)
+					);
+				""";
+
+		String sqlStandardClause = """
+					CREATE TABLE IF NOT EXISTS Standard_Clause (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						template_id INTEGER NOT NULL,
+						clause_order INTEGER,
+						title TEXT NOT NULL,
+						content TEXT NOT NULL,
+						active INTEGER NOT NULL DEFAULT 1,
+						FOREIGN KEY(template_id) REFERENCES Contract_Template(id)
+					);
+				""";
+
+		String sqlContract = """
+					CREATE TABLE IF NOT EXISTS Contract (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						contract_number TEXT,
+						contract_date DATE,
+						template_id INTEGER,
+						client_info_id INTEGER,
+						property_info_id INTEGER,
+						financial_info_id INTEGER,
+						status TEXT,
+						FOREIGN KEY(template_id) REFERENCES Contract_Template(id),
+						FOREIGN KEY(client_info_id) REFERENCES Contract_Client_Info(id),
+						FOREIGN KEY(property_info_id) REFERENCES Project_Property_Info(id),
+						FOREIGN KEY(financial_info_id) REFERENCES Contract_Financial_Info(id)
+					);
+				""";
+
+		String sqlContractClientInfo = """
+					CREATE TABLE IF NOT EXISTS Contract_Client_Info (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						company_name TEXT,
+						owner_name1 TEXT,
+						owner_name2 TEXT,
+						email TEXT,
+						address TEXT,
+						home_phone TEXT,
+						other_phone TEXT
+					);
+				""";
+
+		String sqlContractItem = """
+					CREATE TABLE IF NOT EXISTS Contract_Item (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						contract_id INTEGER NOT NULL,
+						item_order INTEGER,
+						description TEXT,
+						FOREIGN KEY(contract_id) REFERENCES Contract(id) ON DELETE CASCADE
+					);
+				""";
+
+		String sqlProjectPropertyInfo = """
+					CREATE TABLE IF NOT EXISTS Project_Property_Info (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						contract_id INTEGER,
+						is_home INTEGER,
+						is_condo INTEGER,
+						is_mfh INTEGER,
+						is_commercial INTEGER,
+						is_hoa INTEGER,
+						FOREIGN KEY(contract_id) REFERENCES Contract(id) ON DELETE CASCADE
+					);
+				""";
+
+		String sqlContractFinancialInfo = """
+					CREATE TABLE IF NOT EXISTS Contract_Financial_Info (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						contract_id INTEGER,
+						total_price REAL,
+						deposit REAL,
+						balance_due_upon_completion REAL,
+						amount_financed REAL,
+						FOREIGN KEY(contract_id) REFERENCES Contract(id) ON DELETE CASCADE
+					);
+				""";
+
+		String sqlAttachment = """
+					CREATE TABLE IF NOT EXISTS Attachment (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						contract_id INTEGER,
+						file_name TEXT,
+						file_type TEXT,
+						FOREIGN KEY(contract_id) REFERENCES Contract(id) ON DELETE CASCADE
+					);
+				""";
+
+		String sqlSignature = """
+					CREATE TABLE IF NOT EXISTS Signature (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						contract_id INTEGER,
+						name TEXT,
+						role TEXT,
+						date_signed DATE,
+						image_name TEXT,
+						FOREIGN KEY(contract_id) REFERENCES Contract(id) ON DELETE CASCADE
+					);
+				""";
+
+		String sqlClauseStatus = """
+					CREATE TABLE IF NOT EXISTS Contract_Clause_Status (
+						contract_id INTEGER NOT NULL,
+						clause_id INTEGER NOT NULL,
+						initialed INTEGER NOT NULL DEFAULT 0,
+						PRIMARY KEY (contract_id, clause_id),
+						FOREIGN KEY(contract_id) REFERENCES Contract(id) ON DELETE CASCADE,
+						FOREIGN KEY(clause_id) REFERENCES Standard_Clause(id) ON DELETE CASCADE
+					);
+				""";
+
 		try (Connection conn = connect(); Statement stmt = conn.createStatement()) {
 			stmt.execute(sqlAddress);
 			stmt.execute(sqlCompany);
@@ -107,6 +227,17 @@ public class Database {
 			stmt.execute(sqlInvoiceItem);
 			stmt.execute(sqlEstimate);
 			stmt.execute(sqlEstimateItem);
+			stmt.execute(sqlContractTemplate);
+			stmt.execute(sqlStandardClause);
+			stmt.execute(sqlContractClientInfo);
+			stmt.execute(sqlContract);
+			stmt.execute(sqlContractItem);
+			stmt.execute(sqlProjectPropertyInfo);
+			stmt.execute(sqlContractFinancialInfo);
+			stmt.execute(sqlAttachment);
+			stmt.execute(sqlSignature);
+			stmt.execute(sqlClauseStatus);
+
 		} catch (SQLException e) {
 			System.err.println("Error creating schema: " + e.getMessage());
 		}
