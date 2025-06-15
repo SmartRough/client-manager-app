@@ -12,7 +12,13 @@ public class Database {
 		String url = "jdbc:sqlite:" + dbPath.toString();
 
 		try {
-			return DriverManager.getConnection(url);
+			Connection conn = DriverManager.getConnection(url);
+
+			try (Statement stmt = conn.createStatement()) {
+				stmt.execute("PRAGMA foreign_keys = ON");
+			}
+
+			return conn;
 		} catch (SQLException e) {
 			System.err.println("Error connecting to DB: " + e.getMessage());
 			return null;
@@ -34,9 +40,15 @@ public class Database {
 					);
 				""";
 
-		String sqlAddress = "CREATE TABLE IF NOT EXISTS Address (" + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ "street TEXT NOT NULL," + "city TEXT NOT NULL," + "state TEXT NOT NULL," + "zip_code TEXT NOT NULL"
-				+ ");";
+		String sqlAddress = """
+					CREATE TABLE IF NOT EXISTS Address (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						street TEXT NOT NULL,
+						city TEXT NOT NULL,
+						state TEXT NOT NULL,
+						zip_code TEXT NOT NULL
+					);
+				""";
 
 		String sqlInvoice = """
 					CREATE TABLE IF NOT EXISTS Invoice (
@@ -65,11 +77,36 @@ public class Database {
 					);
 				""";
 
+		String sqlEstimate = """
+					CREATE TABLE IF NOT EXISTS Estimate (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						date DATE NOT NULL,
+						company_id INTEGER NOT NULL,
+						customer_id INTEGER NOT NULL,
+						job_description TEXT,
+						total REAL NOT NULL,
+						image_names TEXT,
+						FOREIGN KEY(company_id) REFERENCES Company(id),
+						FOREIGN KEY(customer_id) REFERENCES Company(id)
+					);
+				""";
+
+		String sqlEstimateItem = """
+					CREATE TABLE IF NOT EXISTS Estimate_Item (
+						id INTEGER PRIMARY KEY AUTOINCREMENT,
+						estimate_id INTEGER NOT NULL,
+						description TEXT NOT NULL,
+						FOREIGN KEY(estimate_id) REFERENCES Estimate(id) ON DELETE CASCADE
+					);
+				""";
+
 		try (Connection conn = connect(); Statement stmt = conn.createStatement()) {
 			stmt.execute(sqlAddress);
 			stmt.execute(sqlCompany);
 			stmt.execute(sqlInvoice);
 			stmt.execute(sqlInvoiceItem);
+			stmt.execute(sqlEstimate);
+			stmt.execute(sqlEstimateItem);
 		} catch (SQLException e) {
 			System.err.println("Error creating schema: " + e.getMessage());
 		}

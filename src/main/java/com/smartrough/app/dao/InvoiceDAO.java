@@ -62,7 +62,7 @@ public class InvoiceDAO {
 
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, invoice.getInvoiceNumber());
-			stmt.setDate(2, Date.valueOf(invoice.getDate()));
+			stmt.setString(2, invoice.getDate() != null ? invoice.getDate().toString() : null);
 			stmt.setLong(3, invoice.getCompanyId());
 			stmt.setLong(4, invoice.getCustomerId());
 			stmt.setBigDecimal(5, invoice.getSubtotal());
@@ -139,8 +139,6 @@ public class InvoiceDAO {
 
 		i.setTotal(rs.getBigDecimal("total"));
 		i.setNotes(rs.getString("notes"));
-
-		System.out.println(">> Invoice mapped: " + i.getId() + ", " + i.getInvoiceNumber());
 
 		return i;
 	}

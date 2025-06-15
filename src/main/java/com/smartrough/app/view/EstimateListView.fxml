@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.smartrough.app.controller.EstimateListController"
+      spacing="10"
+      style="-fx-background-color: #fff; -fx-padding: 20;">
+
+    <!-- 🔝 Header con búsqueda y acciones -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Estimate Management" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <TextField fx:id="searchField" promptText="Search by client name" prefWidth="200">
+            <tooltip><Tooltip text="Type to filter estimates" /></tooltip>
+        </TextField>
+
+        <Button fx:id="btnSendEmail" onAction="#handleSendEmail" prefHeight="30" prefWidth="30" styleClass="icon-button">
+            <graphic>
+                <ImageView fitHeight="20" fitWidth="20">
+                    <image><Image url="@/img/send.png" /></image>
+                </ImageView>
+            </graphic>
+            <tooltip><Tooltip text="Send" /></tooltip>
+        </Button>
+
+        <Button fx:id="btnExport" onAction="#handleExport" prefHeight="30" prefWidth="30" styleClass="icon-button">
+            <graphic>
+                <ImageView fitHeight="20" fitWidth="20">
+                    <image><Image url="@/img/export.png" /></image>
+                </ImageView>
+            </graphic>
+            <tooltip><Tooltip text="Export" /></tooltip>
+        </Button>
+
+        <Button fx:id="btnNew" onAction="#handleNew" prefHeight="30" prefWidth="30" styleClass="icon-button">
+            <graphic>
+                <ImageView fitHeight="20" fitWidth="20">
+                    <image><Image url="@/img/add.png" /></image>
+                </ImageView>
+            </graphic>
+            <tooltip><Tooltip text="Add New Estimate" /></tooltip>
+        </Button>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS">
+        <content>
+            <AnchorPane>
+                <TableView fx:id="estimateTable" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0"
+                           AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" prefWidth="1000">
+                    <columns>
+                        <TableColumn fx:id="dateCol" text="Date" prefWidth="120" />
+                        <TableColumn fx:id="clientCol" text="Client" prefWidth="180" />
+                        <TableColumn fx:id="jobCol" text="Job Description" prefWidth="250" />
+                        <TableColumn fx:id="totalCol" text="Total" prefWidth="120" />
+                        <TableColumn fx:id="actionCol" text="Actions" prefWidth="150" />
+                    </columns>
+                </TableView>
+            </AnchorPane>
+        </content>
+    </ScrollPane>
+</VBox>
