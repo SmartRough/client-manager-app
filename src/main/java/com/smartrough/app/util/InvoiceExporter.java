@@ -77,6 +77,48 @@ public class InvoiceExporter {
 		}
 	}
 
+	public static File generatePdfTemp(Invoice invoice) throws Exception {
+		Company company = CompanyDAO.findById(invoice.getCompanyId());
+		Company customer = CompanyDAO.findById(invoice.getCustomerId());
+		Address companyAddress = AddressDAO.findById(company.getAddressId());
+		Address customerAddress = AddressDAO.findById(customer.getAddressId());
+		List<InvoiceItem> items = InvoiceItemDAO.findByInvoiceId(invoice.getId());
+
+		String html = InvoiceHtmlTemplate.generateHtml(invoice, company, companyAddress, customer, customerAddress,
+				items);
+
+		File tempFile = File.createTempFile("Invoice_" + invoice.getInvoiceNumber(), ".pdf");
+		tempFile.deleteOnExit();
+
+		PdfRendererBuilder builder = new PdfRendererBuilder();
+		builder.withHtmlContent(html, null);
+		builder.toStream(new FileOutputStream(tempFile));
+		builder.run();
+
+		return tempFile;
+	}
+
+	public static File generateWordTemp(Invoice invoice) throws Exception {
+		Company company = CompanyDAO.findById(invoice.getCompanyId());
+		Company customer = CompanyDAO.findById(invoice.getCustomerId());
+		Address companyAddress = AddressDAO.findById(company.getAddressId());
+		Address customerAddress = AddressDAO.findById(customer.getAddressId());
+		List<InvoiceItem> items = InvoiceItemDAO.findByInvoiceId(invoice.getId());
+
+		String html = InvoiceHtmlTemplate.generateHtml(invoice, company, companyAddress, customer, customerAddress,
+				items);
+
+		File tempFile = File.createTempFile("Invoice_" + invoice.getInvoiceNumber(), ".docx");
+		tempFile.deleteOnExit();
+
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+		XHTMLImporterImpl importer = new XHTMLImporterImpl(wordMLPackage);
+		wordMLPackage.getMainDocumentPart().getContent().addAll(importer.convert(html, null));
+		wordMLPackage.save(tempFile);
+
+		return tempFile;
+	}
+
 	private static void showSuccess(String msg) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
 		alert.setTitle("Export Successful");

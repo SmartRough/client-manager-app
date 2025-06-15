@@ -18,9 +18,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -182,6 +184,21 @@ public class InvoiceListController {
 		if (selected == null) {
 			new Alert(Alert.AlertType.INFORMATION, "Please select an invoice to send by email.").showAndWait();
 			return;
+		}
+
+		try {
+			File pdf = InvoiceExporter.generatePdfTemp(selected);
+
+			Company customer = CompanyDAO.findById(selected.getCustomerId());
+			String customerEmail = (customer != null && customer.getEmail() != null) ? customer.getEmail() : "";
+
+			ViewNavigator.openDialog("EmailDialog.fxml", controller -> {
+				controller.setData(customerEmail, List.of(pdf));
+			});
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			new Alert(Alert.AlertType.ERROR, "Error opening email dialog: " + e.getMessage()).showAndWait();
 		}
 	}
 

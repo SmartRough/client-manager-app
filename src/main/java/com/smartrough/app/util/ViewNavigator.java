@@ -1,13 +1,19 @@
 package com.smartrough.app.util;
 
+import java.util.function.Consumer;
+
 import com.smartrough.app.controller.CompanyFormController;
+import com.smartrough.app.controller.EmailDialogController;
 import com.smartrough.app.controller.InvoiceFormController;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Invoice;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 public class ViewNavigator {
 
@@ -50,4 +56,23 @@ public class ViewNavigator {
 			e.printStackTrace();
 		}
 	}
+
+	public static void openDialog(String fxml, Consumer<EmailDialogController> configurer) {
+		try {
+			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
+			Parent view = loader.load();
+			EmailDialogController controller = loader.getController();
+			if (configurer != null)
+				configurer.accept(controller);
+
+			Stage stage = new Stage();
+			stage.setTitle("Send Email");
+			stage.setScene(new Scene(view));
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.showAndWait();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }
