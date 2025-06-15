@@ -4,6 +4,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +32,16 @@ public class FileSaveHelper {
 			return Base64.getEncoder().encodeToString(imageBytes);
 		} catch (IOException e) {
 			throw new RuntimeException("Error reading image: " + resourcePath, e);
+		}
+	}
+
+	public static String encodeFileToBase64(String fullFilePath) {
+		try (InputStream is = new FileInputStream(fullFilePath)) {
+			byte[] imageBytes = is.readAllBytes();
+			return Base64.getEncoder().encodeToString(imageBytes);
+		} catch (IOException e) {
+			System.err.println("Error loading image: " + fullFilePath);
+			return null;
 		}
 	}
 

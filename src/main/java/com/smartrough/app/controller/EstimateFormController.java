@@ -96,7 +96,6 @@ public class EstimateFormController {
 				deleteButton.setOnAction(e -> {
 					EstimateItem item = getTableView().getItems().get(getIndex());
 					items.remove(item);
-					recalculateTotal();
 				});
 			}
 
@@ -135,7 +134,6 @@ public class EstimateFormController {
 		EstimateItem item = new EstimateItem(null, null, desc);
 		items.add(item);
 		newDescriptionField.clear();
-		recalculateTotal();
 	}
 
 	@FXML
@@ -144,19 +142,50 @@ public class EstimateFormController {
 		chooser.setTitle("Select Images");
 		chooser.getExtensionFilters()
 				.addAll(new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.jpeg", "*.png"));
-		List<File> files = chooser.showOpenMultipleDialog(null);
-		if (files != null) {
-			for (File file : files) {
-				imageNames.add(file.getName()); // puedes guardar path si quieres
-			}
-			imageCountLabel.setText(imageNames.size() + " images attached");
-		}
-	}
 
-	private void recalculateTotal() {
-		// Si en el futuro tienes montos, cambia esto
-		BigDecimal total = new BigDecimal(items.size());
-		totalField.setText(total.toString());
+		List<File> selectedFiles = chooser.showOpenMultipleDialog(null);
+		if (selectedFiles == null)
+			return;
+
+		LocalDate date = datePicker.getValue();
+		Company customer = customerComboBox.getValue();
+
+		if (date == null || customer == null) {
+			showAlert("Please select a date and customer before adding images.");
+			return;
+		}
+
+		// Ruta destino: /estimates/yyyy-MM-dd/CustomerName/
+		String folderName = date.toString();
+		String customerName = customer.getName().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+		File destFolder = new File(System.getProperty("user.dir"), "estimates/" + folderName + "/" + customerName);
+
+		// ✅ Si está en edición, eliminar imágenes anteriores (del disco y de la lista)
+		if (editing && estimateBeingEdited != null && !imageNames.isEmpty()) {
+			for (String oldImage : imageNames) {
+				File oldFile = new File(destFolder, oldImage);
+				if (oldFile.exists())
+					oldFile.delete();
+			}
+			imageNames.clear();
+		}
+
+		if (!destFolder.exists())
+			destFolder.mkdirs();
+
+		for (File file : selectedFiles) {
+			File destFile = new File(destFolder, file.getName());
+			try {
+				java.nio.file.Files.copy(file.toPath(), destFile.toPath(),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				imageNames.add(file.getName());
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				showAlert("Failed to copy image: " + file.getName());
+			}
+		}
+
+		imageCountLabel.setText(imageNames.size() + " images attached");
 	}
 
 	@FXML
@@ -206,8 +235,26 @@ public class EstimateFormController {
 			showAlert("Company and customer must be selected.");
 			return false;
 		}
+		if (jobDescriptionArea.getText().isBlank()) {
+			showAlert("Job description is required.");
+			return false;
+		}
 		if (items.isEmpty()) {
 			showAlert("At least one item is required.");
+			return false;
+		}
+		if (imageNames.isEmpty()) {
+			showAlert("At least one image must be attached.");
+			return false;
+		}
+		if (totalField.getText().isBlank()) {
+			showAlert("Total is required.");
+			return false;
+		}
+		try {
+			new BigDecimal(totalField.getText());
+		} catch (NumberFormatException e) {
+			showAlert("Total must be a valid number.");
 			return false;
 		}
 		return true;
@@ -246,4 +293,5 @@ public class EstimateFormController {
 		imageNames.addAll(estimate.getImageNames());
 		imageCountLabel.setText(imageNames.size() + " images attached");
 	}
+
 }

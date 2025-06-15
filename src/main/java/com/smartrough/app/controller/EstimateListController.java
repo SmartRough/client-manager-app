@@ -4,6 +4,7 @@ import com.smartrough.app.dao.CompanyDAO;
 import com.smartrough.app.dao.EstimateDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Estimate;
+import com.smartrough.app.util.EstimateExporter;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -164,7 +165,7 @@ public class EstimateListController {
 		dialog.setResultConverter(button -> {
 			if (button == exportBtn) {
 				if (exportPdf.isSelected()) {
-					// TODO: EstimateExporter.exportToPdf(selected);
+					EstimateExporter.exportToPdf(selected);
 				}
 			}
 			return null;
