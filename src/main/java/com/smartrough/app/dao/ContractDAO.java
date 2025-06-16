@@ -1,127 +1,284 @@
 package com.smartrough.app.dao;
 
-import com.smartrough.app.enums.ContractStatus;
-import com.smartrough.app.model.*;
+import com.smartrough.app.model.Contract;
+import com.smartrough.app.model.ContractAttachment;
+import com.smartrough.app.model.ContractClauseItem;
+import com.smartrough.app.model.ContractItem;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ContractDAO {
 
-	public static Contract findById(Long id) {
+	public static long save(Contract contract) {
+		String[] columns = { "po_number", "measure_date", "date", "owner1", "owner2", "address", "city", "state", "zip",
+				"email", "home_phone", "other_phone", "is_house", "is_condo", "is_mfh", "is_commercial", "has_hoa",
+				"total_price", "deposit", "balance_due", "amount_financed", "card_type", "card_number", "card_zip",
+				"card_cvc", "card_exp" };
+
+		Object[] values = { contract.getPoNumber(), contract.getMeasureDate(), contract.getDate(), contract.getOwner1(),
+				contract.getOwner2(), contract.getAddress(), contract.getCity(), contract.getState(), contract.getZip(),
+				contract.getEmail(), contract.getHomePhone(), contract.getOtherPhone(), contract.isHouse(),
+				contract.isCondo(), contract.isMFH(), contract.isCommercial(), contract.isHasHOA(),
+				contract.getTotalPrice(), contract.getDeposit(), contract.getBalanceDue(), contract.getAmountFinanced(),
+				contract.getCardType(), contract.getCardNumber(), contract.getCardZip(), contract.getCardCVC(),
+				contract.getCardExp() };
+
+		int[] types = { Types.VARCHAR, Types.DATE, Types.DATE, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+				Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN,
+				Types.BOOLEAN, Types.BOOLEAN, Types.BOOLEAN, Types.BOOLEAN, Types.DOUBLE, Types.DOUBLE, Types.DOUBLE,
+				Types.DOUBLE, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR };
+
+		long contractId = CRUDHelper.create("Contract", columns, values, types);
+
+		// Guardar cláusulas
+		if (contract.getClauses() != null) {
+			for (ContractClauseItem clause : contract.getClauses()) {
+				clause.setContractId(contractId);
+				ContractClauseItemDAO.save(clause);
+			}
+		}
+
+		// Guardar ítems
+		if (contract.getItems() != null) {
+			for (ContractItem item : contract.getItems()) {
+				item.setContractId(contractId);
+				ContractItemDAO.save(item);
+			}
+		}
+
+		// Guardar archivos adjuntos
+		if (contract.getAttachments() != null) {
+			for (ContractAttachment attachment : contract.getAttachments()) {
+				attachment.setContractId(contractId);
+				ContractAttachmentDAO.save(attachment);
+			}
+		}
+
+		return contractId;
+	}
+
+	public static Contract findById(long id) {
 		String sql = "SELECT * FROM Contract WHERE id = ?";
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-
 			stmt.setLong(1, id);
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (rs.next()) {
-					return map(rs);
-				}
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
+				Contract contract = mapResultSet(rs);
+				// Cargar relaciones
+				contract.setAttachments(ContractAttachmentDAO.findByContractId(id));
+				contract.setClauses(ContractClauseItemDAO.findByContractId(id));
+				contract.setItems(ContractItemDAO.findByContractId(id));
+				return contract;
 			}
 		} catch (SQLException e) {
-			System.err.println("Error fetching Contract: " + e.getMessage());
+			System.err.println("Error fetching contract: " + e.getMessage());
 		}
 		return null;
 	}
 
 	public static List<Contract> findAll() {
-		List<Contract> contracts = new ArrayList<>();
-		String sql = "SELECT * FROM Contract";
+		List<Contract> list = new ArrayList<>();
+		String sql = "SELECT * FROM Contract ORDER BY date DESC";
 		try (Connection conn = Database.connect();
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery()) {
-
 			while (rs.next()) {
-				contracts.add(map(rs));
+				Contract contract = mapResultSet(rs);
+				long id = contract.getId();
+				contract.setAttachments(ContractAttachmentDAO.findByContractId(id));
+				contract.setClauses(ContractClauseItemDAO.findByContractId(id));
+				contract.setItems(ContractItemDAO.findByContractId(id));
+				list.add(contract);
 			}
 		} catch (SQLException e) {
 			System.err.println("Error fetching contracts: " + e.getMessage());
 		}
-		return contracts;
+		return list;
 	}
 
-	public static void save(Contract contract) {
-		String sql = "INSERT INTO Contract (contract_number, contract_date, template_id, client_info_id, property_info_id, financial_info_id, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
-		try (Connection conn = Database.connect();
-				PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+	public static boolean update(Contract contract) {
+		String sql = """
+					UPDATE Contract SET po_number=?, measure_date=?, date=?, owner1=?, owner2=?, address=?, city=?, state=?, zip=?,
+					email=?, home_phone=?, other_phone=?, is_house=?, is_condo=?, is_mfh=?, is_commercial=?, has_hoa=?,
+					total_price=?, deposit=?, balance_due=?, amount_financed=?, card_type=?, card_number=?, card_zip=?,
+					card_cvc=?, card_exp=? WHERE id=?
+				""";
 
-			stmt.setString(1, contract.getContractNumber());
-			stmt.setDate(2, contract.getContractDate() != null ? Date.valueOf(contract.getContractDate()) : null);
-			stmt.setLong(3, contract.getTemplate().getId());
-			stmt.setLong(4, contract.getClientInfo().getId());
-			stmt.setLong(5, contract.getPropertyInfo().getId());
-			stmt.setLong(6, contract.getFinancialInfo().getId());
-			stmt.setString(7, contract.getStatus().name());
+		try (Connection conn = Database.connect()) {
+			conn.setAutoCommit(false); // 🔒 Iniciar transacción manual
 
-			stmt.executeUpdate();
+			try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+				stmt.setString(1, contract.getPoNumber());
+				stmt.setDate(2, contract.getMeasureDate() != null ? Date.valueOf(contract.getMeasureDate()) : null);
+				stmt.setDate(3, contract.getDate() != null ? Date.valueOf(contract.getDate()) : null);
+				stmt.setString(4, contract.getOwner1());
+				stmt.setString(5, contract.getOwner2());
+				stmt.setString(6, contract.getAddress());
+				stmt.setString(7, contract.getCity());
+				stmt.setString(8, contract.getState());
+				stmt.setString(9, contract.getZip());
+				stmt.setString(10, contract.getEmail());
+				stmt.setString(11, contract.getHomePhone());
+				stmt.setString(12, contract.getOtherPhone());
+				stmt.setBoolean(13, contract.isHouse());
+				stmt.setBoolean(14, contract.isCondo());
+				stmt.setBoolean(15, contract.isMFH());
+				stmt.setBoolean(16, contract.isCommercial());
+				stmt.setBoolean(17, contract.isHasHOA());
+				stmt.setDouble(18, contract.getTotalPrice() != null ? contract.getTotalPrice() : 0.0);
+				stmt.setDouble(19, contract.getDeposit() != null ? contract.getDeposit() : 0.0);
+				stmt.setDouble(20, contract.getBalanceDue() != null ? contract.getBalanceDue() : 0.0);
+				stmt.setDouble(21, contract.getAmountFinanced() != null ? contract.getAmountFinanced() : 0.0);
+				stmt.setString(22, contract.getCardType());
+				stmt.setString(23, contract.getCardNumber());
+				stmt.setString(24, contract.getCardZip());
+				stmt.setString(25, contract.getCardCVC());
+				stmt.setString(26, contract.getCardExp());
+				stmt.setLong(27, contract.getId());
 
-			try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-				if (generatedKeys.next()) {
-					contract.setId(generatedKeys.getLong(1));
+				boolean success = stmt.executeUpdate() > 0;
+
+				if (!success) {
+					conn.rollback();
+					System.err.println(">> ERROR: No se pudo actualizar el contrato.");
+					return false;
 				}
+
+				long contractId = contract.getId();
+
+				// Eliminar relaciones existentes
+				if (!ContractClauseItemDAO.deleteByContractId(contractId)) {
+					conn.rollback();
+					System.err.println(">> ERROR al eliminar cláusulas existentes.");
+					return false;
+				}
+
+				if (!ContractItemDAO.deleteByContractId(contractId)) {
+					conn.rollback();
+					System.err.println(">> ERROR al eliminar ítems existentes.");
+					return false;
+				}
+
+				if (!ContractAttachmentDAO.deleteByContractId(contractId)) {
+					conn.rollback();
+					System.err.println(">> ERROR al eliminar adjuntos existentes.");
+					return false;
+				}
+
+				// Insertar cláusulas nuevas
+				if (contract.getClauses() != null) {
+					for (ContractClauseItem clause : contract.getClauses()) {
+						clause.setContractId(contractId);
+						if (ContractClauseItemDAO.save(clause) == -1) {
+							conn.rollback();
+							System.err.println(">> ERROR al insertar cláusula.");
+							return false;
+						}
+					}
+				}
+
+				// Insertar ítems nuevos
+				if (contract.getItems() != null) {
+					for (ContractItem item : contract.getItems()) {
+						item.setContractId(contractId);
+						if (ContractItemDAO.save(item) == -1) {
+							conn.rollback();
+							System.err.println(">> ERROR al insertar ítem.");
+							return false;
+						}
+					}
+				}
+
+				// Insertar adjuntos nuevos
+				if (contract.getAttachments() != null) {
+					for (ContractAttachment attachment : contract.getAttachments()) {
+						attachment.setContractId(contractId);
+						if (ContractAttachmentDAO.save(attachment) == -1) {
+							conn.rollback();
+							System.err.println(">> ERROR al insertar adjunto.");
+							return false;
+						}
+					}
+				}
+
+				conn.commit();
+				return true;
+
+			} catch (Exception e) {
+				conn.rollback();
+				System.err.println(">> ERROR actualizando contrato: " + e.getMessage());
+				e.printStackTrace();
+				return false;
+			} finally {
+				conn.setAutoCommit(true);
 			}
+
 		} catch (SQLException e) {
-			System.err.println("Error saving Contract: " + e.getMessage());
+			System.err.println(">> ERROR conectando o finalizando transacción: " + e.getMessage());
+			e.printStackTrace();
+			return false;
 		}
 	}
 
-	public static void update(Contract contract) {
-		String sql = "UPDATE Contract SET contract_number = ?, contract_date = ?, template_id = ?, client_info_id = ?, property_info_id = ?, financial_info_id = ?, status = ? WHERE id = ?";
+	public static boolean delete(long id) {
+		String sql = "DELETE FROM Contract WHERE id=?";
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-			stmt.setString(1, contract.getContractNumber());
-			stmt.setDate(2, contract.getContractDate() != null ? Date.valueOf(contract.getContractDate()) : null);
-			stmt.setLong(3, contract.getTemplate().getId());
-			stmt.setLong(4, contract.getClientInfo().getId());
-			stmt.setLong(5, contract.getPropertyInfo().getId());
-			stmt.setLong(6, contract.getFinancialInfo().getId());
-			stmt.setString(7, contract.getStatus().name());
-			stmt.setLong(8, contract.getId());
-
-			stmt.executeUpdate();
-		} catch (SQLException e) {
-			System.err.println("Error updating Contract: " + e.getMessage());
-		}
-	}
-
-	public static void delete(Long id) {
-		String sql = "DELETE FROM Contract WHERE id = ?";
-		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-
 			stmt.setLong(1, id);
-			stmt.executeUpdate();
+			return stmt.executeUpdate() > 0;
 		} catch (SQLException e) {
-			System.err.println("Error deleting Contract: " + e.getMessage());
+			System.err.println("Error deleting contract: " + e.getMessage());
+			return false;
 		}
 	}
 
-	private static Contract map(ResultSet rs) throws SQLException {
-		Contract contract = new Contract();
-		Long id = rs.getLong("id");
-		contract.setId(id);
-		contract.setContractNumber(rs.getString("contract_number"));
+	private static Contract mapResultSet(ResultSet rs) throws SQLException {
+		Contract c = new Contract();
+		c.setId(rs.getLong("id"));
+		c.setPoNumber(rs.getString("po_number"));
 
-		Date contractDate = rs.getDate("contract_date");
-		if (contractDate != null) {
-			contract.setContractDate(contractDate.toLocalDate());
+		try {
+			c.setMeasureDate(LocalDate.parse(rs.getString("measure_date")));
+		} catch (Exception e) {
+			c.setMeasureDate(null);
 		}
 
-		contract.setTemplate(ContractTemplateDAO.findById(rs.getLong("template_id")));
-		contract.setClientInfo(ContractClientInfoDAO.findById(rs.getLong("client_info_id")));
-		contract.setPropertyInfo(ProjectPropertyInfoDAO.findById(rs.getLong("property_info_id")));
-		contract.setFinancialInfo(ContractFinancialInfoDAO.findById(rs.getLong("financial_info_id")));
-
-		String statusStr = rs.getString("status");
-		if (statusStr != null) {
-			contract.setStatus(ContractStatus.valueOf(statusStr));
+		try {
+			c.setDate(LocalDate.parse(rs.getString("date")));
+		} catch (Exception e) {
+			c.setDate(null);
 		}
 
-		contract.setDescriptionItems(ContractItemDAO.findByContractId(id));
-		contract.setClauseStatuses(ContractStandardClauseStatusDAO.findByContractId(id));
-		contract.setAttachments(AttachmentDAO.findByContractId(id));
-		contract.setSignatures(SignatureDAO.findByContractId(id));
+		c.setOwner1(rs.getString("owner1"));
+		c.setOwner2(rs.getString("owner2"));
+		c.setAddress(rs.getString("address"));
+		c.setCity(rs.getString("city"));
+		c.setState(rs.getString("state"));
+		c.setZip(rs.getString("zip"));
+		c.setEmail(rs.getString("email"));
+		c.setHomePhone(rs.getString("home_phone"));
+		c.setOtherPhone(rs.getString("other_phone"));
+		c.setHouse(rs.getBoolean("is_house"));
+		c.setCondo(rs.getBoolean("is_condo"));
+		c.setMFH(rs.getBoolean("is_mfh"));
+		c.setCommercial(rs.getBoolean("is_commercial"));
+		c.setHasHOA(rs.getBoolean("has_hoa"));
+		c.setTotalPrice(rs.getDouble("total_price"));
+		c.setDeposit(rs.getDouble("deposit"));
+		c.setBalanceDue(rs.getDouble("balance_due"));
+		c.setAmountFinanced(rs.getDouble("amount_financed"));
+		c.setCardType(rs.getString("card_type"));
+		c.setCardNumber(rs.getString("card_number"));
+		c.setCardZip(rs.getString("card_zip"));
+		c.setCardCVC(rs.getString("card_cvc"));
+		c.setCardExp(rs.getString("card_exp"));
 
-		return contract;
+		c.setAttachments(new ArrayList<>());
+		c.setClauses(new ArrayList<>());
+		c.setItems(new ArrayList<>());
+
+		return c;
 	}
 }

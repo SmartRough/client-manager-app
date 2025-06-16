@@ -33,7 +33,7 @@
     <Button text="Contracts" onAction="#showContracts" styleClass="sidebar-button">
         <graphic><Label text="📄" /></graphic>
     </Button>    
-     <Button text="Estimates" onAction="#showEstimates" styleClass="sidebar-button">
+    <Button text="Estimates" onAction="#showEstimates" styleClass="sidebar-button">
         <graphic><Label text="📝" /></graphic>
     </Button>
     <Button text="My Company" onAction="#showOwnCompanyForm" styleClass="sidebar-button">

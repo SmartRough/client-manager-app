@@ -1,20 +1,22 @@
 package com.smartrough.app.model;
 
-public class ContractItem {
+public class ContractClauseItem {
 
 	private Long id;
 	private Long contractId;
+	private Integer order;
 	private String description;
 
-	public ContractItem() {
-		super();
-	}
-
-	public ContractItem(Long id, Long contractId, String description) {
+	public ContractClauseItem(Long id, Long contractId, Integer order, String description) {
 		super();
 		this.id = id;
 		this.contractId = contractId;
+		this.order = order;
 		this.description = description;
+	}
+
+	public ContractClauseItem() {
+		super();
 	}
 
 	public Long getId() {
@@ -31,6 +33,14 @@ public class ContractItem {
 
 	public void setContractId(Long contractId) {
 		this.contractId = contractId;
+	}
+
+	public Integer getOrder() {
+		return order;
+	}
+
+	public void setOrder(Integer order) {
+		this.order = order;
 	}
 
 	public String getDescription() {

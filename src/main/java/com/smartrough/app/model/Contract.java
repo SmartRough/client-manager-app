@@ -3,47 +3,97 @@ package com.smartrough.app.model;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.smartrough.app.enums.ContractStatus;
-
 public class Contract {
-	private Long id;
-	private String contractNumber;
-	private LocalDate contractDate;
 
-	private ContractTemplate template; // Plantilla base con cláusulas e info legal
-	private ContractClientInfo clientInfo;
-	private List<ContractItem> descriptionItems;
-	private ProjectPropertyInfo propertyInfo;
-	private ContractFinancialInfo financialInfo;
-	private List<ContractStandardClauseStatus> clauseStatuses;
-	private List<Attachment> attachments;
-	private List<Signature> signatures;
+	private Long id;
+
+	// Basic info
+	private String poNumber;
+	private LocalDate measureDate;
+	private LocalDate date;
+
+	// Owners and contact
+	private String owner1;
+	private String owner2;
+	private String address;
+	private String city;
+	private String state;
+	private String zip;
+	private String email;
+	private String homePhone;
+	private String otherPhone;
+
+	// Property type
+	private boolean isHouse;
+	private boolean isCondo;
+	private boolean isMFH;
+	private boolean isCommercial;
+	private boolean hasHOA;
+
+	// Financials
+	private Double totalPrice;
+	private Double deposit;
+	private Double balanceDue;
+	private Double amountFinanced;
+
+	// Card info
+	private String cardType;
+	private String cardNumber;
+	private String cardZip;
+	private String cardCVC;
+	private String cardExp;
+
+	// Attached files (store filenames)
+	private List<ContractAttachment> attachments;
+
+	// Child items
+	private List<ContractClauseItem> clauses;
+	private List<ContractItem> items;
 
 	public Contract() {
 		super();
 	}
 
-	private ContractStatus status;
-
-	public Contract(Long id, String contractNumber, LocalDate contractDate, ContractTemplate template,
-			ContractClientInfo clientInfo, List<ContractItem> descriptionItems, ProjectPropertyInfo propertyInfo,
-			ContractFinancialInfo financialInfo, List<ContractStandardClauseStatus> clauseStatuses,
-			List<Attachment> attachments, List<Signature> signatures, ContractStatus status) {
+	public Contract(Long id, String poNumber, LocalDate measureDate, LocalDate date, String owner1, String owner2,
+			String address, String city, String state, String zip, String email, String homePhone, String otherPhone,
+			boolean isHouse, boolean isCondo, boolean isMFH, boolean isCommercial, boolean hasHOA, Double totalPrice,
+			Double deposit, Double balanceDue, Double amountFinanced, String cardType, String cardNumber,
+			String cardZip, String cardCVC, String cardExp, List<ContractAttachment> attachments,
+			List<ContractClauseItem> clauses, List<ContractItem> items) {
 		super();
 		this.id = id;
-		this.contractNumber = contractNumber;
-		this.contractDate = contractDate;
-		this.template = template;
-		this.clientInfo = clientInfo;
-		this.descriptionItems = descriptionItems;
-		this.propertyInfo = propertyInfo;
-		this.financialInfo = financialInfo;
-		this.clauseStatuses = clauseStatuses;
+		this.poNumber = poNumber;
+		this.measureDate = measureDate;
+		this.date = date;
+		this.owner1 = owner1;
+		this.owner2 = owner2;
+		this.address = address;
+		this.city = city;
+		this.state = state;
+		this.zip = zip;
+		this.email = email;
+		this.homePhone = homePhone;
+		this.otherPhone = otherPhone;
+		this.isHouse = isHouse;
+		this.isCondo = isCondo;
+		this.isMFH = isMFH;
+		this.isCommercial = isCommercial;
+		this.hasHOA = hasHOA;
+		this.totalPrice = totalPrice;
+		this.deposit = deposit;
+		this.balanceDue = balanceDue;
+		this.amountFinanced = amountFinanced;
+		this.cardType = cardType;
+		this.cardNumber = cardNumber;
+		this.cardZip = cardZip;
+		this.cardCVC = cardCVC;
+		this.cardExp = cardExp;
 		this.attachments = attachments;
-		this.signatures = signatures;
-		this.status = status;
+		this.clauses = clauses;
+		this.items = items;
 	}
 
+	// Getters and Setters (puedes generar con Lombok si prefieres)
 	public Long getId() {
 		return id;
 	}
@@ -52,92 +102,235 @@ public class Contract {
 		this.id = id;
 	}
 
-	public String getContractNumber() {
-		return contractNumber;
+	public String getPoNumber() {
+		return poNumber;
 	}
 
-	public void setContractNumber(String contractNumber) {
-		this.contractNumber = contractNumber;
+	public void setPoNumber(String poNumber) {
+		this.poNumber = poNumber;
 	}
 
-	public LocalDate getContractDate() {
-		return contractDate;
+	public LocalDate getMeasureDate() {
+		return measureDate;
 	}
 
-	public void setContractDate(LocalDate contractDate) {
-		this.contractDate = contractDate;
+	public void setMeasureDate(LocalDate measureDate) {
+		this.measureDate = measureDate;
 	}
 
-	public ContractTemplate getTemplate() {
-		return template;
+	public LocalDate getDate() {
+		return date;
 	}
 
-	public void setTemplate(ContractTemplate template) {
-		this.template = template;
+	public void setDate(LocalDate date) {
+		this.date = date;
 	}
 
-	public ContractClientInfo getClientInfo() {
-		return clientInfo;
+	public String getOwner1() {
+		return owner1;
 	}
 
-	public void setClientInfo(ContractClientInfo clientInfo) {
-		this.clientInfo = clientInfo;
+	public void setOwner1(String owner1) {
+		this.owner1 = owner1;
 	}
 
-	public List<ContractItem> getDescriptionItems() {
-		return descriptionItems;
+	public String getOwner2() {
+		return owner2;
 	}
 
-	public void setDescriptionItems(List<ContractItem> descriptionItems) {
-		this.descriptionItems = descriptionItems;
+	public void setOwner2(String owner2) {
+		this.owner2 = owner2;
 	}
 
-	public ProjectPropertyInfo getPropertyInfo() {
-		return propertyInfo;
+	public String getAddress() {
+		return address;
 	}
 
-	public void setPropertyInfo(ProjectPropertyInfo propertyInfo) {
-		this.propertyInfo = propertyInfo;
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
-	public ContractFinancialInfo getFinancialInfo() {
-		return financialInfo;
+	public String getCity() {
+		return city;
 	}
 
-	public void setFinancialInfo(ContractFinancialInfo financialInfo) {
-		this.financialInfo = financialInfo;
+	public void setCity(String city) {
+		this.city = city;
 	}
 
-	public List<ContractStandardClauseStatus> getClauseStatuses() {
-		return clauseStatuses;
+	public String getState() {
+		return state;
 	}
 
-	public void setClauseStatuses(List<ContractStandardClauseStatus> clauseStatuses) {
-		this.clauseStatuses = clauseStatuses;
+	public void setState(String state) {
+		this.state = state;
 	}
 
-	public List<Attachment> getAttachments() {
+	public String getZip() {
+		return zip;
+	}
+
+	public void setZip(String zip) {
+		this.zip = zip;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getHomePhone() {
+		return homePhone;
+	}
+
+	public void setHomePhone(String homePhone) {
+		this.homePhone = homePhone;
+	}
+
+	public String getOtherPhone() {
+		return otherPhone;
+	}
+
+	public void setOtherPhone(String otherPhone) {
+		this.otherPhone = otherPhone;
+	}
+
+	public boolean isHouse() {
+		return isHouse;
+	}
+
+	public void setHouse(boolean isHouse) {
+		this.isHouse = isHouse;
+	}
+
+	public boolean isCondo() {
+		return isCondo;
+	}
+
+	public void setCondo(boolean isCondo) {
+		this.isCondo = isCondo;
+	}
+
+	public boolean isMFH() {
+		return isMFH;
+	}
+
+	public void setMFH(boolean isMFH) {
+		this.isMFH = isMFH;
+	}
+
+	public boolean isCommercial() {
+		return isCommercial;
+	}
+
+	public void setCommercial(boolean isCommercial) {
+		this.isCommercial = isCommercial;
+	}
+
+	public boolean isHasHOA() {
+		return hasHOA;
+	}
+
+	public void setHasHOA(boolean hasHOA) {
+		this.hasHOA = hasHOA;
+	}
+
+	public Double getTotalPrice() {
+		return totalPrice;
+	}
+
+	public void setTotalPrice(Double totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+
+	public Double getDeposit() {
+		return deposit;
+	}
+
+	public void setDeposit(Double deposit) {
+		this.deposit = deposit;
+	}
+
+	public Double getBalanceDue() {
+		return balanceDue;
+	}
+
+	public void setBalanceDue(Double balanceDue) {
+		this.balanceDue = balanceDue;
+	}
+
+	public Double getAmountFinanced() {
+		return amountFinanced;
+	}
+
+	public void setAmountFinanced(Double amountFinanced) {
+		this.amountFinanced = amountFinanced;
+	}
+
+	public String getCardType() {
+		return cardType;
+	}
+
+	public void setCardType(String cardType) {
+		this.cardType = cardType;
+	}
+
+	public String getCardNumber() {
+		return cardNumber;
+	}
+
+	public void setCardNumber(String cardNumber) {
+		this.cardNumber = cardNumber;
+	}
+
+	public String getCardZip() {
+		return cardZip;
+	}
+
+	public void setCardZip(String cardZip) {
+		this.cardZip = cardZip;
+	}
+
+	public String getCardCVC() {
+		return cardCVC;
+	}
+
+	public void setCardCVC(String cardCVC) {
+		this.cardCVC = cardCVC;
+	}
+
+	public String getCardExp() {
+		return cardExp;
+	}
+
+	public void setCardExp(String cardExp) {
+		this.cardExp = cardExp;
+	}
+
+	public List<ContractAttachment> getAttachments() {
 		return attachments;
 	}
 
-	public void setAttachments(List<Attachment> attachments) {
+	public void setAttachments(List<ContractAttachment> attachments) {
 		this.attachments = attachments;
 	}
 
-	public List<Signature> getSignatures() {
-		return signatures;
+	public List<ContractClauseItem> getClauses() {
+		return clauses;
 	}
 
-	public void setSignatures(List<Signature> signatures) {
-		this.signatures = signatures;
+	public void setClauses(List<ContractClauseItem> clauses) {
+		this.clauses = clauses;
 	}
 
-	public ContractStatus getStatus() {
-		return status;
+	public List<ContractItem> getItems() {
+		return items;
 	}
 
-	public void setStatus(ContractStatus status) {
-		this.status = status;
+	public void setItems(List<ContractItem> items) {
+		this.items = items;
 	}
-
 }

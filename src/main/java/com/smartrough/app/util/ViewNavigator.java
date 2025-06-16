@@ -3,10 +3,12 @@ package com.smartrough.app.util;
 import java.util.function.Consumer;
 
 import com.smartrough.app.controller.CompanyFormController;
+import com.smartrough.app.controller.ContractFormController;
 import com.smartrough.app.controller.EmailDialogController;
 import com.smartrough.app.controller.EstimateFormController;
 import com.smartrough.app.controller.InvoiceFormController;
 import com.smartrough.app.model.Company;
+import com.smartrough.app.model.Contract;
 import com.smartrough.app.model.Estimate;
 import com.smartrough.app.model.Invoice;
 
@@ -58,13 +60,25 @@ public class ViewNavigator {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void loadView(String fxml, Estimate estimate) {
 		try {
 			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
 			Parent view = loader.load();
 			EstimateFormController controller = loader.getController();
 			controller.loadEstimate(estimate);
+			mainLayout.setCenter(view);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void loadView(String fxml, Contract contract) {
+		try {
+			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
+			Parent view = loader.load();
+			ContractFormController controller = loader.getController();
+			controller.loadContract(contract);
 			mainLayout.setCenter(view);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -88,5 +102,4 @@ public class ViewNavigator {
 			e.printStackTrace();
 		}
 	}
-
 }

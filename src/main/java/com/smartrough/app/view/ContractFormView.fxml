@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.smartrough.app.controller.ContractFormController">
+    <content>
+        <VBox spacing="15">
+            <padding>
+                <Insets top="20" right="30" bottom="20" left="30"/>
+            </padding>
+
+            <Label text="Contract Form" style="-fx-font-size: 18px; -fx-font-weight: bold"/>
+
+            <TitledPane text="Basic Information" expanded="true">
+                <GridPane hgap="10" vgap="10">
+                    <TextField fx:id="poField" promptText="PO Number" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <DatePicker fx:id="measureDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <DatePicker fx:id="datePicker" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                </GridPane>
+            </TitledPane>
+
+            <TitledPane text="Owner &amp; Contact" expanded="true">
+                <GridPane hgap="10" vgap="10">
+                    <TextField fx:id="owner1Field" promptText="Owner 1" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="owner2Field" promptText="Owner 2" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                    <TextField fx:id="addressField" promptText="Address" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="cityField" promptText="City" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <TextField fx:id="stateField" promptText="State" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField fx:id="zipField" promptText="ZIP" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                    <TextField fx:id="emailField" promptText="Email" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <TextField fx:id="homePhoneField" promptText="Home Phone" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    <TextField fx:id="otherPhoneField" promptText="Other Phone" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                </GridPane>
+            </TitledPane>
+
+            <TitledPane text="Property Type" expanded="true">
+                <HBox spacing="10">
+                    <CheckBox fx:id="houseCheck" text="House"/>
+                    <CheckBox fx:id="condoCheck" text="Condo"/>
+                    <CheckBox fx:id="mfhCheck" text="MFH"/>
+                    <CheckBox fx:id="commercialCheck" text="Commercial"/>
+                    <CheckBox fx:id="hoaCheck" text="HOA"/>
+                </HBox>
+            </TitledPane>
+
+            <TitledPane text="Financials" expanded="true">
+                <GridPane hgap="10" vgap="10">
+                    <TextField fx:id="totalField" promptText="Total Price" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="depositField" promptText="Deposit" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <TextField fx:id="balanceField" promptText="Balance Due" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="financedField" promptText="Amount Financed" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                </GridPane>
+            </TitledPane>
+
+            <TitledPane text="Card Information" expanded="false">
+                <GridPane hgap="10" vgap="10">
+                    <TextField fx:id="cardTypeField" promptText="Card Type" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="cardNumberField" promptText="Card Number" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <TextField fx:id="cardZipField" promptText="Card ZIP" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="cardCVCField" promptText="Card CVC" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                    <TextField fx:id="cardExpField" promptText="Card Exp" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                </GridPane>
+            </TitledPane>
+
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Save" onAction="#handleSave"/>
+                <Button text="Cancel" onAction="#handleCancel"/>
+            </HBox>
+        </VBox>
+    </content>
+</ScrollPane>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.smartrough.app.controller.ContractListController">
+
+    <top>
+        <HBox spacing="10">
+        	<padding>
+                <Insets top="20" right="30" bottom="20" left="30"/>
+            </padding>
+            <Label text="Contract Management" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="searchField" promptText="Search by PO, Owner or Address..." />
+            <Button text="Add" onAction="#handleAdd"/>
+            <Button text="Export" onAction="#handleExport"/>
+        </HBox>
+    </top>
+
+    <center>
+        <TableView fx:id="contractTable" prefHeight="600">
+            <columns>
+                <TableColumn fx:id="poCol" text="PO #" prefWidth="100"/>
+                <TableColumn fx:id="dateCol" text="Date" prefWidth="100"/>
+                <TableColumn fx:id="ownerCol" text="Owner(s)" prefWidth="200"/>
+                <TableColumn fx:id="addressCol" text="Address" prefWidth="300"/>
+                <TableColumn fx:id="totalCol" text="Total" prefWidth="100"/>
+                <TableColumn fx:id="actionsCol" text="Actions" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>
