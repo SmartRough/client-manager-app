@@ -122,6 +122,7 @@ public class ContractFormController {
 
 		if (!editing) {
 			houseCheck.setSelected(true);
+			measureDatePicker.setValue(java.time.LocalDate.now());
 		}
 
 		propertyTypeGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
@@ -384,16 +385,41 @@ public class ContractFormController {
 	}
 
 	private boolean validateForm() {
-		if (measureDatePicker.getValue() == null || startDatePicker.getValue() == null
-				|| endDatePicker.getValue() == null || owner1Field.getText().isBlank()
-				|| addressField.getText().isBlank()) {
-			showAlert("Date, owner and address are required.");
+		if (poNumberField.getText().isBlank()) {
+			showAlert("PO Number is required.");
 			return false;
 		}
+
+		if (measureDatePicker.getValue() == null) {
+			showAlert("Measure Date is required.");
+			return false;
+		}
+
+		if (startDatePicker.getValue() == null) {
+			showAlert("Start Date is required.");
+			return false;
+		}
+
+		if (endDatePicker.getValue() == null) {
+			showAlert("End Date is required.");
+			return false;
+		}
+
+		if (owner1Field.getText().isBlank()) {
+			showAlert("Owner 1 is required.");
+			return false;
+		}
+
+		if (addressField.getText().isBlank()) {
+			showAlert("Address is required.");
+			return false;
+		}
+
 		if (items.isEmpty()) {
 			showAlert("At least one item is required.");
 			return false;
 		}
+
 		return true;
 	}
 
