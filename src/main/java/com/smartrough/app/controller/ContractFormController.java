@@ -112,6 +112,25 @@ public class ContractFormController {
 		itemTable.setItems(items);
 
 		cardTypeField.getItems().addAll("Debit", "Credit");
+		cardTypeField.getSelectionModel().selectFirst();
+
+		propertyTypeGroup = new ToggleGroup();
+		houseCheck.setToggleGroup(propertyTypeGroup);
+		condoCheck.setToggleGroup(propertyTypeGroup);
+		mfhCheck.setToggleGroup(propertyTypeGroup);
+		commercialCheck.setToggleGroup(propertyTypeGroup);
+
+		if (!editing) {
+			houseCheck.setSelected(true);
+		}
+
+		propertyTypeGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+			if (newToggle != null) {
+				RadioButton selected = (RadioButton) newToggle;
+				System.out.println("Selected property type: " + selected.getText());
+			}
+		});
+
 		updateAttachmentTable();
 	}
 

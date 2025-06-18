@@ -14,7 +14,7 @@
 
         <Label text="Contract Details" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
 
-        <TitledPane text="General Information" expanded="true" collapsible="false">
+        <TitledPane text="General Information" expanded="true" collapsible="true">
             <VBox spacing="10">
                 <GridPane hgap="10" vgap="10">
                     <columnConstraints>
@@ -25,7 +25,7 @@
                     </columnConstraints>
 
                     <Label text="PO Number:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                    <TextField fx:id="poNumberField" GridPane.rowIndex="0" GridPane.columnIndex="1" promptText="e.g. 1234-AB"/>
+                    <TextField fx:id="poNumberField" GridPane.rowIndex="0" GridPane.columnIndex="1" promptText="e.g. 1234-AB" />
 
                     <Label text="Measure Date:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                     <DatePicker fx:id="measureDatePicker" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
@@ -68,7 +68,7 @@
                 <HBox spacing="10">
                     <RadioButton fx:id="houseCheck" text="House"/>
                     <RadioButton fx:id="condoCheck" text="Condo"/>
-                    <RadioButton fx:id="mfhCheck" text="MFH"/>
+                    <RadioButton fx:id="mfhCheck" text="MFH" />
                     <RadioButton fx:id="commercialCheck" text="Commercial"/>
                 </HBox>
 
@@ -76,7 +76,7 @@
             </VBox>
         </TitledPane>
 
-        <TitledPane text="Financial Details" expanded="true" collapsible="false">
+        <TitledPane text="Financial Details" expanded="false" collapsible="true">
             <GridPane hgap="10" vgap="10">
                 <Label text="Total Price:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                 <TextField fx:id="totalPriceField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
@@ -97,17 +97,17 @@
                 <TextField fx:id="cardNumberField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
                 <Label text="Card ZIP:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-                <TextField fx:id="cardZipField" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                <TextField fx:id="cardZipField" GridPane.rowIndex="6" GridPane.columnIndex="1" promptText="ZIP Code"/>
 
                 <Label text="Card CVC:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-                <TextField fx:id="cardCvcField" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                <TextField fx:id="cardCvcField" GridPane.rowIndex="7" GridPane.columnIndex="1" promptText="e.g. 123"/>
 
                 <Label text="Card Expiration:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
-                <TextField fx:id="cardExpField" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                <TextField fx:id="cardExpField" GridPane.rowIndex="8" GridPane.columnIndex="1" promptText="MM/YY"/>
             </GridPane>
         </TitledPane>
 
-        <TitledPane text="Contract Items" expanded="true" collapsible="false">
+        <TitledPane text="Contract Items" expanded="false" collapsible="true">
             <VBox spacing="10">
                 <TableView fx:id="itemTable" prefHeight="200">
                     <columns>
@@ -131,7 +131,7 @@
             </VBox>
         </TitledPane>
 
-        <TitledPane text="Attachments" expanded="true" collapsible="false">
+        <TitledPane text="Attachments" expanded="false" collapsible="true">
             <VBox spacing="10">
                 <HBox spacing="10" alignment="CENTER_LEFT">
                     <Button text="Browse Files" onAction="#handleBrowseAttachments"/>
