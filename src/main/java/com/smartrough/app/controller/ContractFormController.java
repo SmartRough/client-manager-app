@@ -14,7 +14,6 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -167,33 +166,11 @@ public class ContractFormController {
 		if (filesToAdd.isEmpty())
 			return;
 
-		LocalDate date = measureDatePicker.getValue();
-		if (date == null || poNumberField.getText().isBlank()) {
-			showAlert("Select measure date and PO number before adding attachments.");
-			return;
-		}
-
-		String folderName = date.toString();
-		String poNumber = poNumberField.getText().replaceAll("[^a-zA-Z0-9_\\-]", "_");
-		File destFolder = new File(System.getProperty("user.dir"), "contracts/" + folderName + "/" + poNumber);
-		if (!destFolder.exists())
-			destFolder.mkdirs();
-
 		for (File file : filesToAdd) {
-			File destFile = new File(destFolder, file.getName());
-			try {
-				java.nio.file.Files.copy(file.toPath(), destFile.toPath(),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				String name = getFileNameWithoutExtension(file.getName());
-				String extension = getFileExtension(file.getName());
-				attachments.add(new ContractAttachment(null, null, name, extension));
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				showAlert("Failed to add attachment: " + file.getName());
-			}
+			String name = getFileNameWithoutExtension(file.getName());
+			String extension = getFileExtension(file.getName());
+			attachments.add(new ContractAttachment(null, null, name, extension));
 		}
-
-		filesToAdd.clear();
 		attachmentLabel.setText("0 selected");
 		updateAttachmentTable();
 	}
@@ -222,6 +199,58 @@ public class ContractFormController {
 				setGraphic(empty ? null : deleteButton);
 			}
 		});
+	}
+
+	private void removeObsoleteAttachments(Contract oldContract, List<ContractAttachment> newAttachments) {
+		String folderName = oldContract.getMeasureDate().toString();
+		String poNumber = oldContract.getPoNumber().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+		File folder = new File(System.getProperty("user.dir"), "contracts/" + folderName + "/" + poNumber);
+
+		for (ContractAttachment oldAtt : oldContract.getAttachments()) {
+			boolean stillExists = newAttachments.stream().anyMatch(newAtt -> newAtt.getName().equals(oldAtt.getName())
+					&& newAtt.getExtension().equals(oldAtt.getExtension()));
+
+			if (!stillExists) {
+				File fileToDelete = new File(folder, oldAtt.getName() + "." + oldAtt.getExtension());
+				if (fileToDelete.exists()) {
+					fileToDelete.delete();
+				}
+			}
+		}
+	}
+
+	private void copyNewAttachments(Contract contract) {
+		String folderName = contract.getMeasureDate().toString();
+		String poNumber = contract.getPoNumber().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+		File destFolder = new File(System.getProperty("user.dir"), "contracts/" + folderName + "/" + poNumber);
+		if (!destFolder.exists())
+			destFolder.mkdirs();
+
+		for (ContractAttachment att : attachments) {
+			boolean alreadyExists = contractBeingEdited != null && contractBeingEdited.getAttachments().stream()
+					.anyMatch(existing -> existing.getName().equals(att.getName())
+							&& existing.getExtension().equals(att.getExtension()));
+
+			if (!alreadyExists) {
+				for (File source : filesToAdd) {
+					String name = getFileNameWithoutExtension(source.getName());
+					String ext = getFileExtension(source.getName());
+
+					if (name.equals(att.getName()) && ext.equals(att.getExtension())) {
+						try {
+							File destFile = new File(destFolder, source.getName());
+							java.nio.file.Files.copy(source.toPath(), destFile.toPath(),
+									java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						} catch (Exception e) {
+							e.printStackTrace();
+							showAlert("Failed to save attachment: " + source.getName());
+						}
+					}
+				}
+			}
+		}
+
+		filesToAdd.clear();
 	}
 
 	public void loadContract(Contract contract) {
@@ -307,14 +336,17 @@ public class ContractFormController {
 			long id = ContractDAO.save(c);
 			c.setId(id);
 		} else {
+			removeObsoleteAttachments(contractBeingEdited, attachments);
 			ContractDAO.update(c);
 		}
 
+		copyNewAttachments(c);
 		handleCancel();
 	}
 
 	@FXML
 	private void handleCancel() {
+		cleanupTemporaryAttachments();
 		ViewNavigator.loadView("ContractListView.fxml");
 	}
 
@@ -345,4 +377,27 @@ public class ContractFormController {
 	private void showAlert(String msg) {
 		new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
 	}
+
+	private void cleanupTemporaryAttachments() {
+		if (filesToAdd.isEmpty())
+			return;
+
+		for (File file : filesToAdd) {
+			String name = getFileNameWithoutExtension(file.getName());
+			String ext = getFileExtension(file.getName());
+
+			if (measureDatePicker.getValue() != null && !poNumberField.getText().isBlank()) {
+				String folderName = measureDatePicker.getValue().toString();
+				String poNumber = poNumberField.getText().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+				File destFile = new File(System.getProperty("user.dir"),
+						"contracts/" + folderName + "/" + poNumber + "/" + name + "." + ext);
+				if (destFile.exists()) {
+					destFile.delete();
+				}
+			}
+		}
+
+		filesToAdd.clear();
+	}
+
 }
