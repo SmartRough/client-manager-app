@@ -3,6 +3,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
@@ -15,9 +17,35 @@
             </padding>
             <Label text="Contract Management" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
             <Pane HBox.hgrow="ALWAYS"/>
-            <TextField fx:id="searchField" promptText="Search by PO, Owner or Address..." />
-            <Button text="Add" onAction="#handleAdd"/>
-            <Button text="Export" onAction="#handleExport"/>
+            <TextField fx:id="searchField" promptText="Search by PO or Owner..." prefWidth="200">
+	            <tooltip><Tooltip text="Type to filter contracts" /></tooltip>
+	        </TextField>
+            <Button fx:id="btnSendEmail" onAction="#handleSendEmail" prefHeight="30" prefWidth="30" styleClass="icon-button">
+	            <graphic>
+	                <ImageView fitHeight="20" fitWidth="20">
+	                    <image><Image url="@/img/send.png" /></image>
+	                </ImageView>
+	            </graphic>
+	            <tooltip><Tooltip text="Send by Email" /></tooltip>
+	        </Button>
+	
+	        <Button fx:id="btnExport" onAction="#handleExport" prefHeight="30" prefWidth="30" styleClass="icon-button">
+	            <graphic>
+	                <ImageView fitHeight="20" fitWidth="20">
+	                    <image><Image url="@/img/export.png" /></image>
+	                </ImageView>
+	            </graphic>
+	            <tooltip><Tooltip text="Export to PDF" /></tooltip>
+	        </Button>
+	        
+	        <Button fx:id="btnNew" onAction="#handleAdd" prefHeight="30" prefWidth="30" styleClass="icon-button">
+	            <graphic>
+	                <ImageView fitHeight="20" fitWidth="20">
+	                    <image><Image url="@/img/add.png" /></image>
+	                </ImageView>
+	            </graphic>
+	            <tooltip><Tooltip text="Add New Contract" /></tooltip>
+	        </Button>
         </HBox>
     </top>
 

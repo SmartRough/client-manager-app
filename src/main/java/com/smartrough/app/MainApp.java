@@ -5,6 +5,7 @@ import com.smartrough.app.util.ViewNavigator;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -28,6 +29,9 @@ public class MainApp extends Application {
 		// Configura y muestra
 		stage.setScene(new Scene(rootLayout, 800, 600));
 		stage.setTitle("Client Manager App");
+		stage.getIcons().add(new Image(MainApp.class.getResourceAsStream("/img/robot.png")));
+		stage.setResizable(true);
+		stage.setMaximized(true);
 		stage.show();
 	}
 

@@ -110,6 +110,11 @@ public class ContractListController {
 	private void handleExport() {
 		// Implementación futura
 	}
+	
+	@FXML
+	private void handleSendEmail() {
+		
+	}
 
 	private void deleteContractWithFiles(Contract contract) {
 		Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
