@@ -10,7 +10,8 @@ public class Contract {
 	// Basic info
 	private String poNumber;
 	private LocalDate measureDate;
-	private LocalDate date;
+	private LocalDate startDate;
+	private LocalDate endDate;
 
 	// Owners and contact
 	private String owner1;
@@ -54,17 +55,18 @@ public class Contract {
 		super();
 	}
 
-	public Contract(Long id, String poNumber, LocalDate measureDate, LocalDate date, String owner1, String owner2,
-			String address, String city, String state, String zip, String email, String homePhone, String otherPhone,
-			boolean isHouse, boolean isCondo, boolean isMFH, boolean isCommercial, boolean hasHOA, Double totalPrice,
-			Double deposit, Double balanceDue, Double amountFinanced, String cardType, String cardNumber,
-			String cardZip, String cardCVC, String cardExp, List<ContractAttachment> attachments,
-			List<ContractClauseItem> clauses, List<ContractItem> items) {
+	public Contract(Long id, String poNumber, LocalDate measureDate, LocalDate startDate, LocalDate endDate,
+			String owner1, String owner2, String address, String city, String state, String zip, String email,
+			String homePhone, String otherPhone, boolean isHouse, boolean isCondo, boolean isMFH, boolean isCommercial,
+			boolean hasHOA, Double totalPrice, Double deposit, Double balanceDue, Double amountFinanced,
+			String cardType, String cardNumber, String cardZip, String cardCVC, String cardExp,
+			List<ContractAttachment> attachments, List<ContractClauseItem> clauses, List<ContractItem> items) {
 		super();
 		this.id = id;
 		this.poNumber = poNumber;
 		this.measureDate = measureDate;
-		this.date = date;
+		this.startDate = startDate;
+		this.endDate = endDate;
 		this.owner1 = owner1;
 		this.owner2 = owner2;
 		this.address = address;
@@ -118,12 +120,20 @@ public class Contract {
 		this.measureDate = measureDate;
 	}
 
-	public LocalDate getDate() {
-		return date;
+	public LocalDate getStartDate() {
+		return startDate;
 	}
 
-	public void setDate(LocalDate date) {
-		this.date = date;
+	public void setStartDate(LocalDate startDate) {
+		this.startDate = startDate;
+	}
+
+	public LocalDate getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(LocalDate endDate) {
+		this.endDate = endDate;
 	}
 
 	public String getOwner1() {

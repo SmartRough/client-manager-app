@@ -25,7 +25,8 @@
         <TableView fx:id="contractTable" prefHeight="600">
             <columns>
                 <TableColumn fx:id="poCol" text="PO #" prefWidth="100"/>
-                <TableColumn fx:id="dateCol" text="Date" prefWidth="100"/>
+                <TableColumn fx:id="startDateCol" text="Start Date" prefWidth="100"/>
+                <TableColumn fx:id="endDateCol" text="End Date" prefWidth="100"/>
                 <TableColumn fx:id="ownerCol" text="Owner(s)" prefWidth="200"/>
                 <TableColumn fx:id="addressCol" text="Address" prefWidth="300"/>
                 <TableColumn fx:id="totalCol" text="Total" prefWidth="100"/>

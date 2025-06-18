@@ -13,20 +13,20 @@ import java.util.List;
 public class ContractDAO {
 
 	public static long save(Contract contract) {
-		String[] columns = { "po_number", "measure_date", "date", "owner1", "owner2", "address", "city", "state", "zip",
-				"email", "home_phone", "other_phone", "is_house", "is_condo", "is_mfh", "is_commercial", "has_hoa",
-				"total_price", "deposit", "balance_due", "amount_financed", "card_type", "card_number", "card_zip",
-				"card_cvc", "card_exp" };
+		String[] columns = { "po_number", "measure_date", "startDate", "endDate", "owner1", "owner2", "address", "city",
+				"state", "zip", "email", "home_phone", "other_phone", "is_house", "is_condo", "is_mfh", "is_commercial",
+				"has_hoa", "total_price", "deposit", "balance_due", "amount_financed", "card_type", "card_number",
+				"card_zip", "card_cvc", "card_exp" };
 
-		Object[] values = { contract.getPoNumber(), contract.getMeasureDate(), contract.getDate(), contract.getOwner1(),
-				contract.getOwner2(), contract.getAddress(), contract.getCity(), contract.getState(), contract.getZip(),
-				contract.getEmail(), contract.getHomePhone(), contract.getOtherPhone(), contract.isHouse(),
-				contract.isCondo(), contract.isMFH(), contract.isCommercial(), contract.isHasHOA(),
-				contract.getTotalPrice(), contract.getDeposit(), contract.getBalanceDue(), contract.getAmountFinanced(),
-				contract.getCardType(), contract.getCardNumber(), contract.getCardZip(), contract.getCardCVC(),
-				contract.getCardExp() };
+		Object[] values = { contract.getPoNumber(), contract.getMeasureDate(), contract.getStartDate(),
+				contract.getEndDate(), contract.getOwner1(), contract.getOwner2(), contract.getAddress(),
+				contract.getCity(), contract.getState(), contract.getZip(), contract.getEmail(),
+				contract.getHomePhone(), contract.getOtherPhone(), contract.isHouse(), contract.isCondo(),
+				contract.isMFH(), contract.isCommercial(), contract.isHasHOA(), contract.getTotalPrice(),
+				contract.getDeposit(), contract.getBalanceDue(), contract.getAmountFinanced(), contract.getCardType(),
+				contract.getCardNumber(), contract.getCardZip(), contract.getCardCVC(), contract.getCardExp() };
 
-		int[] types = { Types.VARCHAR, Types.DATE, Types.DATE, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+		int[] types = { Types.VARCHAR, Types.DATE, Types.DATE, Types.DATE, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
 				Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.BOOLEAN,
 				Types.BOOLEAN, Types.BOOLEAN, Types.BOOLEAN, Types.BOOLEAN, Types.DOUBLE, Types.DOUBLE, Types.DOUBLE,
 				Types.DOUBLE, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR };
@@ -81,7 +81,7 @@ public class ContractDAO {
 
 	public static List<Contract> findAll() {
 		List<Contract> list = new ArrayList<>();
-		String sql = "SELECT * FROM Contract ORDER BY date DESC";
+		String sql = "SELECT * FROM Contract ORDER BY measure_date DESC";
 		try (Connection conn = Database.connect();
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery()) {
@@ -101,7 +101,7 @@ public class ContractDAO {
 
 	public static boolean update(Contract contract) {
 		String sql = """
-					UPDATE Contract SET po_number=?, measure_date=?, date=?, owner1=?, owner2=?, address=?, city=?, state=?, zip=?,
+					UPDATE Contract SET po_number=?, measure_date=?, startDate=?, endDate=?, owner1=?, owner2=?, address=?, city=?, state=?, zip=?,
 					email=?, home_phone=?, other_phone=?, is_house=?, is_condo=?, is_mfh=?, is_commercial=?, has_hoa=?,
 					total_price=?, deposit=?, balance_due=?, amount_financed=?, card_type=?, card_number=?, card_zip=?,
 					card_cvc=?, card_exp=? WHERE id=?
@@ -113,31 +113,32 @@ public class ContractDAO {
 			try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 				stmt.setString(1, contract.getPoNumber());
 				stmt.setDate(2, contract.getMeasureDate() != null ? Date.valueOf(contract.getMeasureDate()) : null);
-				stmt.setDate(3, contract.getDate() != null ? Date.valueOf(contract.getDate()) : null);
-				stmt.setString(4, contract.getOwner1());
-				stmt.setString(5, contract.getOwner2());
-				stmt.setString(6, contract.getAddress());
-				stmt.setString(7, contract.getCity());
-				stmt.setString(8, contract.getState());
-				stmt.setString(9, contract.getZip());
-				stmt.setString(10, contract.getEmail());
-				stmt.setString(11, contract.getHomePhone());
-				stmt.setString(12, contract.getOtherPhone());
-				stmt.setBoolean(13, contract.isHouse());
-				stmt.setBoolean(14, contract.isCondo());
-				stmt.setBoolean(15, contract.isMFH());
-				stmt.setBoolean(16, contract.isCommercial());
-				stmt.setBoolean(17, contract.isHasHOA());
-				stmt.setDouble(18, contract.getTotalPrice() != null ? contract.getTotalPrice() : 0.0);
-				stmt.setDouble(19, contract.getDeposit() != null ? contract.getDeposit() : 0.0);
-				stmt.setDouble(20, contract.getBalanceDue() != null ? contract.getBalanceDue() : 0.0);
-				stmt.setDouble(21, contract.getAmountFinanced() != null ? contract.getAmountFinanced() : 0.0);
-				stmt.setString(22, contract.getCardType());
-				stmt.setString(23, contract.getCardNumber());
-				stmt.setString(24, contract.getCardZip());
-				stmt.setString(25, contract.getCardCVC());
-				stmt.setString(26, contract.getCardExp());
-				stmt.setLong(27, contract.getId());
+				stmt.setDate(3, contract.getStartDate() != null ? Date.valueOf(contract.getStartDate()) : null);
+				stmt.setDate(4, contract.getEndDate() != null ? Date.valueOf(contract.getEndDate()) : null);
+				stmt.setString(5, contract.getOwner1());
+				stmt.setString(6, contract.getOwner2());
+				stmt.setString(7, contract.getAddress());
+				stmt.setString(8, contract.getCity());
+				stmt.setString(9, contract.getState());
+				stmt.setString(10, contract.getZip());
+				stmt.setString(11, contract.getEmail());
+				stmt.setString(12, contract.getHomePhone());
+				stmt.setString(13, contract.getOtherPhone());
+				stmt.setBoolean(14, contract.isHouse());
+				stmt.setBoolean(15, contract.isCondo());
+				stmt.setBoolean(16, contract.isMFH());
+				stmt.setBoolean(17, contract.isCommercial());
+				stmt.setBoolean(18, contract.isHasHOA());
+				stmt.setDouble(19, contract.getTotalPrice() != null ? contract.getTotalPrice() : 0.0);
+				stmt.setDouble(20, contract.getDeposit() != null ? contract.getDeposit() : 0.0);
+				stmt.setDouble(21, contract.getBalanceDue() != null ? contract.getBalanceDue() : 0.0);
+				stmt.setDouble(22, contract.getAmountFinanced() != null ? contract.getAmountFinanced() : 0.0);
+				stmt.setString(23, contract.getCardType());
+				stmt.setString(24, contract.getCardNumber());
+				stmt.setString(25, contract.getCardZip());
+				stmt.setString(26, contract.getCardCVC());
+				stmt.setString(27, contract.getCardExp());
+				stmt.setLong(28, contract.getId());
 
 				boolean success = stmt.executeUpdate() > 0;
 
@@ -246,9 +247,15 @@ public class ContractDAO {
 		}
 
 		try {
-			c.setDate(LocalDate.parse(rs.getString("date")));
+			c.setStartDate(LocalDate.parse(rs.getString("startDate")));
 		} catch (Exception e) {
-			c.setDate(null);
+			c.setStartDate(null);
+		}
+
+		try {
+			c.setEndDate(LocalDate.parse(rs.getString("endDate")));
+		} catch (Exception e) {
+			c.setEndDate(null);
 		}
 
 		c.setOwner1(rs.getString("owner1"));

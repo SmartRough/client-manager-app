@@ -18,7 +18,9 @@ public class ContractListController {
 	@FXML
 	private TableColumn<Contract, String> poCol;
 	@FXML
-	private TableColumn<Contract, String> dateCol;
+	private TableColumn<Contract, String> startDateCol;
+	@FXML
+	private TableColumn<Contract, String> endDateCol;
 	@FXML
 	private TableColumn<Contract, String> ownerCol;
 	@FXML
@@ -35,8 +37,10 @@ public class ContractListController {
 	@FXML
 	public void initialize() {
 		poCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getPoNumber()));
-		dateCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
-				data.getValue().getDate() != null ? data.getValue().getDate().format(formatter) : "-"));
+		startDateCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
+				data.getValue().getStartDate() != null ? data.getValue().getStartDate().format(formatter) : "-"));
+		endDateCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
+				data.getValue().getEndDate() != null ? data.getValue().getEndDate().format(formatter) : "-"));
 		ownerCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getOwner1()
 				+ (data.getValue().getOwner2() != null ? " & " + data.getValue().getOwner2() : "")));
 		addressCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getAddress()));
