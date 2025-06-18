@@ -8,17 +8,36 @@ import java.util.List;
 
 public class ContractAttachmentDAO {
 
-	public static long save(ContractAttachment attachment) {
-		String[] columns = { "contract_id", "name", "extension" };
-		Object[] values = { attachment.getContractId(), attachment.getName(), attachment.getExtension() };
-		int[] types = { Types.BIGINT, Types.VARCHAR, Types.VARCHAR };
+	// SAVE con conexión explícita (para transacción)
+	public static long save(Connection conn, ContractAttachment attachment) throws SQLException {
+		String sql = "INSERT INTO Contract_Attachment (contract_id, name, extension) VALUES (?, ?, ?)";
+		try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+			stmt.setLong(1, attachment.getContractId());
+			stmt.setString(2, attachment.getName());
+			stmt.setString(3, attachment.getExtension());
+			stmt.executeUpdate();
 
-		return CRUDHelper.create("ContractAttachment", columns, values, types);
+			ResultSet keys = stmt.getGeneratedKeys();
+			if (keys.next()) {
+				return keys.getLong(1);
+			}
+			return -1;
+		}
+	}
+
+	// SAVE tradicional por fuera de transacción
+	public static long save(ContractAttachment attachment) {
+		try (Connection conn = Database.connect()) {
+			return save(conn, attachment);
+		} catch (SQLException e) {
+			System.err.println("Error saving contract attachment: " + e.getMessage());
+			return -1;
+		}
 	}
 
 	public static List<ContractAttachment> findByContractId(long contractId) {
 		List<ContractAttachment> list = new ArrayList<>();
-		String sql = "SELECT * FROM ContractAttachment WHERE contract_id = ?";
+		String sql = "SELECT * FROM Contract_Attachment WHERE contract_id = ?";
 
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, contractId);
@@ -33,19 +52,19 @@ public class ContractAttachmentDAO {
 		return list;
 	}
 
-	public static boolean deleteByContractId(long contractId) {
-		String sql = "DELETE FROM ContractAttachment WHERE contract_id = ?";
-		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+	// deleteByContractId con conexión explícita
+	public static boolean deleteByContractId(Connection conn, long contractId) throws SQLException {
+		String sql = "DELETE FROM Contract_Attachment WHERE contract_id = ?";
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, contractId);
-			return stmt.executeUpdate() > 0;
-		} catch (SQLException e) {
-			System.err.println("Error deleting attachments by contract: " + e.getMessage());
-			return false;
+			stmt.executeUpdate();
+			return true;
 		}
 	}
 
+	// delete individual
 	public static boolean delete(long id) {
-		String sql = "DELETE FROM ContractAttachment WHERE id = ?";
+		String sql = "DELETE FROM Contract_Attachment WHERE id = ?";
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, id);
 			return stmt.executeUpdate() > 0;

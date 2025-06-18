@@ -47,8 +47,6 @@ public class Contract {
 	// Attached files (store filenames)
 	private List<ContractAttachment> attachments;
 
-	// Child items
-	private List<ContractClauseItem> clauses;
 	private List<ContractItem> items;
 
 	public Contract() {
@@ -60,7 +58,7 @@ public class Contract {
 			String homePhone, String otherPhone, boolean isHouse, boolean isCondo, boolean isMFH, boolean isCommercial,
 			boolean hasHOA, Double totalPrice, Double deposit, Double balanceDue, Double amountFinanced,
 			String cardType, String cardNumber, String cardZip, String cardCVC, String cardExp,
-			List<ContractAttachment> attachments, List<ContractClauseItem> clauses, List<ContractItem> items) {
+			List<ContractAttachment> attachments, List<ContractItem> items) {
 		super();
 		this.id = id;
 		this.poNumber = poNumber;
@@ -91,7 +89,6 @@ public class Contract {
 		this.cardCVC = cardCVC;
 		this.cardExp = cardExp;
 		this.attachments = attachments;
-		this.clauses = clauses;
 		this.items = items;
 	}
 
@@ -326,14 +323,6 @@ public class Contract {
 
 	public void setAttachments(List<ContractAttachment> attachments) {
 		this.attachments = attachments;
-	}
-
-	public List<ContractClauseItem> getClauses() {
-		return clauses;
-	}
-
-	public void setClauses(List<ContractClauseItem> clauses) {
-		this.clauses = clauses;
 	}
 
 	public List<ContractItem> getItems() {

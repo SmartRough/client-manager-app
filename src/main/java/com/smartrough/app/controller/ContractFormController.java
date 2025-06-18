@@ -1,7 +1,6 @@
 package com.smartrough.app.controller;
 
 import com.smartrough.app.dao.ContractDAO;
-import com.smartrough.app.dao.ContractItemDAO;
 import com.smartrough.app.model.Contract;
 import com.smartrough.app.model.ContractAttachment;
 import com.smartrough.app.model.ContractItem;
@@ -47,16 +46,21 @@ public class ContractFormController {
 	private TextField homePhoneField;
 	@FXML
 	private TextField otherPhoneField;
+
 	@FXML
-	private CheckBox houseCheck;
+	private RadioButton houseCheck;
 	@FXML
-	private CheckBox condoCheck;
+	private RadioButton condoCheck;
 	@FXML
-	private CheckBox mfhCheck;
+	private RadioButton mfhCheck;
 	@FXML
-	private CheckBox commercialCheck;
+	private RadioButton commercialCheck;
+	@FXML
+	private ToggleGroup propertyTypeGroup;
+
 	@FXML
 	private CheckBox hoaCheck;
+
 	@FXML
 	private TextField totalPriceField;
 	@FXML
@@ -66,7 +70,7 @@ public class ContractFormController {
 	@FXML
 	private TextField amountFinancedField;
 	@FXML
-	private TextField cardTypeField;
+	private ComboBox<String> cardTypeField;
 	@FXML
 	private TextField cardNumberField;
 	@FXML
@@ -86,10 +90,17 @@ public class ContractFormController {
 	private TextField newItemField;
 
 	@FXML
+	private TableView<ContractAttachment> attachmentTable;
+	@FXML
+	private TableColumn<ContractAttachment, String> attachmentNameColumn;
+	@FXML
+	private TableColumn<ContractAttachment, Void> attachmentActionColumn;
+	@FXML
 	private Label attachmentLabel;
 
 	private final ObservableList<ContractItem> items = FXCollections.observableArrayList();
-	private final List<ContractAttachment> attachments = new ArrayList<ContractAttachment>();
+	private final List<ContractAttachment> attachments = new ArrayList<>();
+	private final List<File> filesToAdd = new ArrayList<>();
 	private Contract contractBeingEdited;
 	private boolean editing = false;
 
@@ -99,6 +110,9 @@ public class ContractFormController {
 				data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
 		itemActionCol.setCellFactory(col -> createDeleteButton(itemTable, items));
 		itemTable.setItems(items);
+
+		cardTypeField.getItems().addAll("Debit", "Credit");
+		updateAttachmentTable();
 	}
 
 	private <T> TableCell<T, Void> createDeleteButton(TableView<T> table, ObservableList<T> list) {
@@ -137,16 +151,24 @@ public class ContractFormController {
 	}
 
 	@FXML
-	private void handleAddAttachment() {
+	private void handleBrowseAttachments() {
 		FileChooser chooser = new FileChooser();
 		chooser.setTitle("Select Attachments");
 		chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Files", "*.*"));
 		List<File> selected = chooser.showOpenMultipleDialog(null);
-		if (selected == null)
+		if (selected != null) {
+			filesToAdd.addAll(selected);
+			attachmentLabel.setText(filesToAdd.size() + " selected");
+		}
+	}
+
+	@FXML
+	private void handleAddAttachment() {
+		if (filesToAdd.isEmpty())
 			return;
 
 		LocalDate date = measureDatePicker.getValue();
-		if (date == null || owner1Field.getText().isBlank()) {
+		if (date == null || poNumberField.getText().isBlank()) {
 			showAlert("Select measure date and PO number before adding attachments.");
 			return;
 		}
@@ -157,7 +179,7 @@ public class ContractFormController {
 		if (!destFolder.exists())
 			destFolder.mkdirs();
 
-		for (File file : selected) {
+		for (File file : filesToAdd) {
 			File destFile = new File(destFolder, file.getName());
 			try {
 				java.nio.file.Files.copy(file.toPath(), destFile.toPath(),
@@ -170,7 +192,36 @@ public class ContractFormController {
 				showAlert("Failed to add attachment: " + file.getName());
 			}
 		}
-		attachmentLabel.setText(attachments.size() + " attachments");
+
+		filesToAdd.clear();
+		attachmentLabel.setText("0 selected");
+		updateAttachmentTable();
+	}
+
+	private void updateAttachmentTable() {
+		ObservableList<ContractAttachment> data = FXCollections.observableArrayList(attachments);
+		attachmentTable.setItems(data);
+
+		attachmentNameColumn.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(
+				cd.getValue().getName() + "." + cd.getValue().getExtension()));
+
+		attachmentActionColumn.setCellFactory(col -> new TableCell<>() {
+			private final Button deleteButton = new Button("Delete");
+
+			{
+				deleteButton.setOnAction(e -> {
+					ContractAttachment att = getTableView().getItems().get(getIndex());
+					attachments.remove(att);
+					updateAttachmentTable();
+				});
+			}
+
+			@Override
+			protected void updateItem(Void item, boolean empty) {
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : deleteButton);
+			}
+		});
 	}
 
 	public void loadContract(Contract contract) {
@@ -202,18 +253,18 @@ public class ContractFormController {
 		balanceField.setText(String.valueOf(contract.getBalanceDue()));
 		amountFinancedField.setText(String.valueOf(contract.getAmountFinanced()));
 
-		cardTypeField.setText(String.valueOf(contract.getCardType()));
-		cardNumberField.setText(String.valueOf(contract.getCardNumber()));
-		cardZipField.setText(String.valueOf(contract.getCardZip()));
-		cardCvcField.setText(String.valueOf(contract.getCardCVC()));
-		cardExpField.setText(String.valueOf(contract.getCardExp()));
+		cardTypeField.setValue(contract.getCardType());
+		cardNumberField.setText(contract.getCardNumber());
+		cardZipField.setText(contract.getCardZip());
+		cardCvcField.setText(contract.getCardCVC());
+		cardExpField.setText(contract.getCardExp());
 
 		items.clear();
 		items.addAll(contract.getItems());
 
 		attachments.clear();
 		attachments.addAll(contract.getAttachments());
-		attachmentLabel.setText(attachments.size() + " attachments");
+		updateAttachmentTable();
 	}
 
 	@FXML
@@ -244,29 +295,19 @@ public class ContractFormController {
 		c.setDeposit(Double.parseDouble(depositField.getText()));
 		c.setBalanceDue(Double.parseDouble(balanceField.getText()));
 		c.setAmountFinanced(Double.parseDouble(amountFinancedField.getText()));
-
-		c.setCardType(cardTypeField.getText());
+		c.setCardType(cardTypeField.getValue());
 		c.setCardNumber(cardNumberField.getText());
 		c.setCardZip(cardZipField.getText());
 		c.setCardCVC(cardCvcField.getText());
 		c.setCardExp(cardExpField.getText());
-
+		c.setItems(new ArrayList<>(items));
 		c.setAttachments(new ArrayList<>(attachments));
 
 		if (!editing) {
 			long id = ContractDAO.save(c);
 			c.setId(id);
-			for (ContractItem it : items) {
-				it.setContractId(id);
-				ContractItemDAO.save(it);
-			}
 		} else {
 			ContractDAO.update(c);
-			ContractItemDAO.deleteByContractId(c.getId());
-			for (ContractItem it : items) {
-				it.setContractId(c.getId());
-				ContractItemDAO.save(it);
-			}
 		}
 
 		handleCancel();

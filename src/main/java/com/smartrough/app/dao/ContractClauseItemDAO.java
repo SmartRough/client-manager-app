@@ -13,12 +13,12 @@ public class ContractClauseItemDAO {
 		Object[] values = { item.getContractId(), item.getOrder(), item.getDescription() };
 		int[] types = { Types.BIGINT, Types.INTEGER, Types.VARCHAR };
 
-		return CRUDHelper.create("ContractClauseItem", columns, values, types);
+		return CRUDHelper.create("Contract_Clause_Item", columns, values, types);
 	}
 
 	public static List<ContractClauseItem> findByContractId(long contractId) {
 		List<ContractClauseItem> list = new ArrayList<>();
-		String sql = "SELECT * FROM ContractClauseItem WHERE contract_id = ? ORDER BY order_number ASC";
+		String sql = "SELECT * FROM Contract_Clause_Item WHERE contract_id = ? ORDER BY order_number ASC";
 
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -36,7 +36,7 @@ public class ContractClauseItemDAO {
 	}
 
 	public static boolean deleteByContractId(long contractId) {
-		String sql = "DELETE FROM ContractClauseItem WHERE contract_id = ?";
+		String sql = "DELETE FROM Contract_Clause_Item WHERE contract_id = ?";
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, contractId);
 			return stmt.executeUpdate() > 0;
@@ -47,7 +47,7 @@ public class ContractClauseItemDAO {
 	}
 
 	public static boolean delete(long id) {
-		String sql = "DELETE FROM ContractClauseItem WHERE id = ?";
+		String sql = "DELETE FROM Contract_Clause_Item WHERE id = ?";
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, id);
 			return stmt.executeUpdate() > 0;

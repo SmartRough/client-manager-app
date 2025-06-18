@@ -8,17 +8,35 @@ import java.util.List;
 
 public class ContractItemDAO {
 
-	public static long save(ContractItem item) {
-		String[] columns = { "contract_id", "description" };
-		Object[] values = { item.getContractId(), item.getDescription() };
-		int[] types = { Types.BIGINT, Types.VARCHAR };
+	// Método SAVE con conexión explícita
+	public static long save(Connection conn, ContractItem item) throws SQLException {
+		String sql = "INSERT INTO Contract_Item (contract_id, description) VALUES (?, ?)";
+		try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+			stmt.setLong(1, item.getContractId());
+			stmt.setString(2, item.getDescription());
+			stmt.executeUpdate();
 
-		return CRUDHelper.create("ContractItem", columns, values, types);
+			ResultSet keys = stmt.getGeneratedKeys();
+			if (keys.next()) {
+				return keys.getLong(1);
+			}
+			return -1;
+		}
+	}
+
+	// Método SAVE para casos sueltos fuera de transacción
+	public static long save(ContractItem item) {
+		try (Connection conn = Database.connect()) {
+			return save(conn, item);
+		} catch (SQLException e) {
+			System.err.println("Error saving contract item: " + e.getMessage());
+			return -1;
+		}
 	}
 
 	public static List<ContractItem> findByContractId(long contractId) {
 		List<ContractItem> list = new ArrayList<>();
-		String sql = "SELECT * FROM ContractItem WHERE contract_id = ?";
+		String sql = "SELECT * FROM Contract_Item WHERE contract_id = ?";
 
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, contractId);
@@ -33,19 +51,19 @@ public class ContractItemDAO {
 		return list;
 	}
 
-	public static boolean deleteByContractId(long contractId) {
-		String sql = "DELETE FROM ContractItem WHERE contract_id = ?";
-		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+	// deleteByContractId con conexión explícita para uso transaccional
+	public static boolean deleteByContractId(Connection conn, long contractId) throws SQLException {
+		String sql = "DELETE FROM Contract_Item WHERE contract_id = ?";
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, contractId);
-			return stmt.executeUpdate() > 0;
-		} catch (SQLException e) {
-			System.err.println("Error deleting contract items by contract: " + e.getMessage());
-			return false;
+			stmt.executeUpdate();
+			return true;
 		}
 	}
 
+	// delete individual sin transacción
 	public static boolean delete(long id) {
-		String sql = "DELETE FROM ContractItem WHERE id = ?";
+		String sql = "DELETE FROM Contract_Item WHERE id = ?";
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, id);
 			return stmt.executeUpdate() > 0;
