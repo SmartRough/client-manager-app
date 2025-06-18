@@ -22,6 +22,8 @@ import java.util.List;
 public class ContractFormController {
 
 	@FXML
+	private TextField poNumberField;
+	@FXML
 	private DatePicker measureDatePicker;
 	@FXML
 	private DatePicker startDatePicker;
@@ -145,13 +147,13 @@ public class ContractFormController {
 
 		LocalDate date = measureDatePicker.getValue();
 		if (date == null || owner1Field.getText().isBlank()) {
-			showAlert("Select measure date and owner before adding attachments.");
+			showAlert("Select measure date and PO number before adding attachments.");
 			return;
 		}
 
 		String folderName = date.toString();
-		String ownerName = owner1Field.getText().replaceAll("[^a-zA-Z0-9_\\-]", "_");
-		File destFolder = new File(System.getProperty("user.dir"), "contracts/" + folderName + "/" + ownerName);
+		String poNumber = poNumberField.getText().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+		File destFolder = new File(System.getProperty("user.dir"), "contracts/" + folderName + "/" + poNumber);
 		if (!destFolder.exists())
 			destFolder.mkdirs();
 
@@ -175,6 +177,7 @@ public class ContractFormController {
 		this.contractBeingEdited = contract;
 		this.editing = true;
 
+		poNumberField.setText(contract.getPoNumber());
 		measureDatePicker.setValue(contract.getMeasureDate());
 		startDatePicker.setValue(contract.getStartDate());
 		endDatePicker.setValue(contract.getEndDate());
@@ -219,6 +222,7 @@ public class ContractFormController {
 			return;
 
 		Contract c = editing ? contractBeingEdited : new Contract();
+		c.setPoNumber(poNumberField.getText());
 		c.setMeasureDate(measureDatePicker.getValue());
 		c.setStartDate(startDatePicker.getValue());
 		c.setEndDate(endDatePicker.getValue());
