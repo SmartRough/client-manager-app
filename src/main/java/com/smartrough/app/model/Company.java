@@ -11,13 +11,14 @@ public class Company {
 	private long addressId;
 	private boolean isOwnCompany;
 	private CompanyType type;
+	private String license;
 
 	public Company() {
 		this.type = CompanyType.BUSINESS;
 	}
 
 	public Company(long id, String name, String representative, String phone, String email, long addressId,
-			boolean isOwnCompany, CompanyType type) {
+			boolean isOwnCompany, CompanyType type, String license) {
 		this.id = id;
 		this.name = name;
 		this.representative = representative;
@@ -26,6 +27,7 @@ public class Company {
 		this.addressId = addressId;
 		this.isOwnCompany = isOwnCompany;
 		this.type = type;
+		this.license = license;
 	}
 
 	// Getters and Setters
@@ -93,4 +95,13 @@ public class Company {
 	public void setType(CompanyType type) {
 		this.type = type;
 	}
+
+	public String getLicense() {
+		return license;
+	}
+
+	public void setLicense(String license) {
+		this.license = license;
+	}
+
 }

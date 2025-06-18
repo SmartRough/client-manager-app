@@ -36,6 +36,7 @@ public class Database {
 						address_id INTEGER,
 						is_own_company INTEGER DEFAULT 0,
 						type TEXT DEFAULT 'BUSINESS',
+						license TEXT,
 						FOREIGN KEY(address_id) REFERENCES Address(id)
 					);
 				""";
@@ -173,6 +174,53 @@ public class Database {
 			stmt.execute(sqlContractItem);
 			stmt.execute(sqlContractClauseItem);
 			stmt.execute(sqlContractAttachment);
+
+			// Insertar compañía por defecto si no existe
+			try (PreparedStatement checkStmt = conn
+					.prepareStatement("SELECT COUNT(*) FROM Company WHERE is_own_company = 1");
+					ResultSet rs = checkStmt.executeQuery()) {
+				if (rs.next() && rs.getInt(1) == 0) {
+					// Insertar dirección
+					String insertAddress = """
+								INSERT INTO Address (street, city, state, zip_code)
+								VALUES (?, ?, ?, ?)
+							""";
+					long addressId;
+					try (PreparedStatement addrStmt = conn.prepareStatement(insertAddress,
+							Statement.RETURN_GENERATED_KEYS)) {
+						addrStmt.setString(1, "7028 W. Waters Ave. #101");
+						addrStmt.setString(2, "Tampa");
+						addrStmt.setString(3, "FL");
+						addrStmt.setString(4, "33634");
+						addrStmt.executeUpdate();
+
+						try (ResultSet addrKeys = addrStmt.getGeneratedKeys()) {
+							if (addrKeys.next()) {
+								addressId = addrKeys.getLong(1);
+							} else {
+								throw new SQLException("Failed to retrieve address ID.");
+							}
+						}
+					}
+
+					// Insertar compañía
+					String insertCompany = """
+								INSERT INTO Company (name, representative, phone, email, address_id, is_own_company, type, license)
+								VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+							""";
+					try (PreparedStatement compStmt = conn.prepareStatement(insertCompany)) {
+						compStmt.setString(1, "G Construction Service Inc.");
+						compStmt.setString(2, "Greg Staples");
+						compStmt.setString(3, "813-613-2040");
+						compStmt.setString(4, "gcs@usa.com");
+						compStmt.setLong(5, addressId);
+						compStmt.setInt(6, 1); // is_own_company = true
+						compStmt.setString(7, "BUSINESS");
+						compStmt.setString(8, "CGC 1532364");
+						compStmt.executeUpdate();
+					}
+				}
+			}
 
 		} catch (SQLException e) {
 			System.err.println("Error creating schema: " + e.getMessage());

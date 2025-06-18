@@ -16,6 +16,8 @@ public class OwnCompanyFormController {
 	@FXML
 	private TextField repField;
 	@FXML
+	private TextField licenseField;
+	@FXML
 	private TextField phoneField;
 	@FXML
 	private TextField emailField;
@@ -36,6 +38,7 @@ public class OwnCompanyFormController {
 		if (currentCompany != null) {
 			nameField.setText(currentCompany.getName());
 			repField.setText(currentCompany.getRepresentative());
+			licenseField.setText(currentCompany.getLicense());
 			phoneField.setText(currentCompany.getPhone());
 			emailField.setText(currentCompany.getEmail());
 
@@ -59,6 +62,7 @@ public class OwnCompanyFormController {
 
 		currentCompany.setName(nameField.getText());
 		currentCompany.setRepresentative(repField.getText());
+		currentCompany.setLicense(licenseField.getText());
 		currentCompany.setPhone(phoneField.getText());
 		currentCompany.setEmail(emailField.getText());
 

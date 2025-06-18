@@ -10,11 +10,13 @@ import java.util.List;
 public class CompanyDAO {
 
 	public static long saveCompany(Company company) {
-		String[] columns = { "name", "representative", "phone", "email", "address_id", "is_own_company", "type" };
+		String[] columns = { "name", "representative", "phone", "email", "address_id", "is_own_company", "type",
+				"license" };
 		Object[] values = { company.getName(), company.getRepresentative(), company.getPhone(), company.getEmail(),
-				company.getAddressId(), company.isOwnCompany() ? 1 : 0, company.getType().name() };
+				company.getAddressId(), company.isOwnCompany() ? 1 : 0, company.getType().name(),
+				company.getLicense() };
 		int[] types = { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.INTEGER, Types.INTEGER,
-				Types.VARCHAR };
+				Types.VARCHAR, Types.VARCHAR };
 
 		return CRUDHelper.create("Company", columns, values, types);
 	}
@@ -67,6 +69,7 @@ public class CompanyDAO {
 				c.setAddressId(rs.getLong("address_id"));
 				c.setOwnCompany(rs.getInt("is_own_company") == 1);
 				c.setType(CompanyType.valueOf(rs.getString("type")));
+				c.setLicense(rs.getString("license"));
 				list.add(c);
 			}
 
@@ -78,7 +81,7 @@ public class CompanyDAO {
 	}
 
 	public static boolean updateCompany(Company company) {
-		String sql = "UPDATE Company SET name=?, representative=?, phone=?, email=?, address_id=?, is_own_company=?, type=? WHERE id=?";
+		String sql = "UPDATE Company SET name=?, representative=?, phone=?, email=?, address_id=?, is_own_company=?, type=?, license=? WHERE id=?";
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, company.getName());
 			stmt.setString(2, company.getRepresentative());
@@ -87,7 +90,8 @@ public class CompanyDAO {
 			stmt.setLong(5, company.getAddressId());
 			stmt.setInt(6, company.isOwnCompany() ? 1 : 0);
 			stmt.setString(7, company.getType().name());
-			stmt.setLong(8, company.getId());
+			stmt.setString(8, company.getLicense());
+			stmt.setLong(9, company.getId());
 			return stmt.executeUpdate() > 0;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -116,6 +120,7 @@ public class CompanyDAO {
 		c.setAddressId(rs.getLong("address_id"));
 		c.setOwnCompany(rs.getInt("is_own_company") == 1);
 		c.setType(CompanyType.valueOf(rs.getString("type")));
+		c.setLicense(rs.getString("license"));
 		return c;
 	}
 
