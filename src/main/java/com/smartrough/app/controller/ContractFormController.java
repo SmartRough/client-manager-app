@@ -99,6 +99,7 @@ public class ContractFormController {
 
 	private final ObservableList<ContractItem> items = FXCollections.observableArrayList();
 	private final List<ContractAttachment> attachments = new ArrayList<>();
+	private final List<String> newAttachmentNames = new ArrayList<>();
 	private final List<File> filesToAdd = new ArrayList<>();
 	private Contract contractBeingEdited;
 	private boolean editing = false;
@@ -166,11 +167,20 @@ public class ContractFormController {
 		if (filesToAdd.isEmpty())
 			return;
 
+		List<String> existingAttachmentNames = attachments.stream().map(att -> att.getName() + "." + att.getExtension())
+				.toList();
+
 		for (File file : filesToAdd) {
 			String name = getFileNameWithoutExtension(file.getName());
-			String extension = getFileExtension(file.getName());
-			attachments.add(new ContractAttachment(null, null, name, extension));
+			String ext = getFileExtension(file.getName());
+			String fullName = name + "." + ext;
+
+			if (!existingAttachmentNames.contains(fullName)) {
+				attachments.add(new ContractAttachment(null, null, name, ext));
+				newAttachmentNames.add(fullName);
+			}
 		}
+
 		attachmentLabel.setText("0 selected");
 		updateAttachmentTable();
 	}
@@ -201,56 +211,56 @@ public class ContractFormController {
 		});
 	}
 
-	private void removeObsoleteAttachments(Contract oldContract, List<ContractAttachment> newAttachments) {
-		String folderName = oldContract.getMeasureDate().toString();
-		String poNumber = oldContract.getPoNumber().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+	private void removeObsoleteAttachments(List<ContractAttachment> oldAttachments,
+			List<ContractAttachment> newAttachments) {
+		if (measureDatePicker.getValue() == null || poNumberField.getText().isBlank())
+			return;
+
+		String folderName = measureDatePicker.getValue().toString();
+		String poNumber = poNumberField.getText().replaceAll("[^a-zA-Z0-9_\\-]", "_");
 		File folder = new File(System.getProperty("user.dir"), "contracts/" + folderName + "/" + poNumber);
 
-		for (ContractAttachment oldAtt : oldContract.getAttachments()) {
+		for (ContractAttachment oldAtt : oldAttachments) {
 			boolean stillExists = newAttachments.stream().anyMatch(newAtt -> newAtt.getName().equals(oldAtt.getName())
 					&& newAtt.getExtension().equals(oldAtt.getExtension()));
 
 			if (!stillExists) {
 				File fileToDelete = new File(folder, oldAtt.getName() + "." + oldAtt.getExtension());
 				if (fileToDelete.exists()) {
-					fileToDelete.delete();
+					boolean deleted = fileToDelete.delete();
+					System.out.println("Deleting " + fileToDelete.getAbsolutePath() + " => " + deleted);
 				}
 			}
 		}
 	}
 
 	private void copyNewAttachments(Contract contract) {
+		if (newAttachmentNames.isEmpty())
+			return;
+
 		String folderName = contract.getMeasureDate().toString();
 		String poNumber = contract.getPoNumber().replaceAll("[^a-zA-Z0-9_\\-]", "_");
 		File destFolder = new File(System.getProperty("user.dir"), "contracts/" + folderName + "/" + poNumber);
 		if (!destFolder.exists())
 			destFolder.mkdirs();
 
-		for (ContractAttachment att : attachments) {
-			boolean alreadyExists = contractBeingEdited != null && contractBeingEdited.getAttachments().stream()
-					.anyMatch(existing -> existing.getName().equals(att.getName())
-							&& existing.getExtension().equals(att.getExtension()));
-
-			if (!alreadyExists) {
-				for (File source : filesToAdd) {
-					String name = getFileNameWithoutExtension(source.getName());
-					String ext = getFileExtension(source.getName());
-
-					if (name.equals(att.getName()) && ext.equals(att.getExtension())) {
-						try {
-							File destFile = new File(destFolder, source.getName());
-							java.nio.file.Files.copy(source.toPath(), destFile.toPath(),
-									java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-						} catch (Exception e) {
-							e.printStackTrace();
-							showAlert("Failed to save attachment: " + source.getName());
-						}
-					}
+		for (File source : filesToAdd) {
+			String fullName = source.getName();
+			if (newAttachmentNames.contains(fullName)) {
+				try {
+					File destFile = new File(destFolder, fullName);
+					System.out.println("Copying to: " + destFile.getAbsolutePath());
+					java.nio.file.Files.copy(source.toPath(), destFile.toPath(),
+							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				} catch (Exception e) {
+					e.printStackTrace();
+					showAlert("Failed to save attachment: " + source.getName());
 				}
 			}
 		}
 
 		filesToAdd.clear();
+		newAttachmentNames.clear();
 	}
 
 	public void loadContract(Contract contract) {
@@ -301,6 +311,10 @@ public class ContractFormController {
 		if (!validateForm())
 			return;
 
+		List<ContractAttachment> oldAttachments = editing && contractBeingEdited != null
+				? new ArrayList<>(contractBeingEdited.getAttachments())
+				: new ArrayList<>();
+
 		Contract c = editing ? contractBeingEdited : new Contract();
 		c.setPoNumber(poNumberField.getText());
 		c.setMeasureDate(measureDatePicker.getValue());
@@ -336,7 +350,7 @@ public class ContractFormController {
 			long id = ContractDAO.save(c);
 			c.setId(id);
 		} else {
-			removeObsoleteAttachments(contractBeingEdited, attachments);
+			removeObsoleteAttachments(oldAttachments, attachments);
 			ContractDAO.update(c);
 		}
 
