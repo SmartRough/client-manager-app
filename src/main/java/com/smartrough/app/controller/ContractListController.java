@@ -6,8 +6,11 @@ import com.smartrough.app.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
+import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -48,25 +51,45 @@ public class ContractListController {
 				data -> new ReadOnlyStringWrapper(String.format("$%.2f", data.getValue().getTotalPrice())));
 
 		actionsCol.setCellFactory(col -> new TableCell<>() {
-			private final Button editBtn = new Button("Edit");
+			private final Button editBtn = new Button();
+			private final Button deleteBtn = new Button();
+			private final HBox box = new HBox(5, editBtn, deleteBtn);
 
 			{
+				// Ícono de editar
+				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/edit.png")));
+				editIcon.setFitHeight(16);
+				editIcon.setFitWidth(16);
+				editBtn.setGraphic(editIcon);
+				editBtn.getStyleClass().add("icon-button");
+				editBtn.setTooltip(new Tooltip("Edit Contract"));
+
+				// Ícono de eliminar
+				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
+				deleteIcon.setFitHeight(16);
+				deleteIcon.setFitWidth(16);
+				deleteBtn.setGraphic(deleteIcon);
+				deleteBtn.getStyleClass().add("icon-button");
+				deleteBtn.setTooltip(new Tooltip("Delete Contract"));
+
+				// Acciones
 				editBtn.setOnAction(e -> {
 					Contract contract = getTableView().getItems().get(getIndex());
 					ViewNavigator.loadView("ContractFormView.fxml", contract);
 				});
+
+				deleteBtn.setOnAction(e -> {
+					Contract contract = getTableView().getItems().get(getIndex());
+					deleteContractWithFiles(contract);
+				});
+
+				box.setStyle("-fx-alignment: center;");
 			}
 
 			@Override
 			protected void updateItem(String item, boolean empty) {
 				super.updateItem(item, empty);
-				if (empty) {
-					setGraphic(null);
-				} else {
-					HBox box = new HBox(editBtn);
-					box.setSpacing(5);
-					setGraphic(box);
-				}
+				setGraphic(empty ? null : box);
 			}
 		});
 
@@ -87,4 +110,32 @@ public class ContractListController {
 	private void handleExport() {
 		// Implementación futura
 	}
+
+	private void deleteContractWithFiles(Contract contract) {
+		Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+		confirm.setHeaderText("Are you sure you want to delete this contract?");
+		confirm.setContentText("This will permanently delete the contract and its attachments.");
+
+		confirm.showAndWait().ifPresent(response -> {
+			if (response == ButtonType.OK) {
+				// 1. Delete folder if exists
+				if (contract.getMeasureDate() != null && contract.getPoNumber() != null) {
+					String folderName = contract.getMeasureDate().toString();
+					String poNumber = contract.getPoNumber().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+					File folder = new File(System.getProperty("user.dir"), "contracts/" + folderName + "/" + poNumber);
+					if (folder.exists() && folder.isDirectory()) {
+						for (File file : folder.listFiles()) {
+							file.delete();
+						}
+						folder.delete(); // delete the folder after its contents
+					}
+				}
+
+				// 2. Delete from database
+				ContractDAO.delete(contract.getId());
+				loadContracts(); // refresh table
+			}
+		});
+	}
+
 }

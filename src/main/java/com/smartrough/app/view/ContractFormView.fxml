@@ -134,9 +134,14 @@
         <TitledPane text="Attachments" expanded="false" collapsible="true">
             <VBox spacing="10">
                 <HBox spacing="10" alignment="CENTER_LEFT">
-                    <Button text="Browse Files" onAction="#handleBrowseAttachments"/>
-                    <Label fx:id="attachmentLabel" text="0 selected"/>
-                    <Button text="Add to List" onAction="#handleAddAttachment"/>
+                    <Button onAction="#handleBrowseAttachments" prefHeight="30" prefWidth="30" styleClass="icon-button">
+		                <graphic>
+		                    <ImageView fitHeight="20" fitWidth="20">
+		                        <image><Image url="@/img/upload.png" /></image>
+		                    </ImageView>
+		                </graphic>
+		                <tooltip><Tooltip text="Add Image" /></tooltip>
+		            </Button>
                 </HBox>
 
                 <TableView fx:id="attachmentTable" prefHeight="200">

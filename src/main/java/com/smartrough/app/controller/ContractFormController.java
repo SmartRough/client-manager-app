@@ -94,8 +94,6 @@ public class ContractFormController {
 	private TableColumn<ContractAttachment, String> attachmentNameColumn;
 	@FXML
 	private TableColumn<ContractAttachment, Void> attachmentActionColumn;
-	@FXML
-	private Label attachmentLabel;
 
 	private final ObservableList<ContractItem> items = FXCollections.observableArrayList();
 	private final List<ContractAttachment> attachments = new ArrayList<>();
@@ -178,12 +176,8 @@ public class ContractFormController {
 		List<File> selected = chooser.showOpenMultipleDialog(null);
 		if (selected != null) {
 			filesToAdd.addAll(selected);
-			attachmentLabel.setText(filesToAdd.size() + " selected");
 		}
-	}
 
-	@FXML
-	private void handleAddAttachment() {
 		if (filesToAdd.isEmpty())
 			return;
 
@@ -201,7 +195,6 @@ public class ContractFormController {
 			}
 		}
 
-		attachmentLabel.setText("0 selected");
 		updateAttachmentTable();
 	}
 
@@ -213,9 +206,16 @@ public class ContractFormController {
 				cd.getValue().getName() + "." + cd.getValue().getExtension()));
 
 		attachmentActionColumn.setCellFactory(col -> new TableCell<>() {
-			private final Button deleteButton = new Button("Delete");
+			private final Button deleteButton = new Button();
 
 			{
+				ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
+				icon.setFitHeight(16);
+				icon.setFitWidth(16);
+				deleteButton.setGraphic(icon);
+				deleteButton.getStyleClass().add("icon-button");
+				deleteButton.setTooltip(new Tooltip("Delete Attachment"));
+
 				deleteButton.setOnAction(e -> {
 					ContractAttachment att = getTableView().getItems().get(getIndex());
 					attachments.remove(att);
