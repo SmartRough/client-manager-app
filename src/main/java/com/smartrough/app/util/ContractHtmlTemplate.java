@@ -235,11 +235,45 @@ public class ContractHtmlTemplate {
 		sb.append("</div>");
 
 		// Signatures
-		sb.append("<div class='section'><table class='table signatures'>");
-		sb.append("<tr><td>Contractor Signature</td><td>Owner 1 Signature</td><td>Owner 2 Signature</td></tr>");
-		sb.append(
-				"<tr><td>__________________________</td><td>__________________________</td><td>__________________________</td></tr>");
-		sb.append("</table></div>");
+		sb.append("<div class='section'>");
+
+		// Tabla de firmas con 2 columnas (60% y 40%)
+		sb.append("<table style='width: 100%; border-collapse: collapse; font-size: 14px;'>");
+
+		// Encabezado: Company Name - Owner
+		sb.append("<tr>");
+		sb.append("<td style='padding-bottom: 10px;'><strong>").append(safe(company.getName()))
+				.append("</strong></td>");
+		sb.append("<td style='text-align: right;'><strong>Owner</strong></td>");
+		sb.append("</tr>");
+
+		// Firma del contratista y Owner 1
+		sb.append("<tr>");
+		sb.append("<td style='padding: 10px 0;'>By: ____________________________</td>");
+		sb.append("<td style='text-align: right;'>____________________________</td>");
+		sb.append("</tr>");
+
+		// Etiquetas centradas debajo de las líneas
+		sb.append("<tr>");
+		sb.append("<td style='text-align: center;'>(Contractor)</td>");
+		sb.append("<td style='text-align: center;'>(Owner #1)</td>");
+		sb.append("</tr>");
+
+		// Licencia del contratista y Owner 2
+		sb.append("<tr>");
+		sb.append("<td style='padding-bottom: 10px; text-align: center;'> State Certified General Contractor - ").append(safe(company.getLicense()))
+				.append("</td>");
+		sb.append("<td style='text-align: right;'>____________________________</td>");
+		sb.append("</tr>");
+
+		// Etiqueta de Owner 2 centrada
+		sb.append("<tr>");
+		sb.append("<td></td>");
+		sb.append("<td style='text-align: center;'>(Owner #2)</td>");
+		sb.append("</tr>");
+
+		sb.append("</table>");
+		sb.append("</div>");
 
 		// Attachments
 		if (contract.getAttachments() != null && !contract.getAttachments().isEmpty()) {
