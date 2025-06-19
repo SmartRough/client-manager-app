@@ -1,4 +1,3 @@
-
 package com.smartrough.app.util;
 
 import com.smartrough.app.model.Company;
@@ -20,12 +19,14 @@ public class ContractHtmlTemplate {
 		String startDate = contract.getStartDate() != null ? contract.getStartDate().format(df) : "";
 		String endDate = contract.getEndDate() != null ? contract.getEndDate().format(df) : "";
 
+		// Logo como base64
+		String logoBase64 = FileSaveHelper.encodeFileToBase64("logo.png");
+
 		sb.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>");
 		sb.append("<style>");
 		sb.append("body { font-family: 'Segoe UI', sans-serif; padding: 30px; background: #fff; color: #000; }");
 		sb.append(".contract-box { max-width: 850px; margin: auto; }");
 		sb.append(".header, .section, .footer { margin-bottom: 25px; }");
-		sb.append(".flex { display: flex; justify-content: space-between; }");
 		sb.append(".table { width: 100%; border-collapse: collapse; }");
 		sb.append(".table td, .table th { border: 1px solid #ccc; padding: 8px; }");
 		sb.append(".signatures td { padding: 40px 10px 10px; text-align: center; }");
@@ -35,38 +36,76 @@ public class ContractHtmlTemplate {
 		sb.append("</style>");
 		sb.append("</head><body><div class='contract-box'>");
 
-		// Header
-		sb.append("<div class='header flex'>");
-		sb.append("<div>");
-		sb.append("<img src='file:logo.png' class='logo'/><br/>");
+		// Header organizado con tabla
+		sb.append("<div class='header'>");
+		sb.append("<table style='width: 100%; border: none;'>");
+		sb.append("<tr>");
+
+		// Columna izquierda
+		sb.append("<td style='width: 50%; vertical-align: top;'>");
+		if (logoBase64 != null) {
+			sb.append("<img src='data:image/png;base64,").append(logoBase64).append("' class='logo'/><br/>");
+		}
 		sb.append("<strong>").append(safe(company.getName())).append("</strong><br/>");
-		sb.append("Rep: ").append(safe(company.getRepresentative())).append("<br/>");
-		sb.append("Email: ").append(safe(company.getEmail())).append("<br/>");
 		sb.append("Phone: ").append(safe(company.getPhone())).append("<br/>");
-		sb.append("</div>");
-		sb.append("<div>");
+		sb.append("Email: ").append(safe(company.getEmail())).append("<br/>");
+		sb.append("Rep: ").append(safe(company.getRepresentative())).append("<br/>");
+		sb.append("Lic. #: ").append(safe(company.getLicense())).append("<br/>");
+		sb.append("</td>");
+
+		// Columna derecha
+		sb.append("<td style='width: 50%; text-align: right; vertical-align: top;'>");
+		
 		sb.append("<strong>PO Number:</strong> ").append(po).append("<br/>");
 		sb.append("<strong>Measure Date:</strong> ").append(measureDate);
-		sb.append("</div>");
+		sb.append("</td>");
+
+		sb.append("</tr>");
+		sb.append("</table>");
 		sb.append("</div>");
 
 		// Order Info
-		sb.append("<div class='section'><h3>Order Form / Sales Agreement</h3>");
-		sb.append("<table class='table'>");
-		sb.append("<tr><td>Owner 1</td><td>").append(safe(contract.getOwner1())).append("</td>");
-		sb.append("<td>Owner 2</td><td>").append(safe(contract.getOwner2())).append("</td></tr>");
-		sb.append("<tr><td>Address</td><td colspan='3'>").append(safe(contract.getAddress())).append(", ")
-				.append(safe(contract.getCity())).append(", ").append(safe(contract.getState())).append(" ")
-				.append(safe(contract.getZip())).append("</td></tr>");
-		sb.append("<tr><td>Email</td><td>").append(safe(contract.getEmail())).append("</td>");
-		sb.append("<td>Phones</td><td>").append(safe(contract.getHomePhone())).append(" / ")
-				.append(safe(contract.getOtherPhone())).append("</td></tr>");
-		sb.append("<tr><td>Property Type</td><td colspan='3'>");
-		sb.append(contract.isHouse() ? "House " : "").append(contract.isCondo() ? "Condo " : "")
-				.append(contract.isMFH() ? "MFH " : "").append(contract.isCommercial() ? "Commercial " : "")
-				.append(contract.isHasHOA() ? "(HOA)" : "");
-		sb.append("</td></tr>");
-		sb.append("</table></div>");
+		sb.append("<div class='section'>");
+		sb.append("<h3 style='text-align: center;'>ORDER FORM / SALES AGREEMENT</h3>");
+		sb.append("<table style='width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.6;'>");
+
+		sb.append("<tr>");
+		sb.append("<td><strong>Owner #1:</strong> ").append(safe(contract.getOwner1())).append("</td>");
+		sb.append("<td><strong>Email:</strong> ").append(safe(contract.getEmail())).append("</td>");
+		sb.append("<td><strong>House:</strong> ").append(contract.isHouse() ? "☑" : "☐").append("</td>");
+		sb.append("</tr>");
+
+		sb.append("<tr>");
+		sb.append("<td><strong>Owner #2:</strong> ").append(safe(contract.getOwner2())).append("</td>");
+		sb.append("<td><strong>Date:</strong> ").append(measureDate).append("</td>");
+		sb.append("<td><strong>Condo:</strong> ").append(contract.isCondo() ? "☑" : "☐").append("</td>");
+		sb.append("</tr>");
+
+		sb.append("<tr>");
+		sb.append("<td><strong>Address:</strong> ").append(safe(contract.getAddress())).append("</td>");
+		sb.append("<td><strong>Home Phone:</strong> ").append(safe(contract.getHomePhone())).append("</td>");
+		sb.append("<td><strong>MFH:</strong> ").append(contract.isMFH() ? "☑" : "☐").append("</td>");
+		sb.append("</tr>");
+
+		sb.append("<tr>");
+		sb.append("<td><strong>City:</strong> ").append(safe(contract.getCity()))
+			.append(" <strong>State:</strong> ").append(safe(contract.getState()))
+			.append(" <strong>Zip:</strong> ").append(safe(contract.getZip())).append("</td>");
+		sb.append("<td><strong>Other Phone:</strong> ").append(safe(contract.getOtherPhone())).append("</td>");
+		sb.append("<td><strong>Commercial:</strong> ").append(contract.isCommercial() ? "☑" : "☐").append("</td>");
+		sb.append("</tr>");
+
+		sb.append("<tr>");
+		sb.append("<td>").append("</td>");
+		sb.append("<td>").append("</td>");
+		sb.append("<td>").append("</td>");
+		sb.append("<td colspan='5' style='text-align: right; padding-top: 10px;'><strong>HOA:</strong> ")
+			.append(contract.isHasHOA() ? "☑ Yes" : "☐ No").append("</td>");
+		sb.append("</tr>");
+
+		sb.append("</table>");
+		sb.append("</div>");
+
 
 		// Description of Work
 		sb.append("<div class='section'><h3>General Description of Work, Materials or Labor</h3><ul>");
@@ -78,7 +117,7 @@ public class ContractHtmlTemplate {
 		sb.append("</ul></div>");
 
 		// Clauses and Cost
-		sb.append("<div class='section flex'>");
+		sb.append("<div class='section' style='display: flex; gap: 5%;'>");
 
 		sb.append("<div class='clause-box'>");
 		sb.append("<h4>Clauses</h4>");

@@ -61,6 +61,12 @@ data/database.db
 
 email.properties
 /src/main/resources/config/email.properties
+/src/main/resources/certs/
 
 /estimates/
 /contracts/
+
+# Protege otros certificados sensibles
+*.key
+*.pem
+*.p12

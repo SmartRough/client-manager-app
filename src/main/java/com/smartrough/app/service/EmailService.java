@@ -6,8 +6,14 @@ import jakarta.mail.internet.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.List;
 import java.util.Properties;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 public class EmailService {
 
@@ -24,6 +30,8 @@ public class EmailService {
 	}
 
 	public static void sendEmail(String to, String subject, String body, List<File> attachments) throws Exception {
+		configureCustomSSL();
+
 		Properties props = new Properties();
 		props.put("mail.smtp.auth", config.getProperty("smtp.auth"));
 		props.put("mail.smtp.starttls.enable", config.getProperty("smtp.starttls"));
@@ -57,4 +65,26 @@ public class EmailService {
 		message.setContent(multipart);
 		Transport.send(message);
 	}
+
+	private static void configureCustomSSL() throws Exception {
+		InputStream certStream = EmailService.class.getClassLoader().getResourceAsStream("certs/mail_com.crt");
+		if (certStream == null) {
+			throw new FileNotFoundException("No se encontró el certificado mail_com.crt en resources.");
+		}
+
+		CertificateFactory cf = CertificateFactory.getInstance("X.509");
+		Certificate cert = cf.generateCertificate(certStream);
+
+		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+		ks.load(null, null); // Nuevo keystore vacío
+		ks.setCertificateEntry("mailcom", cert);
+
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+		tmf.init(ks);
+
+		SSLContext ctx = SSLContext.getInstance("TLS");
+		ctx.init(null, tmf.getTrustManagers(), null);
+		SSLContext.setDefault(ctx); // Hace que todas las conexiones usen esto
+	}
+
 }
