@@ -63,47 +63,68 @@ public class ContractHtmlTemplate {
 		sb.append("<table style='width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.6;'>");
 
 		sb.append("<tr>");
-		sb.append("<td style='border: 1px solid #ccc;'><strong>Owner #1:</strong> ").append(safe(contract.getOwner1())).append("</td>");
-		sb.append("<td style='border: 1px solid #ccc;'><strong>Email:</strong> ").append(safe(contract.getEmail())).append("</td>");
-		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("House:", contract.isHouse())).append("</td>");
-
-		sb.append("</tr>");
-
-		sb.append("<tr>");
-		sb.append("<td style='border: 1px solid #ccc;'><strong>Owner #2:</strong> ").append(safe(contract.getOwner2())).append("</td>");
-		sb.append("<td style='border: 1px solid #ccc;'><strong>Date:</strong> ").append(measureDate).append("</td>");
-		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("Condo:", contract.isCondo())).append("</td>");
-		sb.append("</tr>");
-
-		sb.append("<tr>");
-		sb.append("<td style='border: 1px solid #ccc;'><strong>Address:</strong> ").append(safe(contract.getAddress())).append("</td>");
-		sb.append("<td style='border: 1px solid #ccc;'><strong>Home Phone:</strong> ").append(safe(contract.getHomePhone())).append("</td>");
-		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("MFH:", contract.isMFH())).append("</td>");
-		sb.append("</tr>");
-
-		sb.append("<tr>");
-		sb.append("<td style='border: 1px solid #ccc;'><strong>City:</strong> ").append(safe(contract.getCity())).append(" <strong>State:</strong> ")
-				.append(safe(contract.getState())).append(" <strong>Zip:</strong> ").append(safe(contract.getZip()))
+		sb.append("<td style='border: 1px solid #ccc;'><strong>Owner #1:</strong> ").append(safe(contract.getOwner1()))
 				.append("</td>");
-		sb.append("<td style='border: 1px solid #ccc;'><strong>Other Phone:</strong> ").append(safe(contract.getOtherPhone())).append("</td>");
-		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("Commercial:", contract.isCommercial())).append("</td>");
+		sb.append("<td style='border: 1px solid #ccc;'><strong>Email:</strong> ").append(safe(contract.getEmail()))
+				.append("</td>");
+		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("House:", contract.isHouse()))
+				.append("</td>");
+
+		sb.append("</tr>");
+
+		sb.append("<tr>");
+		sb.append("<td style='border: 1px solid #ccc;'><strong>Owner #2:</strong> ").append(safe(contract.getOwner2()))
+				.append("</td>");
+		sb.append("<td style='border: 1px solid #ccc;'><strong>Date:</strong> ").append(measureDate).append("</td>");
+		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("Condo:", contract.isCondo()))
+				.append("</td>");
+		sb.append("</tr>");
+
+		sb.append("<tr>");
+		sb.append("<td style='border: 1px solid #ccc;'><strong>Address:</strong> ").append(safe(contract.getAddress()))
+				.append("</td>");
+		sb.append("<td style='border: 1px solid #ccc;'><strong>Home Phone:</strong> ")
+				.append(safe(contract.getHomePhone())).append("</td>");
+		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("MFH:", contract.isMFH()))
+				.append("</td>");
+		sb.append("</tr>");
+
+		sb.append("<tr>");
+		sb.append("<td style='border: 1px solid #ccc;'><strong>City:</strong> ").append(safe(contract.getCity()))
+				.append(" <strong>State:</strong> ").append(safe(contract.getState())).append(" <strong>Zip:</strong> ")
+				.append(safe(contract.getZip())).append("</td>");
+		sb.append("<td style='border: 1px solid #ccc;'><strong>Other Phone:</strong> ")
+				.append(safe(contract.getOtherPhone())).append("</td>");
+		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("Commercial:", contract.isCommercial()))
+				.append("</td>");
 		sb.append("</tr>");
 
 		sb.append("<tr>");
 		sb.append("<td  colspan='2' style='border: 1px solid #ccc;'></td>");
-		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("HOA:", contract.isHasHOA())).append("</td>");
+		sb.append("<td style='border: 1px solid #ccc;'>").append(checkboxLine("HOA:", contract.isHasHOA()))
+				.append("</td>");
 		sb.append("</tr>");
 
 		sb.append("</table></div>");
 
 		// Description of Work
-		sb.append("<div class='section'><h3>General Description of Work, Materials or Labor</h3><ul>");
+		sb.append("<div class='section'>");
+		sb.append("<h3 style='text-align: center;'>General Description of Work, Materials or Labor</h3>");
+		sb.append("<p style='text-align: center; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>");
+		sb.append(
+				"Plans and Specifications are attached hereto and incorporated herein by reference as Exhibit A (collectively the &quot;Improvement&quot;)");
+		sb.append("</p>");
+
+		sb.append("<table style='width: 100%; border-collapse: collapse; font-size: 14px;'>");
 		if (contract.getItems() != null) {
 			for (ContractItem item : contract.getItems()) {
-				sb.append("<li>").append(safe(item.getDescription())).append("</li>");
+				sb.append("<tr>");
+				sb.append("<td style='border-bottom: 1px solid #ccc; padding: 8px;'>")
+						.append(safe(item.getDescription())).append("</td>");
+				sb.append("</tr>");
 			}
 		}
-		sb.append("</ul></div>");
+		sb.append("</table></div>");
 
 		// Clauses and Cost
 		sb.append("<div class='section' style='display: flex; gap: 5%;'>");
