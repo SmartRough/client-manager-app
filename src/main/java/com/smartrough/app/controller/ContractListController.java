@@ -2,6 +2,7 @@ package com.smartrough.app.controller;
 
 import com.smartrough.app.dao.ContractDAO;
 import com.smartrough.app.model.Contract;
+import com.smartrough.app.util.ContractExporter;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
@@ -108,12 +109,22 @@ public class ContractListController {
 
 	@FXML
 	private void handleExport() {
-		// Implementación futura
+		Contract selected = contractTable.getSelectionModel().getSelectedItem();
+		if (selected == null) {
+			Alert alert = new Alert(Alert.AlertType.WARNING);
+			alert.setTitle("No Selection");
+			alert.setHeaderText(null);
+			alert.setContentText("Please select a contract to export.");
+			alert.showAndWait();
+			return;
+		}
+
+		ContractExporter.exportToPdf(selected);
 	}
-	
+
 	@FXML
 	private void handleSendEmail() {
-		
+
 	}
 
 	private void deleteContractWithFiles(Contract contract) {
