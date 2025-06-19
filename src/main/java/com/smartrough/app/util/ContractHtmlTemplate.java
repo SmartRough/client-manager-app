@@ -127,31 +127,111 @@ public class ContractHtmlTemplate {
 		sb.append("</table></div>");
 
 		// Clauses and Cost
-		sb.append("<div class='section' style='display: flex; gap: 5%;'>");
+		sb.append("<div class='section'>");
 
-		sb.append("<div class='clause-box'><h4>Clauses</h4>");
-		sb.append(
-				"<p>The contractor agrees to perform all work specified above according to standard practices. Any changes must be agreed in writing.</p>");
-		sb.append(
-				"<p>All materials shall be of standard quality unless otherwise stated. Payment must be made as agreed upon and is subject to approval of the work completed.</p>");
-		sb.append("</div>");
+		// Título centrado
+		sb.append("<h4 style='text-align: center; margin-bottom: 20px;'>Clauses</h4>");
 
-		sb.append("<div class='cost-box'><h4>Project Cost</h4><table class='table'>");
-		sb.append("<tr><td>Total Price</td><td>$").append(format(contract.getTotalPrice())).append("</td></tr>");
-		sb.append("<tr><td>Deposit</td><td>$").append(format(contract.getDeposit())).append("</td></tr>");
-		sb.append("<tr><td>Balance Due</td><td>$").append(format(contract.getBalanceDue())).append("</td></tr>");
-		sb.append("<tr><td>Amount Financed</td><td>$").append(format(contract.getAmountFinanced()))
+		// Tabla de cláusulas
+		sb.append("<table style='width: 100%; border-collapse: collapse; font-size: 13px;'>");
+
+		String intBox = "<div style='width: 40px; height: 25px; border: 1px solid #000; text-align: center; font-size: 10px; line-height: 25px;'>INT.</div>";
+
+		// Clause 1
+		sb.append("<tr><td style='width: 60px; vertical-align: top; padding: 8px;'>").append(intBox)
+				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc;'>")
+				.append("<strong>1.</strong> This Agreement constitutes the complete agreement between the parties and may not be modified except in writing signed by all parties hereto. ORAL REPRESENTATIONS BY EITHER PARTY ARE NOT BINDING AND SHOULD NOT BE RELIED UPON. The Contractor will not provide any services not specifically outlined in this agreement.")
 				.append("</td></tr>");
-		sb.append("<tr><td>Card Info</td><td>").append(safe(contract.getCardType())).append(" ")
-				.append(safe(contract.getCardNumber())).append("<br/>Exp: ").append(safe(contract.getCardExp()))
-				.append(" / CVC: ").append(safe(contract.getCardCVC())).append("<br/>ZIP: ")
-				.append(safe(contract.getCardZip())).append("</td></tr>");
-		sb.append("</table></div></div>");
+
+		// Clause 2
+		sb.append("<tr><td style='width: 60px; vertical-align: top; padding: 8px;'>").append(intBox)
+				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc;'>")
+				.append("<strong>2.</strong> Permits. The Owner agrees that the owner shall pay for all permits required for the work. All such costs shall be in addition to the Total price listed in this agreement. The Owner shall be responsible for and shall pay the cost of acquiring HOA approval. It is the Owner's responsibility to be present for any inspections necessary for permitting or HOA purposes.")
+				.append("</td></tr>");
+
+		// Clause 3 - with start/end dates
+		String range = (startDate.isEmpty() || endDate.isEmpty()) ? "__________________________"
+				: startDate + " - " + endDate;
+		sb.append("<tr><td style='width: 60px; vertical-align: top; padding: 8px;'>").append(intBox)
+				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc;'>")
+				.append("<strong>3.</strong> The Commencement date will be between <u>").append(range)
+				.append("</u> after approval of measure, the issuance of permits, financing and/or HOA approval.")
+				.append("</td></tr>");
+
+		// Clause 4
+		sb.append("<tr><td style='width: 60px; vertical-align: top; padding: 8px;'>").append(intBox)
+				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc;'>")
+				.append("<strong>4.</strong> Lead Safe Paint Practices. The Owner acknowledges receipt of a copy of the \"Renovate Right: Important Lead Hazard Information for families, Child Care providers and schools\" pamphlet. The Owner is aware of the potential risk of lead hazard exposure from renovation activity to be performed in the home.")
+				.append("</td></tr>");
+
+		sb.append("</table>");
+
+		// Espacio antes de los costos
+		sb.append("<div style='height: 40px;'></div>");
+
+		// Project Cost centrado
+		sb.append("<div style='text-align: center;'>");
+		sb.append("<h4 style='margin-bottom: 10px;'>Project Cost</h4>");
+		sb.append("<table style='margin: 0 auto; border-collapse: collapse; font-size: 14px;'>");
+
+		sb.append(
+				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Total Price</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
+				.append(format(contract.getTotalPrice())).append("</td></tr>");
+		sb.append(
+				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Deposit</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
+				.append(format(contract.getDeposit())).append("</td></tr>");
+		sb.append(
+				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Balance Due Upon Substantial Completion</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
+				.append(format(contract.getBalanceDue())).append("</td></tr>");
+		sb.append(
+				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Amount Financed</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
+				.append(format(contract.getAmountFinanced())).append("</td></tr>");
+		sb.append(
+				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Card Info</td><td style='border: 1px solid #ccc; padding: 8px;'>")
+				.append("Type: ").append(safe(contract.getCardType())).append(" &#160;&#160; Zip Code: ")
+				.append(safe(contract.getCardZip())).append("<br/>Number: ").append(safe(contract.getCardNumber()))
+				.append("<br/>CVC #: ").append(safe(contract.getCardCVC())).append(" &#160;&#160; Exp: ")
+				.append(safe(contract.getCardExp())).append("</td></tr>");
+
+		sb.append("</table>");
+		sb.append("</div>"); // end centered block
+
+		sb.append("</div>"); // end section
 
 		// Right to Cancel
-		sb.append("<div class='section'><h4>Buyer's Right to Cancel</h4>");
+		sb.append("<div class='section'>");
+
+		// Título centrado
+		sb.append("<h4 style='text-align: center;'>BUYER'S RIGHT TO CANCEL</h4>");
+
+		// Texto principal legal
 		sb.append(
-				"<p>The buyer has the right to cancel this agreement within three business days after signing without penalty or obligation by notifying the contractor in writing.</p>");
+				"<p>This is a home solicitation sale, and if you do not want the goods or services, you may cancel this agreement by providing written notice to the seller in person, by telegram, or by mail. This notice must indicate that you do not want the goods or services and must be delivered or postmarked before midnight of the third business day after you sign this agreement. If you cancel this agreement, the seller may not keep all or part of any cash down payment.</p>");
+
+		// Fecha con negrita si disponible
+		if (contract.getMeasureDate() != null) {
+			String[] dateParts = contract.getMeasureDate().format(DateTimeFormatter.ofPattern("MMMM dd yyyy"))
+					.split(" ");
+			String month = dateParts[0];
+			String day = dateParts[1];
+			String year = dateParts[2];
+
+			sb.append(
+					"<p>Executed in Triplicate, one copy of which was delivered and receipt is hereby acknowledged by Buyer, this ")
+					.append("<strong>").append(day).append("</strong> day of <strong>").append(month)
+					.append("</strong>, <strong>").append(year).append("</strong>.</p>");
+		} else {
+			sb.append(
+					"<p>Executed in Triplicate, one copy of which was delivered and receipt is hereby acknowledged by Buyer, this <strong>______</strong>, day of <strong>_________</strong>, <strong>20____</strong>.</p>");
+		}
+
+		// Firma y secciones A-B-C
+		sb.append("<p><strong>Approved and Accepted.</strong></p>");
+		sb.append("<p><strong>A.</strong> Do not sign this Agreement if blank.<br/>");
+		sb.append("<strong>B.</strong> Owner shall retain a copy of this Agreement at the time of signature.<br/>");
+		sb.append(
+				"<strong>C.</strong> The Owner acknowledges receiving and reading the Additional Terms and Conditions on the reverse side of this page, which terms and conditions are incorporated herein by reference.</p>");
+
 		sb.append("</div>");
 
 		// Signatures
