@@ -19,12 +19,12 @@ public class ContractHtmlTemplate {
 		String startDate = contract.getStartDate() != null ? contract.getStartDate().format(df) : "";
 		String endDate = contract.getEndDate() != null ? contract.getEndDate().format(df) : "";
 
-		// Logo como base64
 		String logoBase64 = FileSaveHelper.encodeFileToBase64("logo.png");
 
 		sb.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>");
 		sb.append("<style>");
-		sb.append("body { font-family: 'Segoe UI', sans-serif; padding: 30px; background: #fff; color: #000; }");
+		sb.append(
+				"body { font-family: Arial, DejaVu Sans, Segoe UI Symbol, 'Noto Sans Symbols', 'Symbola', sans-serif; padding: 30px; background: #fff; color: #000; }");
 		sb.append(".contract-box { max-width: 850px; margin: auto; }");
 		sb.append(".header, .section, .footer { margin-bottom: 25px; }");
 		sb.append(".table { width: 100%; border-collapse: collapse; }");
@@ -36,12 +36,9 @@ public class ContractHtmlTemplate {
 		sb.append("</style>");
 		sb.append("</head><body><div class='contract-box'>");
 
-		// Header organizado con tabla
-		sb.append("<div class='header'>");
-		sb.append("<table style='width: 100%; border: none;'>");
-		sb.append("<tr>");
+		// Header
+		sb.append("<div class='header'><table style='width: 100%; border: none;'><tr>");
 
-		// Columna izquierda
 		sb.append("<td style='width: 50%; vertical-align: top;'>");
 		if (logoBase64 != null) {
 			sb.append("<img src='data:image/png;base64,").append(logoBase64).append("' class='logo'/><br/>");
@@ -53,16 +50,12 @@ public class ContractHtmlTemplate {
 		sb.append("Lic. #: ").append(safe(company.getLicense())).append("<br/>");
 		sb.append("</td>");
 
-		// Columna derecha
 		sb.append("<td style='width: 50%; text-align: right; vertical-align: top;'>");
-		
 		sb.append("<strong>PO Number:</strong> ").append(po).append("<br/>");
 		sb.append("<strong>Measure Date:</strong> ").append(measureDate);
 		sb.append("</td>");
 
-		sb.append("</tr>");
-		sb.append("</table>");
-		sb.append("</div>");
+		sb.append("</tr></table></div>");
 
 		// Order Info
 		sb.append("<div class='section'>");
@@ -72,40 +65,36 @@ public class ContractHtmlTemplate {
 		sb.append("<tr>");
 		sb.append("<td><strong>Owner #1:</strong> ").append(safe(contract.getOwner1())).append("</td>");
 		sb.append("<td><strong>Email:</strong> ").append(safe(contract.getEmail())).append("</td>");
-		sb.append("<td><strong>House:</strong> ").append(contract.isHouse() ? "☑" : "☐").append("</td>");
+		sb.append("<td>").append(checkboxLine("House:", contract.isHouse())).append("</td>");
+
 		sb.append("</tr>");
 
 		sb.append("<tr>");
 		sb.append("<td><strong>Owner #2:</strong> ").append(safe(contract.getOwner2())).append("</td>");
 		sb.append("<td><strong>Date:</strong> ").append(measureDate).append("</td>");
-		sb.append("<td><strong>Condo:</strong> ").append(contract.isCondo() ? "☑" : "☐").append("</td>");
+		sb.append("<td>").append(checkboxLine("Condo:", contract.isCondo())).append("</td>");
 		sb.append("</tr>");
 
 		sb.append("<tr>");
 		sb.append("<td><strong>Address:</strong> ").append(safe(contract.getAddress())).append("</td>");
 		sb.append("<td><strong>Home Phone:</strong> ").append(safe(contract.getHomePhone())).append("</td>");
-		sb.append("<td><strong>MFH:</strong> ").append(contract.isMFH() ? "☑" : "☐").append("</td>");
+		sb.append("<td>").append(checkboxLine("MFH:", contract.isMFH())).append("</td>");
 		sb.append("</tr>");
 
 		sb.append("<tr>");
-		sb.append("<td><strong>City:</strong> ").append(safe(contract.getCity()))
-			.append(" <strong>State:</strong> ").append(safe(contract.getState()))
-			.append(" <strong>Zip:</strong> ").append(safe(contract.getZip())).append("</td>");
+		sb.append("<td><strong>City:</strong> ").append(safe(contract.getCity())).append(" <strong>State:</strong> ")
+				.append(safe(contract.getState())).append(" <strong>Zip:</strong> ").append(safe(contract.getZip()))
+				.append("</td>");
 		sb.append("<td><strong>Other Phone:</strong> ").append(safe(contract.getOtherPhone())).append("</td>");
-		sb.append("<td><strong>Commercial:</strong> ").append(contract.isCommercial() ? "☑" : "☐").append("</td>");
+		sb.append("<td>").append(checkboxLine("Commercial:", contract.isCommercial())).append("</td>");
 		sb.append("</tr>");
 
 		sb.append("<tr>");
-		sb.append("<td>").append("</td>");
-		sb.append("<td>").append("</td>");
-		sb.append("<td>").append("</td>");
-		sb.append("<td colspan='5' style='text-align: right; padding-top: 10px;'><strong>HOA:</strong> ")
-			.append(contract.isHasHOA() ? "☑ Yes" : "☐ No").append("</td>");
+		sb.append("<td colspan='2'></td>");
+		sb.append("<td>").append(checkboxLine("HOA:", contract.isHasHOA())).append("</td>");
 		sb.append("</tr>");
 
-		sb.append("</table>");
-		sb.append("</div>");
-
+		sb.append("</table></div>");
 
 		// Description of Work
 		sb.append("<div class='section'><h3>General Description of Work, Materials or Labor</h3><ul>");
@@ -119,26 +108,23 @@ public class ContractHtmlTemplate {
 		// Clauses and Cost
 		sb.append("<div class='section' style='display: flex; gap: 5%;'>");
 
-		sb.append("<div class='clause-box'>");
-		sb.append("<h4>Clauses</h4>");
+		sb.append("<div class='clause-box'><h4>Clauses</h4>");
 		sb.append(
 				"<p>The contractor agrees to perform all work specified above according to standard practices. Any changes must be agreed in writing.</p>");
 		sb.append(
 				"<p>All materials shall be of standard quality unless otherwise stated. Payment must be made as agreed upon and is subject to approval of the work completed.</p>");
 		sb.append("</div>");
 
-		sb.append("<div class='cost-box'>");
-		sb.append("<h4>Project Cost</h4>");
-		sb.append("<table class='table'>");
+		sb.append("<div class='cost-box'><h4>Project Cost</h4><table class='table'>");
 		sb.append("<tr><td>Total Price</td><td>$").append(format(contract.getTotalPrice())).append("</td></tr>");
 		sb.append("<tr><td>Deposit</td><td>$").append(format(contract.getDeposit())).append("</td></tr>");
 		sb.append("<tr><td>Balance Due</td><td>$").append(format(contract.getBalanceDue())).append("</td></tr>");
 		sb.append("<tr><td>Amount Financed</td><td>$").append(format(contract.getAmountFinanced()))
 				.append("</td></tr>");
 		sb.append("<tr><td>Card Info</td><td>").append(safe(contract.getCardType())).append(" ")
-				.append(safe(contract.getCardNumber())).append("<br/>").append("Exp: ")
-				.append(safe(contract.getCardExp())).append(" / CVC: ").append(safe(contract.getCardCVC()))
-				.append("<br/>ZIP: ").append(safe(contract.getCardZip())).append("</td></tr>");
+				.append(safe(contract.getCardNumber())).append("<br/>Exp: ").append(safe(contract.getCardExp()))
+				.append(" / CVC: ").append(safe(contract.getCardCVC())).append("<br/>ZIP: ")
+				.append(safe(contract.getCardZip())).append("</td></tr>");
 		sb.append("</table></div></div>");
 
 		// Right to Cancel
@@ -180,6 +166,16 @@ public class ContractHtmlTemplate {
 
 		sb.append("</div></body></html>");
 		return sb.toString();
+	}
+
+	// Auxiliares
+
+	private static String checkboxLine(String label, boolean checked) {
+		return "<table style='border: none; width: 100%;'><tr>" + "<td style='border: none;'><strong>" + label
+				+ "</strong></td>"
+				+ "<td style='border: 1px solid #000; width: 16px; height: 16px; text-align: center; font-size: 14px;"
+				+ " font-family: Arial, DejaVu Sans, Segoe UI Symbol, sans-serif;'>" + (checked ? "&#10003;" : "")
+				+ "</td>" + "</tr></table>";
 	}
 
 	private static String loadAttachmentImage(Contract contract, ContractAttachment att) {
