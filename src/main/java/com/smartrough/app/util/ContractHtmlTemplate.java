@@ -282,11 +282,12 @@ public class ContractHtmlTemplate {
 	// Auxiliares
 
 	private static String checkboxLine(String label, boolean checked) {
-		return "<table style='border: none; width: 100%;'><tr>" + "<td style='border: none;'><strong>" + label
-				+ "</strong></td>"
-				+ "<td style='border: 1px solid #000; width: 16px; height: 16px; text-align: center; font-size: 14px;"
-				+ " font-family: Arial, DejaVu Sans, Segoe UI Symbol, sans-serif;'>" + (checked ? "&#10003;" : "")
-				+ "</td>" + "</tr></table>";
+		String symbol = checked ? "•" : ""; // punto negro compatible
+		return "<table style='border: none; width: 100%;'><tr>"
+				+ "<td style='border: none; vertical-align: middle;'><strong>" + label + "</strong></td>"
+				+ "<td style='border: 1px solid #000; width: 18px; height: 18px; "
+				+ "text-align: center; vertical-align: middle; font-size: 20px; " + // tamaño más grande
+				"font-family: Arial, sans-serif; line-height: 18px;'>" + symbol + "</td></tr></table>";
 	}
 
 	private static String format(Double d) {
