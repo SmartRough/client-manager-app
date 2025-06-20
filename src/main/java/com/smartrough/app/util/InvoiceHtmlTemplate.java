@@ -42,21 +42,45 @@ public class InvoiceHtmlTemplate {
 		sb.append("<body>");
 		sb.append("<div class='invoice-box'>");
 
-		sb.append("<div class='header'>");
+		sb.append("<div class='header' style='margin-bottom: 0;'>");
+		sb.append("<table style='width: 100%; border-collapse: collapse; border: none;'>");
+
+		// Fila 1: logo e invoice
+		sb.append("<tr style='vertical-align: top; border: none;'>");
+		sb.append("<td style='width: 50%; padding-bottom: 5px; border: none;'>");
 		sb.append("<img src='data:image/png;base64,").append(logoBase64)
 				.append("' alt='Company Logo' style='max-height:60px;'/>");
+		sb.append("</td>");
+		sb.append("<td style='width: 50%; text-align: right; border: none;'>");
+		sb.append("<h1 style='margin: 0; font-size: 26px; color: #0056b3;'>Invoice</h1>");
+		sb.append("</td>");
+		sb.append("</tr>");
 
-		sb.append("<h1>Invoice</h1>");
+		// Fila 2: información empresa e info factura
+		sb.append("<tr style='vertical-align: top; font-size: 14px; border: none;'>");
+		sb.append("<td style='padding-top: 0; border: none;'>");
+		sb.append("<strong>").append(company.getName()).append("</strong><br/>");
+		sb.append(formatAddress(companyAddress)).append("<br/>");
+		sb.append(companyAddress.getCity()).append(", ").append(companyAddress.getState()).append(" ")
+				.append(companyAddress.getZipCode()).append("<br/>");
+		sb.append(company.getEmail()).append("<br/>");
+		sb.append(company.getPhone());
+		sb.append("</td>");
+		sb.append("<td style='text-align: right; padding-top: 0; border: none;'>");
+		sb.append("<p style='margin: 0;'>Invoice #: ").append(invoice.getInvoiceNumber()).append("</p>");
+		sb.append("<p style='margin: 0;'>Date: ").append(invoice.getDate() != null ? invoice.getDate() : "")
+				.append("</p>");
+		sb.append("</td>");
+		sb.append("</tr>");
+
+		sb.append("</table>");
 		sb.append("</div>");
+
+		// Separador real (línea negra discreta)
+		sb.append("<div style='border-bottom: 1px solid #000; margin: 10px 0 20px 0;'></div>");
 
 		sb.append("<div class='info'>");
-		sb.append("<div>");
-		sb.append("<div class='section-title'>From:</div>");
-		sb.append("<p><strong>").append(company.getName()).append("</strong><br/>")
-				.append(formatAddress(companyAddress)).append("<br/>").append(company.getEmail()).append("<br/>")
-				.append(company.getPhone()).append("</p>");
-		sb.append("</div>");
-		sb.append("<div>");
+		sb.append("<div style='width: 100%;'>");
 		sb.append("<div class='section-title'>Bill To:</div>");
 		sb.append("<p><strong>").append(customer.getName()).append("</strong><br/>")
 				.append(formatAddress(customerAddress)).append("<br/>").append(customer.getEmail()).append("<br/>")
