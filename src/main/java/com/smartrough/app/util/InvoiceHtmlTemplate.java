@@ -22,9 +22,9 @@ public class InvoiceHtmlTemplate {
 		sb.append("<title>Invoice</title>");
 		sb.append("<style>");
 		sb.append(
-				"body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px; color: #333; background-color: #f8f9fa; }");
-		sb.append(
-				".invoice-box { max-width: 800px; margin: auto; padding: 30px; background: #fff; border: 1px solid #e3e3e3; box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); }");
+				"body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px; color: #000; background-color: #ffffff; }");
+		sb.append(".invoice-box { max-width: 800px; margin: auto; padding: 30px; background: #ffffff; }");
+
 		sb.append(
 				".header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }");
 		sb.append(".header img { max-height: 60px; }");
@@ -79,13 +79,16 @@ public class InvoiceHtmlTemplate {
 		// Separador real (línea negra discreta)
 		sb.append("<div style='border-bottom: 1px solid #000; margin: 10px 0 20px 0;'></div>");
 
-		sb.append("<div class='info'>");
-		sb.append("<div style='width: 100%;'>");
-		sb.append("<div class='section-title'>Bill To:</div>");
-		sb.append("<p><strong>").append(customer.getName()).append("</strong><br/>")
-				.append(formatAddress(customerAddress)).append("<br/>").append(customer.getEmail()).append("<br/>")
-				.append(customer.getPhone()).append("</p>");
-		sb.append("</div>");
+		sb.append("<div style='width: 100%; text-align: right; margin-bottom: 30px;'>");
+		sb.append("<div style='font-weight: bold; color: #0056b3; margin-bottom: 8px;'>Bill To:</div>");
+		sb.append("<p style='margin: 0;'>");
+		sb.append("<strong>").append(customer.getName()).append("</strong><br/>");
+		sb.append(customerAddress.getStreet()).append("<br/>");
+		sb.append(customerAddress.getCity()).append(", ").append(customerAddress.getState()).append(" ")
+				.append(customerAddress.getZipCode()).append("<br/>");
+		sb.append(customer.getEmail()).append("<br/>");
+		sb.append(customer.getPhone());
+		sb.append("</p>");
 		sb.append("</div>");
 
 		sb.append("<table>");
