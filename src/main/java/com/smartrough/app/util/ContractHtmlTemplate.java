@@ -58,7 +58,7 @@ public class ContractHtmlTemplate {
 		sb.append("</tr></table></div>");
 
 		// Order Info
-		sb.append("<div class='section'>");
+		sb.append("<div class='section' style='page-break-inside: avoid;'>");
 		sb.append("<h3 style='text-align: center;'>ORDER FORM / SALES AGREEMENT</h3>");
 		sb.append("<table style='width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.6;'>");
 
@@ -108,7 +108,7 @@ public class ContractHtmlTemplate {
 		sb.append("</table></div>");
 
 		// Description of Work
-		sb.append("<div class='section'>");
+		sb.append("<div class='section' style='page-break-inside: avoid;'>");
 		sb.append("<h3 style='text-align: center;'>General Description of Work, Materials or Labor</h3>");
 		sb.append("<p style='text-align: center; font-size: 13px; margin-top: -10px; margin-bottom: 20px;'>");
 		sb.append(
@@ -170,9 +170,10 @@ public class ContractHtmlTemplate {
 		sb.append("<div style='height: 40px;'></div>");
 
 		// Project Cost centrado
-		sb.append("<div style='text-align: center;'>");
+		sb.append("<div style='text-align: center; page-break-inside: avoid;'>");
 		sb.append("<h4 style='margin-bottom: 10px;'>Project Cost</h4>");
-		sb.append("<table style='margin: 0 auto; border-collapse: collapse; font-size: 14px;'>");
+		sb.append(
+				"<table style='margin: 0 auto; border-collapse: collapse; font-size: 14px; page-break-inside: avoid;'>");
 
 		sb.append(
 				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Total Price</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
@@ -194,7 +195,8 @@ public class ContractHtmlTemplate {
 				.append(safe(contract.getCardExp())).append("</td></tr>");
 
 		sb.append("</table>");
-		sb.append("</div>"); // end centered block
+		sb.append("</div>");
+		// end centered block
 
 		sb.append("</div>"); // end section
 
@@ -277,22 +279,31 @@ public class ContractHtmlTemplate {
 
 		// Attachments
 		if (contract.getAttachments() != null && !contract.getAttachments().isEmpty()) {
-			sb.append("<div class='section'><h4>Annexes</h4>");
+			sb.append("<div class='section' style='page-break-before: always;'>");
+			sb.append("<h4>Annexes</h4>");
+
 			int annexIndex = 1;
+			boolean first = true;
 			for (ContractAttachment a : contract.getAttachments()) {
 				String filename = a.getFullFilename();
 				String ext = a.getExtension().toLowerCase();
+
 				if (ext.equals("jpg") || ext.equals("jpeg") || ext.equals("png")) {
 					String base64 = loadAttachmentImage(contract, a);
 					if (base64 != null) {
+						if (!first) {
+							sb.append("<div style='page-break-before: always;'>");
+						} else {
+							sb.append("<div>");
+							first = false;
+						}
+
 						sb.append("<h5>Annex ").append((char) ('A' + annexIndex - 1)).append(": ").append(filename)
 								.append("</h5>");
 						sb.append("<img src='data:image/").append(ext).append(";base64,").append(base64)
-								.append("' style='max-width:700px;margin-bottom:30px;'/>");
+								.append("' style='max-width:100%; height:auto; margin-bottom:30px;'/>");
+						sb.append("</div>");
 					}
-				} else {
-					sb.append("<p>Annex ").append((char) ('A' + annexIndex - 1)).append(": ").append(filename)
-							.append("</p>");
 				}
 				annexIndex++;
 			}
