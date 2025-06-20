@@ -91,19 +91,49 @@ public class InvoiceHtmlTemplate {
 		sb.append("</p>");
 		sb.append("</div>");
 
-		sb.append("<table>");
+		sb.append("<table style='width: 100%; border-collapse: collapse; margin-bottom: 30px;'>");
 		sb.append("<tr><th>Description</th><th>Amount</th></tr>");
+
+		// Ítems
 		for (InvoiceItem item : items) {
 			sb.append("<tr><td>").append(item.getDescription()).append("</td>");
-			sb.append("<td>").append(item.getAmount()).append("</td></tr>");
+			sb.append("<td style='text-align: right;'>$").append(item.getAmount()).append("</td></tr>");
 		}
-		sb.append("<tr class='total-line'><td>Subtotal</td><td>").append(invoice.getSubtotal()).append("</td></tr>");
-		sb.append("<tr class='total-line'><td>Tax</td><td>")
-				.append(invoice.getTaxRate() != null ? invoice.getTaxRate() : "0.00").append("</td></tr>");
-		sb.append("<tr class='total-line'><td>Additional Costs</td><td>")
-				.append(invoice.getAdditionalCosts() != null ? invoice.getAdditionalCosts() : "0.00")
+
+		// Agregar filas vacías para dar espacio visual
+		int emptyRows = Math.max(0, 3 - items.size());
+		for (int i = 0; i < emptyRows; i++) {
+			sb.append("<tr><td style='height: 25px;'>&#160;</td><td></td></tr>");
+		}
+
+		// Totales — siempre se muestran, pero el valor solo si > 0
+		sb.append("<tr><td style='text-align: right; font-weight: bold; border: none;'>Subtotal</td>");
+		sb.append("<td style='text-align: right; border: none;'>")
+				.append(invoice.getSubtotal() != null && invoice.getSubtotal().doubleValue() > 0
+						? "$" + invoice.getSubtotal()
+						: "")
 				.append("</td></tr>");
-		sb.append("<tr class='total-line'><td>Total</td><td>").append(invoice.getTotal()).append("</td></tr>");
+
+		sb.append("<tr><td style='text-align: right; font-weight: bold; border: none;'>Tax</td>");
+		sb.append("<td style='text-align: right; border: none;'>")
+				.append(invoice.getTaxRate() != null && invoice.getTaxRate().doubleValue() > 0
+						? "$" + invoice.getTaxRate()
+						: "")
+				.append("</td></tr>");
+
+		sb.append("<tr><td style='text-align: right; font-weight: bold; border: none;'>Additional Costs</td>");
+		sb.append("<td style='text-align: right; border: none;'>")
+				.append(invoice.getAdditionalCosts() != null && invoice.getAdditionalCosts().doubleValue() > 0
+						? "$" + invoice.getAdditionalCosts()
+						: "")
+				.append("</td></tr>");
+
+		// Total final destacado
+		sb.append("<tr style='background-color: #0056b3; color: white;'>");
+		sb.append("<td style='text-align: right; font-weight: bold;'>Total</td>");
+		sb.append("<td style='text-align: right; font-weight: bold;'>$").append(invoice.getTotal())
+				.append("</td></tr>");
+
 		sb.append("</table>");
 
 		sb.append("<div class='section-title'>Notes:</div>");
