@@ -19,7 +19,7 @@ public class ContractHtmlTemplate {
 		String startDate = contract.getStartDate() != null ? contract.getStartDate().format(df) : "";
 		String endDate = contract.getEndDate() != null ? contract.getEndDate().format(df) : "";
 
-		String logoBase64 = FileSaveHelper.encodeFileToBase64("logo.png");
+		String logoBase64 = FileSaveHelper.encodeImageToBase64("/img/logo_gcs.png");
 
 		sb.append("<!DOCTYPE html><html><head><meta charset='UTF-8'/>");
 		sb.append("<style>");
@@ -32,7 +32,7 @@ public class ContractHtmlTemplate {
 		sb.append(".signatures td { padding: 40px 10px 10px; text-align: center; }");
 		sb.append(".clause-box { width: 65%; }");
 		sb.append(".cost-box { width: 30%; }");
-		sb.append("img.logo { height: 60px; }");
+		sb.append("img.logo { height: 80px; }");
 		sb.append("</style>");
 		sb.append("</head><body><div class='contract-box'>");
 
@@ -261,8 +261,8 @@ public class ContractHtmlTemplate {
 
 		// Licencia del contratista y Owner 2
 		sb.append("<tr>");
-		sb.append("<td style='padding-bottom: 10px; text-align: center;'> State Certified General Contractor - ").append(safe(company.getLicense()))
-				.append("</td>");
+		sb.append("<td style='padding-bottom: 10px; text-align: center;'> State Certified General Contractor - ")
+				.append(safe(company.getLicense())).append("</td>");
 		sb.append("<td style='text-align: right;'>____________________________</td>");
 		sb.append("</tr>");
 
