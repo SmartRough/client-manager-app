@@ -49,7 +49,7 @@ public class InvoiceHtmlTemplate {
 		sb.append("<tr style='vertical-align: top; border: none;'>");
 		sb.append("<td style='width: 50%; padding-bottom: 5px; border: none;'>");
 		sb.append("<img src='data:image/png;base64,").append(logoBase64)
-				.append("' alt='Company Logo' style='max-height:60px;'/>");
+				.append("' alt='Company Logo' style='max-height:80px;'/>");
 		sb.append("</td>");
 		sb.append("<td style='width: 50%; text-align: right; border: none;'>");
 		sb.append("<h1 style='margin: 0; font-size: 26px; color: #0056b3;'>Invoice</h1>");
@@ -136,10 +136,17 @@ public class InvoiceHtmlTemplate {
 
 		sb.append("</table>");
 
-		sb.append("<div class='section-title'>Notes:</div>");
-		sb.append("<p>").append(invoice.getNotes() != null ? invoice.getNotes() : "").append("</p>");
+		// Mostrar notas solo si existen y no están vacías
+		if (invoice.getNotes() != null && !invoice.getNotes().trim().isEmpty()) {
+			sb.append("<div class='section-title'>Notes:</div>");
+			sb.append("<p>").append(invoice.getNotes()).append("</p>");
+		}
 
-		sb.append("<div class='footer'>Thank you for your business</div>");
+		// Footer agradecimiento estilizado
+		sb.append("<div style=\"" + "text-align: center; " + "font-size: 24px; " + "font-family: 'Georgia', serif; "
+				+ "font-weight: bold; " + "margin-top: 60px; " + "color: #222;\">");
+		sb.append("Thank you for your business");
+		sb.append("</div>");
 
 		sb.append("</div>");
 		sb.append("</body>");
