@@ -30,36 +30,13 @@ public class ContractExporter {
 			// 2. Obtener los anexos PDF reales
 			List<File> attachments = getPdfAttachments(contract);
 
-			// 3. Unir contrato + anexos PDF
-			PdfMerger.mergeWithAttachments(basePdf, attachments, file);
+			// 3. Unir contrato + anexos PDF directamente sin convertirlos en imágenes
+			PdfMerger.mergePdfFiles(basePdf, attachments, file);
 
 			showSuccess("PDF exported to: " + file.getAbsolutePath());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	public static File createAnnexTitlePage(String title) throws IOException {
-		File temp = File.createTempFile("annex_title_", ".pdf");
-		temp.deleteOnExit();
-
-		try (org.apache.pdfbox.pdmodel.PDDocument doc = new org.apache.pdfbox.pdmodel.PDDocument()) {
-			org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage();
-			doc.addPage(page);
-
-			org.apache.pdfbox.pdmodel.PDPageContentStream stream = new org.apache.pdfbox.pdmodel.PDPageContentStream(
-					doc, page);
-			stream.beginText();
-			stream.setFont(org.apache.pdfbox.pdmodel.font.PDType1Font.HELVETICA_BOLD, 20);
-			stream.newLineAtOffset(100, 700);
-			stream.showText(title);
-			stream.endText();
-			stream.close();
-
-			doc.save(temp);
-		}
-
-		return temp;
 	}
 
 	public static File generatePdfTemp(Contract contract) throws Exception {
@@ -81,19 +58,30 @@ public class ContractExporter {
 		List<File> pdfs = new java.util.ArrayList<>();
 
 		if (contract.getAttachments() != null) {
+			int index = 0;
 			for (var att : contract.getAttachments()) {
-				if ("pdf".equalsIgnoreCase(att.getExtension())) {
-					String folder = contract.getMeasureDate() != null ? contract.getMeasureDate().toString()
-							: "unknown";
-					String poSafe = contract.getPoNumber() != null
-							? contract.getPoNumber().replaceAll("[^a-zA-Z0-9]", "_")
-							: "no_po";
-					File path = new File(System.getProperty("user.dir"),
-							"contracts/" + folder + "/" + poSafe + "/" + att.getFullFilename());
+				String ext = att.getExtension().toLowerCase();
+				String folder = contract.getMeasureDate() != null ? contract.getMeasureDate().toString() : "unknown";
+				String poSafe = contract.getPoNumber() != null ? contract.getPoNumber().replaceAll("[^a-zA-Z0-9]", "_")
+						: "no_po";
+				File file = new File(System.getProperty("user.dir"),
+						"contracts/" + folder + "/" + poSafe + "/" + att.getFullFilename());
 
-					if (path.exists()) {
-						pdfs.add(path);
+				if (!file.exists())
+					continue;
+
+				try {
+					if ("pdf".equals(ext)) {
+						pdfs.add(file);
+					} else if (ext.equals("jpg") || ext.equals("jpeg") || ext.equals("png")) {
+						char annexLetter = (char) ('A' + index);
+						String title = "Annex " + annexLetter + ": " + att.getFullFilename();
+						File annexPdf = ImageToAnnexPdfConverter.createAnnexPdf(file, title);
+						pdfs.add(annexPdf);
+						index++;
 					}
+				} catch (IOException ex) {
+					ex.printStackTrace();
 				}
 			}
 		}

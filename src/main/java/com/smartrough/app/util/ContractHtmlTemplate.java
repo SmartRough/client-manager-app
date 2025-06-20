@@ -2,10 +2,8 @@ package com.smartrough.app.util;
 
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Contract;
-import com.smartrough.app.model.ContractAttachment;
 import com.smartrough.app.model.ContractItem;
 
-import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 
 public class ContractHtmlTemplate {
@@ -277,39 +275,6 @@ public class ContractHtmlTemplate {
 		sb.append("</table>");
 		sb.append("</div>");
 
-		// Attachments
-		if (contract.getAttachments() != null && !contract.getAttachments().isEmpty()) {
-			sb.append("<div class='section' style='page-break-before: always;'>");
-			sb.append("<h4>Annexes</h4>");
-
-			int annexIndex = 1;
-			boolean first = true;
-			for (ContractAttachment a : contract.getAttachments()) {
-				String filename = a.getFullFilename();
-				String ext = a.getExtension().toLowerCase();
-
-				if (ext.equals("jpg") || ext.equals("jpeg") || ext.equals("png")) {
-					String base64 = loadAttachmentImage(contract, a);
-					if (base64 != null) {
-						if (!first) {
-							sb.append("<div style='page-break-before: always;'>");
-						} else {
-							sb.append("<div>");
-							first = false;
-						}
-
-						sb.append("<h5>Annex ").append((char) ('A' + annexIndex - 1)).append(": ").append(filename)
-								.append("</h5>");
-						sb.append("<img src='data:image/").append(ext).append(";base64,").append(base64)
-								.append("' style='max-width:100%; height:auto; margin-bottom:30px;'/>");
-						sb.append("</div>");
-					}
-				}
-				annexIndex++;
-			}
-			sb.append("</div>");
-		}
-
 		sb.append("</div></body></html>");
 		return sb.toString();
 	}
@@ -322,22 +287,6 @@ public class ContractHtmlTemplate {
 				+ "<td style='border: 1px solid #000; width: 16px; height: 16px; text-align: center; font-size: 14px;"
 				+ " font-family: Arial, DejaVu Sans, Segoe UI Symbol, sans-serif;'>" + (checked ? "&#10003;" : "")
 				+ "</td>" + "</tr></table>";
-	}
-
-	private static String loadAttachmentImage(Contract contract, ContractAttachment att) {
-		try {
-			String folder = contract.getMeasureDate() != null ? contract.getMeasureDate().toString() : "unknown";
-			String poSafe = contract.getPoNumber() != null ? contract.getPoNumber().replaceAll("[^a-zA-Z0-9]", "_")
-					: "no_po";
-			Path path = Path.of(System.getProperty("user.dir"), "contracts", folder, poSafe, att.getFullFilename());
-
-			if (!path.toFile().exists())
-				return null;
-			return FileSaveHelper.encodeFileToBase64(path.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 
 	private static String format(Double d) {
