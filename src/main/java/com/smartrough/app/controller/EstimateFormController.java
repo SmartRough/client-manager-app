@@ -202,6 +202,11 @@ public class EstimateFormController {
 		estimate.setItems(new ArrayList<>(items));
 		estimate.setImageNames(new ArrayList<>(imageNames));
 
+		String oldFolderPath = editing && estimateBeingEdited != null ? getEstimateFolderPath(estimateBeingEdited)
+				: null;
+		String newFolderPath = getEstimateFolderPath(estimate);
+		File newFolder = new File(newFolderPath);
+
 		if (!editing) {
 			long id = EstimateDAO.save(estimate);
 			estimate.setId(id);
@@ -209,7 +214,6 @@ public class EstimateFormController {
 				item.setEstimateId(id);
 				EstimateItemDAO.save(item);
 			}
-			prepareNewEstimate();
 		} else {
 			EstimateDAO.update(estimate);
 			EstimateItemDAO.delete(estimate.getId());
@@ -217,12 +221,22 @@ public class EstimateFormController {
 				item.setEstimateId(estimate.getId());
 				EstimateItemDAO.save(item);
 			}
-			handleCancel();
+
+			File oldFolder = oldFolderPath != null ? new File(oldFolderPath) : null;
+			if (oldFolder != null && !oldFolder.equals(newFolder)) {
+				cleanupOldImages(oldFolder, imageNames);
+				cleanupFolderIfEmpty(oldFolder);
+			}
 		}
+
+		handleCancel(); // volver a lista
 	}
 
 	@FXML
 	private void handleCancel() {
+		if (!editing && !imageNames.isEmpty()) {
+			cleanupTemporaryImages();
+		}
 		ViewNavigator.loadView("EstimateListView.fxml");
 	}
 
@@ -292,6 +306,73 @@ public class EstimateFormController {
 		imageNames.clear();
 		imageNames.addAll(estimate.getImageNames());
 		imageCountLabel.setText(imageNames.size() + " images attached");
+	}
+
+	private String getEstimateFolderPath(Estimate estimate) {
+		if (estimate.getDate() == null || estimate.getCustomerId() == null)
+			return "";
+
+		String folderName = estimate.getDate().toString();
+
+		String customerName = "";
+		for (Company c : customerComboBox.getItems()) {
+			if (c.getId() == estimate.getCustomerId()) {
+				customerName = c.getName().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+				break;
+			}
+		}
+
+		if (customerName.isBlank())
+			return "";
+
+		return System.getProperty("user.dir") + File.separator + "estimates" + File.separator + folderName
+				+ File.separator + customerName;
+	}
+
+	private void cleanupOldImages(File folder, List<String> currentImageNames) {
+		if (folder.exists() && folder.isDirectory()) {
+			File[] files = folder.listFiles();
+			if (files != null) {
+				for (File file : files) {
+					if (!currentImageNames.contains(file.getName())) {
+						boolean deleted = file.delete();
+						System.out.println("Deleted obsolete image: " + file.getName() + " => " + deleted);
+					}
+				}
+			}
+		}
+	}
+
+	private void cleanupTemporaryImages() {
+		if (imageNames.isEmpty() || datePicker.getValue() == null || customerComboBox.getValue() == null)
+			return;
+
+		File folder = new File(getEstimateFolderPath(new Estimate() {
+			{
+				setDate(datePicker.getValue());
+				setCustomerId(customerComboBox.getValue().getId());
+			}
+		}));
+
+		for (String name : imageNames) {
+			File file = new File(folder, name);
+			if (file.exists()) {
+				boolean deleted = file.delete();
+				System.out.println("Deleted temp image: " + file.getName() + " => " + deleted);
+			}
+		}
+
+		cleanupFolderIfEmpty(folder);
+	}
+
+	private void cleanupFolderIfEmpty(File folder) {
+		if (folder.exists() && folder.isDirectory()) {
+			File[] files = folder.listFiles();
+			if (files == null || files.length == 0) {
+				boolean deleted = folder.delete();
+				System.out.println("Deleted empty folder: " + folder.getAbsolutePath() + " => " + deleted);
+			}
+		}
 	}
 
 }
