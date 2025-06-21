@@ -22,8 +22,8 @@ public class InvoiceHtmlTemplate {
 		sb.append("<title>Invoice</title>");
 		sb.append("<style>");
 		sb.append(
-				"body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px; color: #000; background-color: #ffffff; }");
-		sb.append(".invoice-box { max-width: 800px; margin: auto; padding: 30px; background: #ffffff; }");
+				"body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px; color: #000; background-color: #e6f7ff; }");
+		sb.append(".invoice-box { max-width: 800px; margin: auto; padding: 30px; background: #e6f7ff; }");
 
 		sb.append(
 				".header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }");
@@ -34,7 +34,7 @@ public class InvoiceHtmlTemplate {
 		sb.append(".section-title { font-weight: bold; color: #0056b3; margin-bottom: 8px; }");
 		sb.append("table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }");
 		sb.append("th { background-color: #0056b3; color: white; padding: 10px; text-align: left; }");
-		sb.append("td { padding: 10px; border-bottom: 1px solid #e3e3e3; }");
+		sb.append("td { padding: 10px; border-bottom: 1px solid #000; }");
 		sb.append(".total-line td { font-weight: bold; background-color: #f1f1f1; }");
 		sb.append(".footer { text-align: center; font-size: 14px; color: #888; margin-top: 50px; }");
 		sb.append("</style>");
