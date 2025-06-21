@@ -165,11 +165,21 @@ public class InvoiceListController {
 			filteredInvoices.setAll(invoices);
 		} else {
 			String lower = keyword.toLowerCase();
-			filteredInvoices.setAll(invoices.stream()
-					.filter(i -> (i.getInvoiceNumber() != null && i.getInvoiceNumber().toLowerCase().contains(lower))
-							|| (customerNamesCache.containsKey(i.getCustomerId())
-									&& customerNamesCache.get(i.getCustomerId()).toLowerCase().contains(lower)))
-					.collect(Collectors.toList()));
+			filteredInvoices.setAll(invoices.stream().filter(i -> {
+				boolean matchesNumber = i.getInvoiceNumber() != null
+						&& i.getInvoiceNumber().toLowerCase().contains(lower);
+
+				boolean matchesClient = customerNamesCache.containsKey(i.getCustomerId())
+						&& customerNamesCache.get(i.getCustomerId()).toLowerCase().contains(lower);
+
+				boolean matchesTotal = false;
+				if (i.getTotal() != null) {
+					String totalStr = i.getTotal().setScale(2, RoundingMode.HALF_UP).toString();
+					matchesTotal = totalStr.contains(lower) || ("$" + totalStr).contains(lower);
+				}
+
+				return matchesNumber || matchesClient || matchesTotal;
+			}).collect(Collectors.toList()));
 		}
 	}
 
