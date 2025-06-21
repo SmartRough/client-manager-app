@@ -30,7 +30,7 @@ public class EstimateHtmlTemplate {
 		sb.append(".header { display: flex; justify-content: space-between; align-items: center; }");
 		sb.append(".section { margin-top: 20px; }");
 		sb.append(".images { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }");
-		sb.append(".images img { max-width: 150px; border: 1px solid #ccc; padding: 5px; border-radius: 5px; }");
+		sb.append(".images { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }");
 		sb.append("</style>");
 
 		sb.append("</head><body>");
