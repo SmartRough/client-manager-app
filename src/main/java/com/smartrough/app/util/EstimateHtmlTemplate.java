@@ -1,14 +1,18 @@
 package com.smartrough.app.util;
 
+import com.smartrough.app.model.Address;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Estimate;
+import com.smartrough.app.model.EstimateItem;
 
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class EstimateHtmlTemplate {
 
-	public static String generateHtml(Estimate estimate, Company company, Company customer) {
+	public static String generateHtml(Estimate estimate, Company company, Company customer, Address companyAddress,
+			Address customerAddress, List<EstimateItem> items) {
 		StringBuilder sb = new StringBuilder();
 
 		String formattedDate = estimate.getDate() != null
@@ -20,7 +24,7 @@ public class EstimateHtmlTemplate {
 		sb.append("<head><meta charset='UTF-8' />");
 
 		sb.append("<style>");
-		sb.append("body { font-family: 'Segoe UI', sans-serif; padding: 30px; background: #f8f9fa; color: #333; }");
+		sb.append("body { font-family: 'Segoe UI', sans-serif; padding: 30px; background: white; color: #333; }");
 		sb.append(
 				".estimate-box { background: white; padding: 20px; max-width: 800px; margin: auto; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }");
 		sb.append(".header { display: flex; justify-content: space-between; align-items: center; }");
@@ -32,23 +36,57 @@ public class EstimateHtmlTemplate {
 		sb.append("</head><body>");
 		sb.append("<div class='estimate-box'>");
 
-		sb.append("<div class='header'>");
-		sb.append("<h1>Estimate</h1>");
-		sb.append("<div><strong>Date:</strong> ").append(formattedDate).append("</div>");
+		// Header en dos columnas
+		sb.append("<table style='width: 100%; border-collapse: collapse;'>");
+		sb.append("<tr style='vertical-align: top;'>");
+
+		// Columna izquierda: logo + info empresa
+		sb.append("<td style='width: 50%; padding-right: 20px;'>");
+		sb.append("<img src='data:image/png;base64,").append(FileSaveHelper.encodeImageToBase64("/img/logo_gcs.png"))
+				.append("' alt='Company Logo' style='max-height:60px; margin-bottom: 10px;'/><br/>");
+		sb.append("<strong>").append(company.getName()).append("</strong><br/>");
+		sb.append("Representative: ").append(company.getRepresentative()).append("<br/>");
+		sb.append(company.getEmail()).append("<br/>");
+		sb.append(company.getPhone());
+		sb.append("</td>");
+
+		// Columna derecha: título y fecha
+		sb.append("<td style='width: 50%; text-align: right;'>");
+		sb.append("<h1 style='margin: 0; font-size: 28px; color: #0056b3;'>Estimate</h1>");
+		sb.append("<p style='margin: 5px 0; font-size: 14px;'>Date: ").append(formattedDate).append("</p>");
+		sb.append("</td>");
+
+		sb.append("</tr>");
+		sb.append("</table>");
+
+		// Cliente destino alineado a la derecha
+		sb.append("<div style='width: 100%; text-align: right; margin-top: 20px;'>");
+		sb.append("<div style='font-weight: bold; color: #0056b3;'>Customer:</div>");
+		sb.append("<p style='margin: 0;'>");
+		sb.append(customer.getName()).append("<br/>");
+		sb.append(customerAddress.getStreet()).append("<br/>");
+		sb.append(customerAddress.getCity()).append(", ").append(customerAddress.getState()).append(" ")
+				.append(customerAddress.getZipCode());
+		sb.append("</p>");
 		sb.append("</div>");
 
-		sb.append("<div class='section'><strong>From:</strong><br/>");
-		sb.append(company.getName()).append("<br/>").append(company.getEmail()).append("<br/>")
-				.append(company.getPhone()).append("</div>");
+		// Sección: Descripción centrada
+		sb.append("<div style='text-align: center; font-weight: bold; font-size: 18px; margin-top: 40px;'>");
+		sb.append("Description of Work");
+		sb.append("</div>");
 
-		sb.append("<div class='section'><strong>To:</strong><br/>");
-		sb.append(customer.getName()).append("<br/>").append(customer.getEmail()).append("<br/>")
-				.append(customer.getPhone()).append("</div>");
+		sb.append("<ul style='margin-top: 10px; padding-left: 40px; font-size: 14px;'>");
+		for (EstimateItem item : estimate.getItems()) {
+			if (item.getDescription() != null && !item.getDescription().trim().isEmpty()) {
+				sb.append("<li>").append(escapeHtml(item.getDescription())).append("</li>");
+			}
+		}
+		sb.append("</ul>");
 
-		sb.append("<div class='section'><strong>Job Description:</strong><br/>");
-		sb.append(escapeHtml(estimate.getJobDescription())).append("</div>");
-
-		sb.append("<div class='section'><strong>Total:</strong> $").append(estimate.getTotal()).append("</div>");
+		// Total
+		sb.append("<div style='text-align: right; font-size: 16px; margin-top: 30px;'>");
+		sb.append("<strong>Total:</strong> $").append(estimate.getTotal());
+		sb.append("</div>");
 
 		if (estimate.getImageNames() != null && !estimate.getImageNames().isEmpty()) {
 			sb.append("<div class='section'><strong>Attached Images:</strong><div class='images'>");
@@ -62,7 +100,8 @@ public class EstimateHtmlTemplate {
 			sb.append("</div></div>");
 		}
 
-		sb.append("<div class='section' style='text-align:center;margin-top:30px;color:#888;'>");
+		sb.append(
+				"<div style='text-align: center; font-size: 18px; font-weight: bold; margin-top: 60px; color: #444;'>");
 		sb.append("Thank you for considering us.");
 		sb.append("</div>");
 
