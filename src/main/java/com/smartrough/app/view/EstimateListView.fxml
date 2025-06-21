@@ -19,7 +19,7 @@
             <tooltip><Tooltip text="Type to filter estimates" /></tooltip>
         </TextField>
 
-        <Button fx:id="btnSendEmail" onAction="#handleSendEmail" prefHeight="30" prefWidth="30" styleClass="icon-button">
+        <Button fx:id="btnSendEmail" onAction="#handleSendEmail" prefHeight="30" prefWidth="30" styleClass="icon-button" visible="false" managed="false">
             <graphic>
                 <ImageView fitHeight="20" fitWidth="20">
                     <image><Image url="@/img/send.png" /></image>

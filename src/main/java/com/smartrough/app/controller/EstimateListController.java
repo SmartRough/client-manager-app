@@ -10,12 +10,10 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 import java.io.File;
 import java.math.RoundingMode;
@@ -133,8 +131,12 @@ public class EstimateListController {
 		} else {
 			String lower = keyword.toLowerCase();
 			filteredEstimates.setAll(estimates.stream().filter(e -> {
-				String name = customerNamesCache.get(e.getCustomerId());
-				return name != null && name.toLowerCase().contains(lower);
+				String name = Optional.ofNullable(customerNamesCache.get(e.getCustomerId())).orElse("");
+				String job = Optional.ofNullable(e.getJobDescription()).orElse("");
+				String total = e.getTotal() != null ? e.getTotal().toPlainString() : "";
+
+				return name.toLowerCase().contains(lower) || job.toLowerCase().contains(lower)
+						|| total.contains(lower.replaceAll("[^0-9.]", ""));
 			}).collect(Collectors.toList()));
 		}
 	}
@@ -152,27 +154,7 @@ public class EstimateListController {
 			return;
 		}
 
-		Dialog<Void> dialog = new Dialog<>();
-		dialog.setTitle("Export Estimate");
-
-		CheckBox exportPdf = new CheckBox("Export as PDF");
-		VBox content = new VBox(10, exportPdf);
-		content.setPadding(new Insets(10));
-		dialog.getDialogPane().setContent(content);
-
-		ButtonType exportBtn = new ButtonType("Export", ButtonBar.ButtonData.OK_DONE);
-		dialog.getDialogPane().getButtonTypes().addAll(exportBtn, ButtonType.CANCEL);
-
-		dialog.setResultConverter(button -> {
-			if (button == exportBtn) {
-				if (exportPdf.isSelected()) {
-					EstimateExporter.exportToPdf(selected);
-				}
-			}
-			return null;
-		});
-
-		dialog.showAndWait();
+		EstimateExporter.exportToPdf(selected);
 	}
 
 	@FXML
