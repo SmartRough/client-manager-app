@@ -52,7 +52,7 @@ public class EstimateHtmlTemplate {
 
 		// Columna derecha: título y fecha
 		sb.append("<td style='width: 50%; text-align: right;'>");
-		sb.append("<h1 style='margin: 0; font-size: 28px; color: #0056b3;'>Estimate</h1>");
+		sb.append("<h1 style='margin: 0; font-size: 28px; color: #0056b3;'>Work Estimate</h1>");
 		sb.append("<p style='margin: 5px 0; font-size: 14px;'>Date: ").append(formattedDate).append("</p>");
 		sb.append("</td>");
 
