@@ -50,7 +50,7 @@ public class InvoiceHtmlTemplate {
 		sb.append("<tr style='vertical-align: top; border: none;'>");
 		sb.append("<td style='width: 50%; padding-bottom: 5px; border: none;'>");
 		sb.append("<img src='data:image/png;base64,").append(logoBase64)
-				.append("' alt='Company Logo' style='max-height:80px;'/>");
+				.append("' alt='Company Logo' style='max-height:100px;'/>");
 		sb.append("</td>");
 		sb.append("<td style='width: 50%; text-align: right; border: none;'>");
 		sb.append("<h1 style='margin: 0; font-size: 26px; color: #0056b3;'>Invoice</h1>");

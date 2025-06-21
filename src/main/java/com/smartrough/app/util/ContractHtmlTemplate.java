@@ -30,7 +30,7 @@ public class ContractHtmlTemplate {
 		sb.append(".signatures td { padding: 40px 10px 10px; text-align: center; }");
 		sb.append(".clause-box { width: 65%; }");
 		sb.append(".cost-box { width: 30%; }");
-		sb.append("img.logo { height: 80px; }");
+		sb.append("img.logo { height: 100px; }");
 		sb.append("</style>");
 		sb.append("</head><body><div class='contract-box'>");
 

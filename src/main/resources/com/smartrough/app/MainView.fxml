@@ -12,11 +12,14 @@
     <!-- 🔝 TOP BAR -->
     <top>
         <HBox fx:id="topBar" styleClass="top-bar">
-            <ImageView fitHeight="40" fitWidth="40">
-                <image>
-                    <Image url="/img/logo_gcs.png" />
-                </image>
-            </ImageView>
+            <StackPane style="-fx-background-color: white; -fx-padding: 5; -fx-background-radius: 5;">
+			    <ImageView fitHeight="40" fitWidth="40">
+			        <image>
+			            <Image url="/img/logo_gcs.png" />
+			        </image>
+			    </ImageView>
+			</StackPane>
+
             <Label text="G Construction Service Inc." styleClass="top-title"/>
         </HBox>
     </top>

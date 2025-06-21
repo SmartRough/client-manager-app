@@ -43,7 +43,7 @@ public class EstimateHtmlTemplate {
 		// Columna izquierda: logo + info empresa
 		sb.append("<td style='width: 50%; padding-right: 20px;'>");
 		sb.append("<img src='data:image/png;base64,").append(FileSaveHelper.encodeImageToBase64("/img/logo_gcs.png"))
-				.append("' alt='Company Logo' style='max-height:60px; margin-bottom: 10px;'/><br/>");
+				.append("' alt='Company Logo' style='max-height:100px;'/><br/>");
 		sb.append("<strong>").append(company.getName()).append("</strong><br/>");
 		sb.append("Representative: ").append(company.getRepresentative()).append("<br/>");
 		sb.append(company.getEmail()).append("<br/>");
