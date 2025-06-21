@@ -198,6 +198,25 @@ public class ContractDAO {
 		}
 	}
 
+	public static boolean existsByPoNumber(String poNumber, Long excludeId) {
+		String sql = "SELECT COUNT(*) FROM Contract WHERE LOWER(TRIM(po_number)) = LOWER(TRIM(?))";
+		if (excludeId != null) {
+			sql += " AND id <> ?";
+		}
+		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setString(1, poNumber);
+			if (excludeId != null)
+				stmt.setLong(2, excludeId);
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
+				return rs.getInt(1) > 0;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	private static Contract mapResultSet(ResultSet rs) throws SQLException {
 		Contract c = new Contract();
 		c.setId(rs.getLong("id"));
@@ -235,7 +254,7 @@ public class ContractDAO {
 			ex.printStackTrace();
 			c.setEndDate(null);
 		}
-		
+
 		c.setOwner1(rs.getString("owner1"));
 		c.setOwner2(rs.getString("owner2"));
 		c.setAddress(rs.getString("address"));

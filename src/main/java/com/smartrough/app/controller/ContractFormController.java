@@ -370,8 +370,23 @@ public class ContractFormController {
 			long id = ContractDAO.save(c);
 			c.setId(id);
 		} else {
+			String oldFolderPath = getContractFolderPath(contractBeingEdited);
 			removeObsoleteAttachments(oldAttachments, attachments);
-			ContractDAO.update(c);
+
+			ContractDAO.update(c); // Ahora sí actualiza en base a los nuevos datos
+
+			String newFolderPath = getContractFolderPath(c);
+
+			// Si la carpeta cambió y ya no contiene archivos, bórrala por completo
+			if (!oldFolderPath.equals(newFolderPath)) {
+				File oldFolder = new File(oldFolderPath);
+				if (oldFolder.exists() && oldFolder.isDirectory()) {
+					File[] files = oldFolder.listFiles();
+					if (files == null || files.length == 0) {
+						oldFolder.delete();
+					}
+				}
+			}
 		}
 
 		copyNewAttachments(c);
@@ -387,6 +402,18 @@ public class ContractFormController {
 	private boolean validateForm() {
 		if (poNumberField.getText().isBlank()) {
 			showAlert("PO Number is required.");
+			return false;
+		}
+
+		String po = poNumberField.getText().trim();
+
+		if (!editing && ContractDAO.existsByPoNumber(po, null)) {
+			showAlert("A contract with this PO Number already exists.");
+			return false;
+		}
+
+		if (editing && ContractDAO.existsByPoNumber(po, contractBeingEdited.getId())) {
+			showAlert("Another contract already uses this PO Number.");
 			return false;
 		}
 
@@ -457,6 +484,15 @@ public class ContractFormController {
 		}
 
 		filesToAdd.clear();
+	}
+
+	private String getContractFolderPath(Contract contract) {
+		if (contract.getMeasureDate() == null || contract.getPoNumber() == null)
+			return "";
+		String folderName = contract.getMeasureDate().toString();
+		String poNumber = contract.getPoNumber().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+		return System.getProperty("user.dir") + File.separator + "contracts" + File.separator + folderName
+				+ File.separator + poNumber;
 	}
 
 }

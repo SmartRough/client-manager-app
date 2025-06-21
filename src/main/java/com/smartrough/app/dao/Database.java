@@ -104,7 +104,7 @@ public class Database {
 		String sqlContract = """
 					CREATE TABLE IF NOT EXISTS Contract (
 						id INTEGER PRIMARY KEY AUTOINCREMENT,
-						po_number TEXT,
+						po_number TEXT UNIQUE,
 						measure_date DATE,
 						startDate DATE,
 						endDate DATE,
