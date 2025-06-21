@@ -9,6 +9,10 @@ import java.util.List;
 public class InvoiceDAO {
 
 	public static long save(Invoice invoice) {
+		if (existsInvoiceNumber(invoice.getInvoiceNumber())) {
+			throw new IllegalArgumentException("Invoice number already exists.");
+		}
+
 		String[] columns = { "invoice_number", "date", "company_id", "customer_id", "subtotal", "tax_rate",
 				"additional_costs", "total", "notes" };
 
@@ -78,6 +82,20 @@ public class InvoiceDAO {
 		}
 	}
 
+	public static boolean existsInvoiceNumber(String invoiceNumber) {
+		String sql = "SELECT COUNT(*) FROM Invoice WHERE invoice_number = ?";
+		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setString(1, invoiceNumber);
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
+				return rs.getInt(1) > 0;
+			}
+		} catch (SQLException e) {
+			System.err.println("Error checking invoice number: " + e.getMessage());
+		}
+		return false;
+	}
+
 	public static boolean delete(long id) {
 		String sql = "DELETE FROM Invoice WHERE id=?";
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -90,15 +108,15 @@ public class InvoiceDAO {
 	}
 
 	public static long findLastInvoiceNumber() {
-		String sql = "SELECT invoice_number FROM Invoice ORDER BY id DESC LIMIT 1";
+		String sql = "SELECT MAX(CAST(invoice_number AS INTEGER)) AS max_number FROM Invoice";
 		try (Connection conn = Database.connect();
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery()) {
 			if (rs.next()) {
-				String last = rs.getString("invoice_number");
-				return Long.parseLong(last);
+				return rs.getLong("max_number");
 			}
-		} catch (Exception ignored) {
+		} catch (Exception e) {
+			System.err.println("Error retrieving max invoice number: " + e.getMessage());
 		}
 		return 0;
 	}

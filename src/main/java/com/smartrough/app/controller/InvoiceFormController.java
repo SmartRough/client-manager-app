@@ -6,16 +6,13 @@ import com.smartrough.app.dao.InvoiceItemDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Invoice;
 import com.smartrough.app.model.InvoiceItem;
-import com.smartrough.app.util.InvoiceExporter;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.VBox;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -276,7 +273,6 @@ public class InvoiceFormController {
 				InvoiceItemDAO.save(item);
 			}
 
-			showExportDialog(invoice);
 			prepareNewInvoice(); // limpiar formulario
 
 		} else {
@@ -289,7 +285,6 @@ public class InvoiceFormController {
 				InvoiceItemDAO.save(item);
 			}
 
-			showExportDialog(invoice);
 			handleCancel(); // volver al listado
 		}
 	}
@@ -327,36 +322,13 @@ public class InvoiceFormController {
 		}
 	}
 
-	private void showExportDialog(Invoice invoice) {
-		Dialog<Void> dialog = new Dialog<>();
-		dialog.setTitle("Export Invoice");
-
-		CheckBox exportPdf = new CheckBox("Export as PDF");
-		CheckBox exportWord = new CheckBox("Export as Word");
-
-		VBox content = new VBox(10, exportPdf, exportWord);
-		content.setPadding(new Insets(10));
-		dialog.getDialogPane().setContent(content);
-
-		ButtonType exportBtn = new ButtonType("Export", ButtonBar.ButtonData.OK_DONE);
-		dialog.getDialogPane().getButtonTypes().addAll(exportBtn, ButtonType.CANCEL);
-
-		dialog.setResultConverter(button -> {
-			if (button == exportBtn) {
-				if (exportPdf.isSelected())
-					InvoiceExporter.exportToPdf(invoice);
-				if (exportWord.isSelected())
-					InvoiceExporter.exportToWord(invoice);
-			}
-			return null;
-		});
-
-		dialog.showAndWait();
-	}
-
 	private boolean validateForm() {
 		if (invoiceNumberField.getText().isBlank()) {
 			showAlert("Invoice number is required.");
+			return false;
+		}
+		if (InvoiceDAO.existsInvoiceNumber(invoiceNumberField.getText()) && invoiceBeingEdited == null) {
+			showAlert("Invoice number already exists.");
 			return false;
 		}
 		if (datePicker.getValue() == null) {
@@ -371,6 +343,24 @@ public class InvoiceFormController {
 			showAlert("Please select a customer.");
 			return false;
 		}
+		if (items.isEmpty()) {
+			showAlert("Please add at least one item.");
+			return false;
+		}
+
+		boolean hasAmount = items.stream()
+				.anyMatch(item -> item.getAmount() != null && item.getAmount().compareTo(BigDecimal.ZERO) > 0);
+		if (!hasAmount) {
+			showAlert("At least one item must have a valid amount.");
+			return false;
+		}
+
+		if (totalField.getText().isBlank() || new BigDecimal(totalField.getText()).compareTo(BigDecimal.ZERO) <= 0) {
+			showAlert("Total cannot be blank or zero.");
+			return false;
+		}
+
 		return true;
 	}
+
 }

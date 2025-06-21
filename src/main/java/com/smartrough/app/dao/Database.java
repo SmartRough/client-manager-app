@@ -54,7 +54,7 @@ public class Database {
 		String sqlInvoice = """
 					CREATE TABLE IF NOT EXISTS Invoice (
 						id INTEGER PRIMARY KEY AUTOINCREMENT,
-						invoice_number TEXT NOT NULL,
+						invoice_number TEXT NOT NULL UNIQUE,
 						date DATE NOT NULL,
 						company_id INTEGER NOT NULL,
 						customer_id INTEGER NOT NULL,
