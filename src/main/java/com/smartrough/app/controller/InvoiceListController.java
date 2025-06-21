@@ -10,13 +10,11 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 import java.io.File;
 import java.math.RoundingMode;
@@ -220,31 +218,7 @@ public class InvoiceListController {
 			return;
 		}
 
-		// Mostrar diálogo de elección
-		Dialog<Void> dialog = new Dialog<>();
-		dialog.setTitle("Export Invoice");
-
-		CheckBox exportPdf = new CheckBox("Export as PDF");
-		CheckBox exportWord = new CheckBox("Export as Word");
-
-		VBox content = new VBox(10, exportPdf, exportWord);
-		content.setPadding(new Insets(10));
-		dialog.getDialogPane().setContent(content);
-
-		ButtonType exportBtn = new ButtonType("Export", ButtonBar.ButtonData.OK_DONE);
-		dialog.getDialogPane().getButtonTypes().addAll(exportBtn, ButtonType.CANCEL);
-
-		dialog.setResultConverter(button -> {
-			if (button == exportBtn) {
-				if (exportPdf.isSelected())
-					InvoiceExporter.exportToPdf(selected);
-				if (exportWord.isSelected())
-					InvoiceExporter.exportToWord(selected);
-			}
-			return null;
-		});
-
-		dialog.showAndWait();
+		InvoiceExporter.exportToPdf(selected);
 	}
 
 	private void handleEdit(Invoice invoice) {
