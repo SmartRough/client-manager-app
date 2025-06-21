@@ -23,8 +23,8 @@ public class InvoiceHtmlTemplate {
 		sb.append("<style>");
 		sb.append("@page { size: A4; margin: 0; }");
 		sb.append(
-				"body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px; color: #000; background-color: #e6f7ff; }");
-		sb.append(".invoice-box { max-width: 800px; margin: auto; padding: 30px; background: #e6f7ff; }");
+				"body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 40px; color: #000; background-color: #f5fbff; }");
+		sb.append(".invoice-box { max-width: 800px; margin: auto; padding: 30px; background: #f5fbff; }");
 
 		sb.append(
 				".header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }");
