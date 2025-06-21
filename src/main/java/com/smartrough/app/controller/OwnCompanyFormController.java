@@ -85,10 +85,4 @@ public class OwnCompanyFormController {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION, "Company information saved successfully.");
 		alert.showAndWait();
 	}
-
-	@FXML
-	private void handleCancel() {
-		Alert alert = new Alert(Alert.AlertType.INFORMATION, "You can return using the left menu.");
-		alert.showAndWait();
-	}
 }

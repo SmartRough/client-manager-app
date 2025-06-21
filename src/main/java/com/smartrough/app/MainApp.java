@@ -24,7 +24,7 @@ public class MainApp extends Application {
 		ViewNavigator.setMainLayout(rootLayout);
 
 		// Carga por defecto el listado de compañías
-		ViewNavigator.loadView("CompanyListView.fxml");
+		ViewNavigator.loadView("InvoiceListView.fxml");
 
 		// Configura y muestra
 		stage.setScene(new Scene(rootLayout, 800, 600));

@@ -17,7 +17,7 @@ public class MainController {
 	@FXML
 	public void initialize() {
 		ViewNavigator.setMainLayout(root);
-		ViewNavigator.loadView("CompanyListView.fxml");
+		ViewNavigator.loadView("InvoiceListView.fxml");
 	}
 	
 	@FXML

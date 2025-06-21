@@ -24,7 +24,6 @@
 
     <!-- Botones -->
     <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Button text="Cancel" onAction="#handleCancel" styleClass="form-button" />
         <Button text="Save" onAction="#handleSave" styleClass="form-button" />
     </HBox>
 </VBox>

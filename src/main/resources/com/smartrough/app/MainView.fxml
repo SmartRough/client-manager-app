@@ -26,23 +26,53 @@
 
     <!-- 📋 LATERAL MENU -->
     <left>
-        <VBox spacing="10" styleClass="sidebar">   
-    <Button text="Customers" onAction="#showCompanyList" graphicTextGap="10" styleClass="sidebar-button">
-        <graphic><Label text="📋" /></graphic>
-    </Button>
-    <Button text="Invoices" onAction="#showInvoices" styleClass="sidebar-button">
-        <graphic><Label text="💰" /></graphic>
-    </Button>
-    <Button text="Contracts" onAction="#showContracts" styleClass="sidebar-button">
-        <graphic><Label text="📄" /></graphic>
-    </Button>    
-    <Button text="Estimates" onAction="#showEstimates" styleClass="sidebar-button">
-        <graphic><Label text="📝" /></graphic>
-    </Button>
-    <Button text="My Company" onAction="#showOwnCompanyForm" styleClass="sidebar-button">
-    	<graphic><Label text="🏢" /></graphic>
-	</Button>
-</VBox>
+        <VBox spacing="10" styleClass="sidebar">
+		    <Button text="Invoices" onAction="#showInvoices" prefHeight="30" prefWidth="30" styleClass="sidebar-button">
+            	<graphic>
+                	<ImageView fitHeight="35" fitWidth="35">
+                    	<image>
+                        	<Image url="@/img/invoice.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+		    <Button text="Contracts" onAction="#showContracts" prefHeight="30" prefWidth="30" styleClass="sidebar-button">
+            	<graphic>
+                	<ImageView fitHeight="35" fitWidth="35">
+                    	<image>
+                        	<Image url="@/img/contract.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+		    <Button text="Estimates" onAction="#showEstimates" prefHeight="30" prefWidth="30" styleClass="sidebar-button">
+            	<graphic>
+                	<ImageView fitHeight="35" fitWidth="35">
+                    	<image>
+                        	<Image url="@/img/estimate.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+		    <Button text="Customers" onAction="#showCompanyList" prefHeight="30" prefWidth="30" styleClass="sidebar-button">
+            	<graphic>
+                	<ImageView fitHeight="35" fitWidth="35">
+                    	<image>
+                        	<Image url="@/img/customer.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button>
+			<Button text="My Company" onAction="#showOwnCompanyForm" prefHeight="30" prefWidth="30" styleClass="sidebar-button">
+            	<graphic>
+                	<ImageView fitHeight="35" fitWidth="35">
+                    	<image>
+                        	<Image url="@/img/company.png" />
+                        </image>
+                    </ImageView>
+                </graphic>
+            </Button> 
+		</VBox>
     </left>
 
     <!-- 🖥️ MAIN CONTENT -->
