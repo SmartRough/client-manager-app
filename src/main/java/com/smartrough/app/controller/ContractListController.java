@@ -5,6 +5,9 @@ import com.smartrough.app.model.Contract;
 import com.smartrough.app.util.ContractExporter;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -22,13 +25,15 @@ public class ContractListController {
 	@FXML
 	private TableColumn<Contract, String> poCol;
 	@FXML
+	private TableColumn<Contract, String> measureDateCol;
+	@FXML
 	private TableColumn<Contract, String> startDateCol;
 	@FXML
 	private TableColumn<Contract, String> endDateCol;
 	@FXML
 	private TableColumn<Contract, String> ownerCol;
 	@FXML
-	private TableColumn<Contract, String> addressCol;
+	private TableColumn<Contract, String> homePhoneCol;
 	@FXML
 	private TableColumn<Contract, String> totalCol;
 	@FXML
@@ -37,43 +42,75 @@ public class ContractListController {
 	private TextField searchField;
 
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+	private ObservableList<Contract> masterList;
+	private FilteredList<Contract> filteredData;
 
 	@FXML
 	public void initialize() {
+		setupColumns();
+		loadContracts();
+		setupSearch();
+		setupActionsColumn();
+	}
+
+	private void setupColumns() {
 		poCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getPoNumber()));
+		measureDateCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
+				data.getValue().getMeasureDate() != null ? data.getValue().getMeasureDate().format(formatter) : "-"));
 		startDateCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
 				data.getValue().getStartDate() != null ? data.getValue().getStartDate().format(formatter) : "-"));
 		endDateCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
 				data.getValue().getEndDate() != null ? data.getValue().getEndDate().format(formatter) : "-"));
 		ownerCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getOwner1()
 				+ (data.getValue().getOwner2() != null ? " & " + data.getValue().getOwner2() : "")));
-		addressCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getAddress()));
+		homePhoneCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
+				data.getValue().getHomePhone() != null ? data.getValue().getHomePhone() : "-"));
 		totalCol.setCellValueFactory(
 				data -> new ReadOnlyStringWrapper(String.format("$%.2f", data.getValue().getTotalPrice())));
+	}
 
+	private void loadContracts() {
+		List<Contract> contracts = ContractDAO.findAll();
+		if (masterList == null) {
+			masterList = FXCollections.observableArrayList(contracts);
+			filteredData = new FilteredList<>(masterList, p -> true);
+			contractTable.setItems(filteredData);
+		} else {
+			masterList.setAll(contracts); // Mantiene el filtro activo
+		}
+	}
+
+	private void setupSearch() {
+		searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+			String lower = newVal != null ? newVal.toLowerCase() : "";
+			filteredData.setPredicate(contract -> {
+				if (lower.isBlank())
+					return true;
+				return (contract.getPoNumber() != null && contract.getPoNumber().toLowerCase().contains(lower))
+						|| (contract.getOwner1() != null && contract.getOwner1().toLowerCase().contains(lower))
+						|| (contract.getOwner2() != null && contract.getOwner2().toLowerCase().contains(lower))
+						|| (contract.getHomePhone() != null && contract.getHomePhone().toLowerCase().contains(lower));
+			});
+		});
+	}
+
+	private void setupActionsColumn() {
 		actionsCol.setCellFactory(col -> new TableCell<>() {
 			private final Button editBtn = new Button();
 			private final Button deleteBtn = new Button();
 			private final HBox box = new HBox(5, editBtn, deleteBtn);
 
 			{
-				// Ícono de editar
-				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/edit.png")));
-				editIcon.setFitHeight(16);
-				editIcon.setFitWidth(16);
-				editBtn.setGraphic(editIcon);
+				editBtn.setGraphic(
+						new ImageView(new Image(getClass().getResourceAsStream("/img/edit.png"), 16, 16, true, true)));
 				editBtn.getStyleClass().add("icon-button");
 				editBtn.setTooltip(new Tooltip("Edit Contract"));
 
-				// Ícono de eliminar
-				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
-				deleteIcon.setFitHeight(16);
-				deleteIcon.setFitWidth(16);
-				deleteBtn.setGraphic(deleteIcon);
+				deleteBtn.setGraphic(new ImageView(
+						new Image(getClass().getResourceAsStream("/img/delete.png"), 16, 16, true, true)));
 				deleteBtn.getStyleClass().add("icon-button");
 				deleteBtn.setTooltip(new Tooltip("Delete Contract"));
 
-				// Acciones
 				editBtn.setOnAction(e -> {
 					Contract contract = getTableView().getItems().get(getIndex());
 					ViewNavigator.loadView("ContractFormView.fxml", contract);
@@ -93,13 +130,6 @@ public class ContractListController {
 				setGraphic(empty ? null : box);
 			}
 		});
-
-		loadContracts();
-	}
-
-	private void loadContracts() {
-		List<Contract> list = ContractDAO.findAll();
-		contractTable.getItems().setAll(list);
 	}
 
 	@FXML
@@ -111,20 +141,15 @@ public class ContractListController {
 	private void handleExport() {
 		Contract selected = contractTable.getSelectionModel().getSelectedItem();
 		if (selected == null) {
-			Alert alert = new Alert(Alert.AlertType.WARNING);
-			alert.setTitle("No Selection");
-			alert.setHeaderText(null);
-			alert.setContentText("Please select a contract to export.");
-			alert.showAndWait();
+			showAlert("No Selection", "Please select a contract to export.");
 			return;
 		}
-
 		ContractExporter.exportToPdf(selected);
 	}
 
 	@FXML
 	private void handleSendEmail() {
-
+		// Oculto de momento
 	}
 
 	private void deleteContractWithFiles(Contract contract) {
@@ -143,15 +168,21 @@ public class ContractListController {
 						for (File file : folder.listFiles()) {
 							file.delete();
 						}
-						folder.delete(); // delete the folder after its contents
+						folder.delete();
 					}
 				}
-
-				// 2. Delete from database
+				// 2. Delete from DB and refresh
 				ContractDAO.delete(contract.getId());
-				loadContracts(); // refresh table
+				loadContracts(); // actualiza lista y mantiene el filtro
 			}
 		});
 	}
 
+	private void showAlert(String title, String content) {
+		Alert alert = new Alert(Alert.AlertType.WARNING);
+		alert.setTitle(title);
+		alert.setHeaderText(null);
+		alert.setContentText(content);
+		alert.showAndWait();
+	}
 }

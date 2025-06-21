@@ -20,7 +20,7 @@
             <TextField fx:id="searchField" promptText="Search by PO or Owner..." prefWidth="200">
 	            <tooltip><Tooltip text="Type to filter contracts" /></tooltip>
 	        </TextField>
-            <Button fx:id="btnSendEmail" onAction="#handleSendEmail" prefHeight="30" prefWidth="30" styleClass="icon-button">
+            <Button fx:id="btnSendEmail" onAction="#handleSendEmail" prefHeight="30" prefWidth="30" styleClass="icon-button" visible="false" managed="false">
 	            <graphic>
 	                <ImageView fitHeight="20" fitWidth="20">
 	                    <image><Image url="@/img/send.png" /></image>
@@ -50,16 +50,20 @@
     </top>
 
     <center>
-        <TableView fx:id="contractTable" prefHeight="600">
-            <columns>
-                <TableColumn fx:id="poCol" text="PO #" prefWidth="100"/>
-                <TableColumn fx:id="startDateCol" text="Start Date" prefWidth="100"/>
-                <TableColumn fx:id="endDateCol" text="End Date" prefWidth="100"/>
-                <TableColumn fx:id="ownerCol" text="Owner(s)" prefWidth="200"/>
-                <TableColumn fx:id="addressCol" text="Address" prefWidth="300"/>
-                <TableColumn fx:id="totalCol" text="Total" prefWidth="100"/>
-                <TableColumn fx:id="actionsCol" text="Actions" prefWidth="120"/>
-            </columns>
-        </TableView>
+	    <VBox spacing="10">
+	        <TableView fx:id="contractTable" prefHeight="600">
+	            <columns>
+	                <TableColumn fx:id="poCol" text="PO #" prefWidth="100"/>
+	                <TableColumn fx:id="measureDateCol" text="Measure Date" prefWidth="100"/>
+	                <TableColumn fx:id="startDateCol" text="Start Date" prefWidth="100"/>
+	                <TableColumn fx:id="endDateCol" text="End Date" prefWidth="100"/>
+	                <TableColumn fx:id="ownerCol" text="Owner(s)" prefWidth="200"/>
+	                <TableColumn fx:id="homePhoneCol" text="Home Phone" prefWidth="150"/>
+	                <TableColumn fx:id="totalCol" text="Total" prefWidth="100"/>
+	                <TableColumn fx:id="actionsCol" text="Actions" prefWidth="120"/>
+	            </columns>
+	        </TableView>
+	        <Region VBox.vgrow="ALWAYS"/> <!-- ESPACIO INFERIOR -->
+	    </VBox>
     </center>
 </BorderPane>
