@@ -45,7 +45,7 @@ public class EstimateDAO {
 
 	public static List<Estimate> findAll() {
 		List<Estimate> list = new ArrayList<>();
-		String sql = "SELECT * FROM Estimate ORDER BY date DESC";
+		String sql = "SELECT * FROM Estimate ORDER BY date ASC";
 
 		try (Connection conn = Database.connect();
 				PreparedStatement stmt = conn.prepareStatement(sql);

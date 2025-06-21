@@ -170,7 +170,7 @@ public class ContractDAO {
 
 	public static List<Contract> findAll() {
 		List<Contract> list = new ArrayList<>();
-		String sql = "SELECT * FROM Contract ORDER BY measure_date DESC";
+		String sql = "SELECT * FROM Contract ORDER BY measure_date ASC";
 		try (Connection conn = Database.connect();
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery()) {
