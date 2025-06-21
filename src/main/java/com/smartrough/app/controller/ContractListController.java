@@ -159,21 +159,41 @@ public class ContractListController {
 
 		confirm.showAndWait().ifPresent(response -> {
 			if (response == ButtonType.OK) {
-				// 1. Delete folder if exists
+				// 1. Eliminar archivos adjuntos del disco
 				if (contract.getMeasureDate() != null && contract.getPoNumber() != null) {
 					String folderName = contract.getMeasureDate().toString();
 					String poNumber = contract.getPoNumber().replaceAll("[^a-zA-Z0-9_\\-]", "_");
 					File folder = new File(System.getProperty("user.dir"), "contracts/" + folderName + "/" + poNumber);
+
 					if (folder.exists() && folder.isDirectory()) {
-						for (File file : folder.listFiles()) {
-							file.delete();
+						File[] files = folder.listFiles();
+						if (files != null) {
+							for (File file : files) {
+								boolean deleted = file.delete();
+								System.out.println("Deleted file: " + file.getName() + " => " + deleted);
+							}
 						}
-						folder.delete();
+						boolean deletedFolder = folder.delete();
+						System.out.println("Deleted folder: " + folder.getAbsolutePath() + " => " + deletedFolder);
+
+						// Limpiar carpeta del día si queda vacía
+						File dateFolder = folder.getParentFile();
+						if (dateFolder != null && dateFolder.isDirectory()) {
+							File[] remaining = dateFolder.listFiles();
+							if (remaining == null || remaining.length == 0) {
+								boolean deletedDateFolder = dateFolder.delete();
+								System.out.println("Deleted empty date folder: " + dateFolder.getAbsolutePath() + " => "
+										+ deletedDateFolder);
+							}
+						}
 					}
 				}
-				// 2. Delete from DB and refresh
+
+				// 2. Eliminar contrato de la base de datos
 				ContractDAO.delete(contract.getId());
-				loadContracts(); // actualiza lista y mantiene el filtro
+
+				// 3. Actualizar tabla
+				loadContracts();
 			}
 		});
 	}
