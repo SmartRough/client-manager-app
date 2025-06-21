@@ -199,6 +199,8 @@ public class EstimateListController {
 			if (response == yesBtn) {
 				boolean success = EstimateDAO.delete(estimate.getId());
 				if (success) {
+					deleteEstimateFiles(estimate);
+
 					estimates.remove(estimate);
 					filteredEstimates.remove(estimate);
 				} else {
@@ -207,4 +209,55 @@ public class EstimateListController {
 			}
 		});
 	}
+
+	private void deleteEstimateFiles(Estimate estimate) {
+		if (estimate == null || estimate.getDate() == null || estimate.getCustomerId() == null
+				|| estimate.getCompanyId() == null)
+			return;
+
+		Company customer = CompanyDAO.findById(estimate.getCustomerId());
+		if (customer == null)
+			return;
+
+		String folderName = estimate.getDate().toString();
+		String customerName = customer.getName().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+		String contractFolderName = "contract_" + estimate.getId();
+
+		// Carpeta completa: /estimates/YYYY-MM-DD/customer_name/contract_ID/
+		File contractFolder = new File(System.getProperty("user.dir") + File.separator + "estimates" + File.separator
+				+ folderName + File.separator + customerName + File.separator + contractFolderName);
+
+		// Eliminar imágenes
+		List<String> imageNames = estimate.getImageNames();
+		if (imageNames != null) {
+			for (String name : imageNames) {
+				File file = new File(contractFolder, name);
+				if (file.exists()) {
+					boolean deleted = file.delete();
+					System.out.println("Deleted image: " + file.getAbsolutePath() + " => " + deleted);
+				}
+			}
+		}
+
+		// Eliminar carpeta de contractor si queda vacía
+		if (contractFolder.exists() && contractFolder.isDirectory() && contractFolder.list().length == 0) {
+			boolean deleted = contractFolder.delete();
+			System.out.println("Deleted contract folder: " + contractFolder.getAbsolutePath() + " => " + deleted);
+		}
+
+		// Eliminar carpeta de cliente si queda vacía
+		File customerFolder = contractFolder.getParentFile();
+		if (customerFolder != null && customerFolder.isDirectory() && customerFolder.list().length == 0) {
+			boolean deleted = customerFolder.delete();
+			System.out.println("Deleted customer folder: " + customerFolder.getAbsolutePath() + " => " + deleted);
+		}
+
+		// Eliminar carpeta de fecha si queda vacía
+		File dateFolder = customerFolder != null ? customerFolder.getParentFile() : null;
+		if (dateFolder != null && dateFolder.isDirectory() && dateFolder.list().length == 0) {
+			boolean deleted = dateFolder.delete();
+			System.out.println("Deleted date folder: " + dateFolder.getAbsolutePath() + " => " + deleted);
+		}
+	}
+
 }

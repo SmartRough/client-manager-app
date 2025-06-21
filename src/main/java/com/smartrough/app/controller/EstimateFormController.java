@@ -31,14 +31,12 @@ public class EstimateFormController {
 	private ComboBox<Company> customerComboBox;
 	@FXML
 	private TextArea jobDescriptionArea;
-
 	@FXML
 	private TableView<EstimateItem> itemTable;
 	@FXML
 	private TableColumn<EstimateItem, String> descriptionColumn;
 	@FXML
 	private TableColumn<EstimateItem, Void> actionColumn;
-
 	@FXML
 	private TextField newDescriptionField;
 	@FXML
@@ -48,6 +46,8 @@ public class EstimateFormController {
 
 	private final ObservableList<EstimateItem> items = FXCollections.observableArrayList();
 	private final List<String> imageNames = new ArrayList<>();
+	private final List<File> imageFiles = new ArrayList<>();
+
 	private Estimate estimateBeingEdited;
 	private boolean editing = false;
 
@@ -84,19 +84,16 @@ public class EstimateFormController {
 	private void setupItemTable() {
 		descriptionColumn.setCellValueFactory(
 				data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
-
 		actionColumn.setCellFactory(col -> new TableCell<>() {
 			private final Button deleteButton = new Button();
+
 			{
 				ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
 				icon.setFitHeight(16);
 				icon.setFitWidth(16);
 				deleteButton.setGraphic(icon);
 				deleteButton.getStyleClass().add("icon-button");
-				deleteButton.setOnAction(e -> {
-					EstimateItem item = getTableView().getItems().get(getIndex());
-					items.remove(item);
-				});
+				deleteButton.setOnAction(e -> items.remove(getTableView().getItems().get(getIndex())));
 			}
 
 			@Override
@@ -105,7 +102,6 @@ public class EstimateFormController {
 				setGraphic(empty ? null : deleteButton);
 			}
 		});
-
 		itemTable.setItems(items);
 	}
 
@@ -119,6 +115,7 @@ public class EstimateFormController {
 		jobDescriptionArea.clear();
 		newDescriptionField.clear();
 		imageNames.clear();
+		imageFiles.clear();
 		items.clear();
 		imageCountLabel.setText("0 images attached");
 		totalField.clear();
@@ -131,8 +128,7 @@ public class EstimateFormController {
 			showAlert("Description is required.");
 			return;
 		}
-		EstimateItem item = new EstimateItem(null, null, desc);
-		items.add(item);
+		items.add(new EstimateItem(null, null, desc));
 		newDescriptionField.clear();
 	}
 
@@ -143,55 +139,28 @@ public class EstimateFormController {
 		chooser.getExtensionFilters()
 				.addAll(new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.jpeg", "*.png"));
 
-		List<File> selectedFiles = chooser.showOpenMultipleDialog(null);
-		if (selectedFiles == null)
+		List<File> selected = chooser.showOpenMultipleDialog(null);
+		if (selected == null)
 			return;
 
-		LocalDate date = datePicker.getValue();
-		Company customer = customerComboBox.getValue();
+		imageFiles.clear();
+		imageNames.clear();
 
-		if (date == null || customer == null) {
-			showAlert("Please select a date and customer before adding images.");
-			return;
+		for (File file : selected) {
+			imageFiles.add(file);
+			imageNames.add(file.getName());
 		}
-
-		// Ruta destino: /estimates/yyyy-MM-dd/CustomerName/
-		String folderName = date.toString();
-		String customerName = customer.getName().replaceAll("[^a-zA-Z0-9_\\-]", "_");
-		File destFolder = new File(System.getProperty("user.dir"), "estimates/" + folderName + "/" + customerName);
-
-		// ✅ Si está en edición, eliminar imágenes anteriores (del disco y de la lista)
-		if (editing && estimateBeingEdited != null && !imageNames.isEmpty()) {
-			for (String oldImage : imageNames) {
-				File oldFile = new File(destFolder, oldImage);
-				if (oldFile.exists())
-					oldFile.delete();
-			}
-			imageNames.clear();
-		}
-
-		if (!destFolder.exists())
-			destFolder.mkdirs();
-
-		for (File file : selectedFiles) {
-			File destFile = new File(destFolder, file.getName());
-			try {
-				java.nio.file.Files.copy(file.toPath(), destFile.toPath(),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				imageNames.add(file.getName());
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				showAlert("Failed to copy image: " + file.getName());
-			}
-		}
-
+		System.out.println("Nuevas imágenes seleccionadas. Se reemplazaron las anteriores.");
 		imageCountLabel.setText(imageNames.size() + " images attached");
 	}
 
 	@FXML
 	private void handleSave() {
-		if (!validateForm())
+		System.out.println("Iniciando guardado de estimado...");
+		if (!validateForm()) {
+			System.out.println("Validación fallida.");
 			return;
+		}
 
 		Estimate estimate = editing ? estimateBeingEdited : new Estimate();
 		estimate.setDate(datePicker.getValue());
@@ -204,10 +173,9 @@ public class EstimateFormController {
 
 		String oldFolderPath = editing && estimateBeingEdited != null ? getEstimateFolderPath(estimateBeingEdited)
 				: null;
-		String newFolderPath = getEstimateFolderPath(estimate);
-		File newFolder = new File(newFolderPath);
 
 		if (!editing) {
+			System.out.println("Guardando nuevo estimado...");
 			long id = EstimateDAO.save(estimate);
 			estimate.setId(id);
 			for (EstimateItem item : items) {
@@ -215,63 +183,92 @@ public class EstimateFormController {
 				EstimateItemDAO.save(item);
 			}
 		} else {
+			System.out.println("Actualizando estimado existente ID: " + estimate.getId());
 			EstimateDAO.update(estimate);
 			EstimateItemDAO.delete(estimate.getId());
 			for (EstimateItem item : items) {
 				item.setEstimateId(estimate.getId());
 				EstimateItemDAO.save(item);
 			}
+		}
 
-			File oldFolder = oldFolderPath != null ? new File(oldFolderPath) : null;
-			if (oldFolder != null && !oldFolder.equals(newFolder)) {
-				cleanupOldImages(oldFolder, imageNames);
-				cleanupFolderIfEmpty(oldFolder);
+		// Guardar imágenes en carpeta
+		String newFolderPath = getEstimateFolderPath(estimate);
+		System.out.println("Ruta destino: " + newFolderPath);
+
+		File newFolder = new File(newFolderPath);
+		if (!newFolder.exists()) {
+			System.out.println("Carpeta no existe. Creando...");
+			boolean created = newFolder.mkdirs();
+			System.out.println("Carpeta creada: " + created);
+		}
+
+		System.out.println("Archivos a copiar: " + imageFiles.size());
+		for (File file : imageFiles) {
+			try {
+				System.out.println("Copiando archivo: " + file.getAbsolutePath());
+				File dest = new File(newFolder, file.getName());
+				System.out.println("Destino: " + dest.getAbsolutePath());
+
+				if (!dest.exists() || !dest.getAbsolutePath().equals(file.getAbsolutePath())) {
+					java.nio.file.Files.copy(file.toPath(), dest.toPath(),
+							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					System.out.println("Copiado correctamente");
+				} else {
+					System.out.println("Archivo ya existe en destino, se omite.");
+				}
+			} catch (Exception ex) {
+				System.out.println("ERROR al copiar archivo: " + file.getName());
+				ex.printStackTrace();
+				showAlert("Failed to copy image: " + file.getName());
 			}
 		}
 
-		handleCancel(); // volver a lista
+		if (editing && oldFolderPath != null) {
+			File oldFolder = new File(oldFolderPath);
+			cleanupOldImages(oldFolder, imageNames);
+			cleanupFolderIfEmpty(oldFolder);
+		}
+
+		System.out.println("Guardado completo. Limpiando imagenes temporales...");
+		imageFiles.clear();
+		imageNames.clear(); // ya están guardadas, no las necesitas más en memoria
+		ViewNavigator.loadView("EstimateListView.fxml");
 	}
 
 	@FXML
 	private void handleCancel() {
-		if (!editing && !imageNames.isEmpty()) {
+		if (!editing && !imageNames.isEmpty())
 			cleanupTemporaryImages();
-		}
+		imageFiles.clear();
+		imageNames.clear();
 		ViewNavigator.loadView("EstimateListView.fxml");
 	}
 
 	private boolean validateForm() {
-		if (datePicker.getValue() == null) {
-			showAlert("Date is required.");
-			return false;
-		}
-		if (companyComboBox.getValue() == null || customerComboBox.getValue() == null) {
-			showAlert("Company and customer must be selected.");
-			return false;
-		}
-		if (jobDescriptionArea.getText().isBlank()) {
-			showAlert("Job description is required.");
-			return false;
-		}
-		if (items.isEmpty()) {
-			showAlert("At least one item is required.");
-			return false;
-		}
-		if (imageNames.isEmpty()) {
-			showAlert("At least one image must be attached.");
-			return false;
-		}
-		if (totalField.getText().isBlank()) {
-			showAlert("Total is required.");
-			return false;
-		}
+		if (datePicker.getValue() == null)
+			return showError("Date is required.");
+		if (companyComboBox.getValue() == null || customerComboBox.getValue() == null)
+			return showError("Company and customer must be selected.");
+		if (jobDescriptionArea.getText().isBlank())
+			return showError("Job description is required.");
+		if (items.isEmpty())
+			return showError("At least one item is required.");
+		if (imageFiles.isEmpty() && imageNames.isEmpty())
+			return showError("At least one image must be attached.");
+		if (totalField.getText().isBlank())
+			return showError("Total is required.");
 		try {
 			new BigDecimal(totalField.getText());
-		} catch (NumberFormatException e) {
-			showAlert("Total must be a valid number.");
-			return false;
+		} catch (Exception e) {
+			return showError("Total must be a valid number.");
 		}
 		return true;
+	}
+
+	private boolean showError(String msg) {
+		showAlert(msg);
+		return false;
 	}
 
 	private void showAlert(String msg) {
@@ -283,37 +280,32 @@ public class EstimateFormController {
 		this.editing = true;
 
 		datePicker.setValue(estimate.getDate());
-
-		// Seleccionar la compañía
-		for (Company c : companyComboBox.getItems()) {
-			if (c.getId() == estimate.getCompanyId()) {
-				companyComboBox.getSelectionModel().select(c);
-				break;
-			}
-		}
-
-		// Seleccionar el cliente
-		for (Company c : customerComboBox.getItems()) {
-			if (c.getId() == estimate.getCustomerId()) {
-				customerComboBox.getSelectionModel().select(c);
-				break;
-			}
-		}
-
+		companyComboBox.getItems().stream().filter(c -> c.getId() == estimate.getCompanyId()).findFirst()
+				.ifPresent(companyComboBox.getSelectionModel()::select);
+		customerComboBox.getItems().stream().filter(c -> c.getId() == estimate.getCustomerId()).findFirst()
+				.ifPresent(customerComboBox.getSelectionModel()::select);
 		jobDescriptionArea.setText(estimate.getJobDescription());
 		totalField.setText(estimate.getTotal().toString());
 		items.setAll(EstimateItemDAO.findByEstimateId(estimate.getId()));
+
 		imageNames.clear();
 		imageNames.addAll(estimate.getImageNames());
+		imageFiles.clear();
+		String folderPath = getEstimateFolderPath(estimate);
+		for (String name : imageNames) {
+			File file = new File(folderPath, name);
+			if (file.exists()) {
+				imageFiles.add(file);
+			}
+		}
 		imageCountLabel.setText(imageNames.size() + " images attached");
 	}
 
 	private String getEstimateFolderPath(Estimate estimate) {
-		if (estimate.getDate() == null || estimate.getCustomerId() == null)
+		if (estimate.getDate() == null || estimate.getCustomerId() == null || estimate.getCompanyId() == null)
 			return "";
 
 		String folderName = estimate.getDate().toString();
-
 		String customerName = "";
 		for (Company c : customerComboBox.getItems()) {
 			if (c.getId() == estimate.getCustomerId()) {
@@ -321,22 +313,21 @@ public class EstimateFormController {
 				break;
 			}
 		}
-
 		if (customerName.isBlank())
 			return "";
 
+		// Nuevo formato: /estimates/YYYY-MM-DD/customer_name/contract_id
 		return System.getProperty("user.dir") + File.separator + "estimates" + File.separator + folderName
-				+ File.separator + customerName;
+				+ File.separator + customerName + File.separator + "contract_" + estimate.getId();
 	}
 
-	private void cleanupOldImages(File folder, List<String> currentImageNames) {
+	private void cleanupOldImages(File folder, List<String> validNames) {
 		if (folder.exists() && folder.isDirectory()) {
 			File[] files = folder.listFiles();
 			if (files != null) {
 				for (File file : files) {
-					if (!currentImageNames.contains(file.getName())) {
-						boolean deleted = file.delete();
-						System.out.println("Deleted obsolete image: " + file.getName() + " => " + deleted);
+					if (!validNames.contains(file.getName())) {
+						file.delete();
 					}
 				}
 			}
@@ -356,23 +347,15 @@ public class EstimateFormController {
 
 		for (String name : imageNames) {
 			File file = new File(folder, name);
-			if (file.exists()) {
-				boolean deleted = file.delete();
-				System.out.println("Deleted temp image: " + file.getName() + " => " + deleted);
-			}
+			if (file.exists())
+				file.delete();
 		}
-
 		cleanupFolderIfEmpty(folder);
 	}
 
 	private void cleanupFolderIfEmpty(File folder) {
-		if (folder.exists() && folder.isDirectory()) {
-			File[] files = folder.listFiles();
-			if (files == null || files.length == 0) {
-				boolean deleted = folder.delete();
-				System.out.println("Deleted empty folder: " + folder.getAbsolutePath() + " => " + deleted);
-			}
+		if (folder.exists() && folder.isDirectory() && folder.listFiles() != null && folder.listFiles().length == 0) {
+			folder.delete();
 		}
 	}
-
 }
