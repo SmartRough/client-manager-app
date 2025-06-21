@@ -98,7 +98,9 @@ public class InvoiceHtmlTemplate {
 		// Ítems
 		for (InvoiceItem item : items) {
 			sb.append("<tr><td>").append(item.getDescription()).append("</td>");
-			sb.append("<td style='text-align: right;'>$").append(item.getAmount()).append("</td></tr>");
+			sb.append("<td style='text-align: right;'>").append(
+					item.getAmount() != null && item.getAmount().doubleValue() > 0 ? "$" + item.getAmount() : "")
+					.append("</td></tr>");
 		}
 
 		// Agregar filas vacías para dar espacio visual
