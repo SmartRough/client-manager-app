@@ -43,7 +43,7 @@ npx caxa ^
   --input %TMP_DIR% ^
   --output %INSTALLER_DIR%\%CAXA_EXE% ^
   --no-include-node ^
-  -- "cmd" "/c" "set PRISM_ORDER=sw && {{caxa}}/runtime/bin/java -jar {{caxa}}/%JAR_NAME%"
+  -- "cmd" "/c" "set PRISM_ORDER=sw && {{caxa}}/runtime/bin/javaw -jar {{caxa}}/%JAR_NAME%"
 
 if errorlevel 1 (
     echo ❌ Error con Caxa.
