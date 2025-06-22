@@ -44,6 +44,25 @@ public class AddressDAO {
 		}
 	}
 
+	public static boolean update(Address address) {
+		String sql = "UPDATE Address SET street = ?, city = ?, state = ?, zip_code = ? WHERE id = ?";
+		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+			stmt.setString(1, address.getStreet());
+			stmt.setString(2, address.getCity());
+			stmt.setString(3, address.getState());
+			stmt.setString(4, address.getZipCode());
+			stmt.setLong(5, address.getId());
+
+			int rowsAffected = stmt.executeUpdate();
+			return rowsAffected > 0;
+
+		} catch (SQLException e) {
+			System.err.println("Error updating address: " + e.getMessage());
+			return false;
+		}
+	}
+
 	private static Address mapResultSet(ResultSet rs) throws SQLException {
 		Address address = new Address();
 		address.setId(rs.getLong("id"));

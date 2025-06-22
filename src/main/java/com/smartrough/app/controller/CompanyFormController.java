@@ -1,5 +1,6 @@
 package com.smartrough.app.controller;
 
+import com.smartrough.app.dao.AddressDAO;
 import com.smartrough.app.dao.CRUDHelper;
 import com.smartrough.app.dao.CompanyDAO;
 import com.smartrough.app.model.Address;
@@ -90,19 +91,37 @@ public class CompanyFormController {
 
 	@FXML
 	private void handleSave() {
-		long addressId;
+		if (!isFormValid()) {
+			return;
+		}
+
+		long addressId = -1;
 
 		if (creatingNewAddress) {
-			Address address = new Address();
-			address.setStreet(streetField.getText());
-			address.setCity(cityField.getText());
-			address.setState(stateField.getText());
-			address.setZipCode(zipField.getText());
+			if (companyBeingEdited != null && companyBeingEdited.getAddressId() > 0) {
+				// Actualizar dirección existente
+				Address addrToUpdate = AddressDAO.findById(companyBeingEdited.getAddressId());
+				if (addrToUpdate != null) {
+					addrToUpdate.setStreet(streetField.getText());
+					addrToUpdate.setCity(cityField.getText());
+					addrToUpdate.setState(stateField.getText());
+					addrToUpdate.setZipCode(zipField.getText());
+					AddressDAO.update(addrToUpdate);
+					addressId = addrToUpdate.getId();
+				}
+			} else {
+				// Crear nueva dirección
+				Address address = new Address();
+				address.setStreet(streetField.getText());
+				address.setCity(cityField.getText());
+				address.setState(stateField.getText());
+				address.setZipCode(zipField.getText());
 
-			String[] cols = { "street", "city", "state", "zip_code" };
-			Object[] vals = { address.getStreet(), address.getCity(), address.getState(), address.getZipCode() };
-			int[] types = { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR };
-			addressId = CRUDHelper.create("Address", cols, vals, types);
+				String[] cols = { "street", "city", "state", "zip_code" };
+				Object[] vals = { address.getStreet(), address.getCity(), address.getState(), address.getZipCode() };
+				int[] types = { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR };
+				addressId = CRUDHelper.create("Address", cols, vals, types);
+			}
 		} else {
 			Address selected = addressComboBox.getSelectionModel().getSelectedItem();
 			addressId = selected != null ? selected.getId() : -1;
@@ -135,6 +154,8 @@ public class CompanyFormController {
 			CompanyDAO.updateCompany(companyBeingEdited);
 			showAlert("Company updated successfully");
 		}
+		
+		ViewNavigator.loadView("CompanyListView.fxml");
 	}
 
 	@FXML
@@ -167,15 +188,18 @@ public class CompanyFormController {
 		repField.setVisible(isBusiness);
 		repField.setManaged(isBusiness);
 
-		for (Address addr : addressComboBox.getItems()) {
-			if (addr != null && addr.getId() == company.getAddressId()) {
-				addressComboBox.getSelectionModel().select(addr);
-				streetField.setText(addr.getStreet());
-				cityField.setText(addr.getCity());
-				stateField.setText(addr.getState());
-				zipField.setText(addr.getZipCode());
-				break;
-			}
+		creatingNewAddress = true;
+		addressGrid.setVisible(true);
+		addressGrid.setManaged(true);
+		addressComboBox.setDisable(true);
+
+		// Cargar datos de dirección directamente en los campos
+		Address addr = AddressDAO.findById(company.getAddressId());
+		if (addr != null) {
+			streetField.setText(addr.getStreet());
+			cityField.setText(addr.getCity());
+			stateField.setText(addr.getState());
+			zipField.setText(addr.getZipCode());
 		}
 	}
 
@@ -194,6 +218,29 @@ public class CompanyFormController {
 		cityField.clear();
 		stateField.clear();
 		zipField.clear();
+	}
+
+	private boolean isFormValid() {
+		if (nameField.getText() == null || nameField.getText().trim().isEmpty()) {
+			showAlert("The name field cannot be empty.");
+			return false;
+		}
+
+		if (creatingNewAddress) {
+			if (streetField.getText().trim().isEmpty() || cityField.getText().trim().isEmpty()
+					|| stateField.getText().trim().isEmpty() || zipField.getText().trim().isEmpty()) {
+				showAlert("All address fields must be filled when creating a new address.");
+				return false;
+			}
+		} else {
+			Address selected = addressComboBox.getSelectionModel().getSelectedItem();
+			if (selected == null) {
+				showAlert("Please select an address or create a new one.");
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private void showAlert(String message) {

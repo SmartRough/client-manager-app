@@ -54,6 +54,10 @@ public class OwnCompanyFormController {
 
 	@FXML
 	private void handleSave() {
+		if (!isFormValid()) {
+			return;
+		}
+
 		if (currentCompany == null) {
 			currentCompany = new Company();
 			currentCompany.setOwnCompany(true);
@@ -67,14 +71,28 @@ public class OwnCompanyFormController {
 		currentCompany.setEmail(emailField.getText());
 
 		// Dirección
-		Address address = new Address();
+		Address address;
+
+		if (currentCompany.getAddressId() > 0) {
+			address = AddressDAO.findById(currentCompany.getAddressId());
+			if (address == null) {
+				address = new Address();
+			}
+		} else {
+			address = new Address();
+		}
+
 		address.setStreet(streetField.getText());
 		address.setCity(cityField.getText());
 		address.setState(stateField.getText());
 		address.setZipCode(zipField.getText());
 
-		Address savedAddr = AddressDAO.save(address);
-		currentCompany.setAddressId(savedAddr.getId());
+		if (address.getId() > 0) {
+			AddressDAO.update(address);
+		} else {
+			Address saved = AddressDAO.save(address);
+			currentCompany.setAddressId(saved.getId());
+		}
 
 		if (currentCompany.getId() > 0) {
 			CompanyDAO.updateCompany(currentCompany);
@@ -85,4 +103,21 @@ public class OwnCompanyFormController {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION, "Company information saved successfully.");
 		alert.showAndWait();
 	}
+
+	private boolean isFormValid() {
+		if (isEmpty(nameField) || isEmpty(repField) || isEmpty(licenseField) || isEmpty(phoneField)
+				|| isEmpty(emailField) || isEmpty(streetField) || isEmpty(cityField) || isEmpty(stateField)
+				|| isEmpty(zipField)) {
+
+			Alert alert = new Alert(Alert.AlertType.WARNING, "All fields must be filled out.", ButtonType.OK);
+			alert.showAndWait();
+			return false;
+		}
+		return true;
+	}
+
+	private boolean isEmpty(TextField field) {
+		return field.getText() == null || field.getText().trim().isEmpty();
+	}
+
 }
