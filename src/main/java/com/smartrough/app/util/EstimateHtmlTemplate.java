@@ -116,8 +116,10 @@ public class EstimateHtmlTemplate {
 
 			// Usar el mismo nombre "seguro" que usaste al guardar las imágenes
 			String safeCustomerName = customer.getName().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+			
+			String contractName = "estimates_" + estimate.getId();
 
-			Path path = Path.of(System.getProperty("user.dir"), "estimates", folder, safeCustomerName, imageName);
+			Path path = Path.of(System.getProperty("user.dir"), "estimates", folder, safeCustomerName, contractName, imageName);
 
 			if (!path.toFile().exists()) {
 				System.err.println("⚠️ Archivo no encontrado: " + path);

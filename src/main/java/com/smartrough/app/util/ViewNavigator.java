@@ -29,7 +29,7 @@ public class ViewNavigator {
 
 	public static void loadView(String fxml) {
 		try {
-			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
+			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/" + fxml));
 			Parent view = loader.load();
 			mainLayout.setCenter(view);
 		} catch (Exception e) {
@@ -39,7 +39,7 @@ public class ViewNavigator {
 
 	public static void loadView(String fxml, Company company) {
 		try {
-			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
+			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/" + fxml));
 			Parent view = loader.load();
 			CompanyFormController controller = loader.getController();
 			controller.loadCompany(company);
@@ -51,7 +51,7 @@ public class ViewNavigator {
 
 	public static void loadView(String fxml, Invoice invoice) {
 		try {
-			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
+			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/" + fxml));
 			Parent view = loader.load();
 			InvoiceFormController controller = loader.getController();
 			controller.loadInvoice(invoice);
@@ -63,7 +63,7 @@ public class ViewNavigator {
 
 	public static void loadView(String fxml, Estimate estimate) {
 		try {
-			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
+			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/" + fxml));
 			Parent view = loader.load();
 			EstimateFormController controller = loader.getController();
 			controller.loadEstimate(estimate);
@@ -87,7 +87,7 @@ public class ViewNavigator {
 
 	public static void openDialog(String fxml, Consumer<EmailDialogController> configurer) {
 		try {
-			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
+			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/" + fxml));
 			Parent view = loader.load();
 			EmailDialogController controller = loader.getController();
 			if (configurer != null)

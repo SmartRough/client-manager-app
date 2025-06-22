@@ -318,7 +318,7 @@ public class EstimateFormController {
 
 		// Nuevo formato: /estimates/YYYY-MM-DD/customer_name/contract_id
 		return System.getProperty("user.dir") + File.separator + "estimates" + File.separator + folderName
-				+ File.separator + customerName + File.separator + "contract_" + estimate.getId();
+				+ File.separator + customerName + File.separator + "estimates_" + estimate.getId();
 	}
 
 	private void cleanupOldImages(File folder, List<String> validNames) {
