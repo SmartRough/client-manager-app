@@ -87,6 +87,8 @@ public class CompanyFormController {
 
 		// Ejecuta lógica una vez para reflejar el estado inicial en pantalla
 		typeComboBox.getOnAction().handle(null);
+
+		restrictToIntegerInput(zipField, 5);
 	}
 
 	@FXML
@@ -154,7 +156,7 @@ public class CompanyFormController {
 			CompanyDAO.updateCompany(companyBeingEdited);
 			showAlert("Company updated successfully");
 		}
-		
+
 		ViewNavigator.loadView("CompanyListView.fxml");
 	}
 
@@ -246,5 +248,12 @@ public class CompanyFormController {
 	private void showAlert(String message) {
 		Alert alert = new Alert(Alert.AlertType.INFORMATION, message, ButtonType.OK);
 		alert.showAndWait();
+	}
+
+	private void restrictToIntegerInput(TextField field, int maxLength) {
+		field.setTextFormatter(new TextFormatter<>(change -> {
+			String newText = change.getControlNewText();
+			return newText.matches("\\d{0," + maxLength + "}") ? change : null;
+		}));
 	}
 }
