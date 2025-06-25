@@ -118,6 +118,17 @@ public class ContractFormController {
 		mfhCheck.setToggleGroup(propertyTypeGroup);
 		commercialCheck.setToggleGroup(propertyTypeGroup);
 
+		restrictToIntegerInput(zipField, 5);
+
+		restrictToDecimalInput(totalPriceField);
+		restrictToDecimalInput(depositField);
+		restrictToDecimalInput(balanceField);
+		restrictToDecimalInput(amountFinancedField);
+
+		restrictToIntegerInput(cardNumberField, 11);
+		restrictToIntegerInput(cardZipField, 5);
+		restrictToIntegerInput(cardCvcField, 3);
+
 		if (!editing) {
 			houseCheck.setSelected(true);
 			measureDatePicker.setValue(java.time.LocalDate.now());
@@ -495,4 +506,17 @@ public class ContractFormController {
 				+ File.separator + poNumber;
 	}
 
+	private void restrictToDecimalInput(TextField field) {
+		field.setTextFormatter(new TextFormatter<>(change -> {
+			String newText = change.getControlNewText();
+			return newText.matches("\\d*(\\.\\d{0,2})?") ? change : null;
+		}));
+	}
+
+	private void restrictToIntegerInput(TextField field, int maxLength) {
+		field.setTextFormatter(new TextFormatter<>(change -> {
+			String newText = change.getControlNewText();
+			return newText.matches("\\d{0," + maxLength + "}") ? change : null;
+		}));
+	}
 }
