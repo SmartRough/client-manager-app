@@ -61,6 +61,13 @@ public class InvoiceFormController {
 		setupCompanyCombos();
 		setupItemTable();
 
+		restrictToIntegerInput(invoiceNumberField);
+		restrictToDecimalInput(newAmountField);
+		restrictToDecimalInput(subtotalField);
+		restrictToDecimalInput(taxRateField);
+		restrictToDecimalInput(additionalCostsField);
+		restrictToDecimalInput(totalField);
+
 		if (!editing) {
 			prepareNewInvoice();
 		}
@@ -363,4 +370,17 @@ public class InvoiceFormController {
 		return true;
 	}
 
+	private void restrictToDecimalInput(TextField field) {
+		field.setTextFormatter(new TextFormatter<>(change -> {
+			String newText = change.getControlNewText();
+			return newText.matches("\\d*(\\.\\d{0,2})?") ? change : null;
+		}));
+	}
+
+	private void restrictToIntegerInput(TextField field) {
+		field.setTextFormatter(new TextFormatter<>(change -> {
+			String newText = change.getControlNewText();
+			return newText.matches("\\d*") ? change : null;
+		}));
+	}
 }
