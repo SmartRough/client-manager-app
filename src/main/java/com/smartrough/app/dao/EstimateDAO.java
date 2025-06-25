@@ -11,11 +11,13 @@ import java.util.List;
 public class EstimateDAO {
 
 	public static long save(Estimate estimate) {
-		String[] columns = { "date", "company_id", "customer_id", "job_description", "total", "image_names" };
+		String[] columns = { "date", "company_id", "customer_id", "approved_by", "job_description", "total",
+				"image_names" };
 		Object[] values = { estimate.getDate() != null ? estimate.getDate().toString() : null, estimate.getCompanyId(),
-				estimate.getCustomerId(), estimate.getJobDescription(), estimate.getTotal(),
+				estimate.getCustomerId(), estimate.getApproved_by(), estimate.getJobDescription(), estimate.getTotal(),
 				String.join(",", estimate.getImageNames()) };
-		int[] types = { Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.DECIMAL, Types.VARCHAR };
+		int[] types = { Types.VARCHAR, Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.VARCHAR, Types.DECIMAL,
+				Types.VARCHAR };
 
 		return CRUDHelper.create("Estimate", columns, values, types);
 	}
@@ -23,7 +25,7 @@ public class EstimateDAO {
 	public static boolean update(Estimate estimate) {
 		String sql = """
 					UPDATE Estimate
-					SET date=?, company_id=?, customer_id=?, job_description=?, total=?, image_names=?
+					SET date=?, company_id=?, customer_id=?, approved_by=?, job_description=?, total=?, image_names=?
 					WHERE id=?
 				""";
 
@@ -31,10 +33,11 @@ public class EstimateDAO {
 			stmt.setString(1, estimate.getDate() != null ? estimate.getDate().toString() : null);
 			stmt.setLong(2, estimate.getCompanyId());
 			stmt.setLong(3, estimate.getCustomerId());
-			stmt.setString(4, estimate.getJobDescription());
-			stmt.setBigDecimal(5, estimate.getTotal());
-			stmt.setString(6, String.join(",", estimate.getImageNames()));
-			stmt.setLong(7, estimate.getId());
+			stmt.setString(4, estimate.getApproved_by());
+			stmt.setString(5, estimate.getJobDescription());
+			stmt.setBigDecimal(6, estimate.getTotal());
+			stmt.setString(7, String.join(",", estimate.getImageNames()));
+			stmt.setLong(8, estimate.getId());
 
 			return stmt.executeUpdate() > 0;
 		} catch (SQLException e) {
@@ -102,6 +105,7 @@ public class EstimateDAO {
 
 		e.setCompanyId(rs.getLong("company_id"));
 		e.setCustomerId(rs.getLong("customer_id"));
+		e.setApproved_by(rs.getString("approved_by"));
 		e.setJobDescription(rs.getString("job_description"));
 		e.setTotal(rs.getBigDecimal("total"));
 

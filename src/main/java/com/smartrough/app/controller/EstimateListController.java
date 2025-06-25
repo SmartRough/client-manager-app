@@ -30,7 +30,7 @@ public class EstimateListController {
 	@FXML
 	private TableColumn<Estimate, String> clientCol;
 	@FXML
-	private TableColumn<Estimate, String> jobCol;
+	private TableColumn<Estimate, String> approvedByCol;
 	@FXML
 	private TableColumn<Estimate, String> totalCol;
 	@FXML
@@ -69,8 +69,7 @@ public class EstimateListController {
 			return new ReadOnlyStringWrapper("-");
 		});
 
-		jobCol.setCellValueFactory(
-				e -> new ReadOnlyStringWrapper(Optional.ofNullable(e.getValue().getJobDescription()).orElse("-")));
+		approvedByCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getApproved_by()));
 
 		totalCol.setCellValueFactory(e -> {
 			if (e.getValue().getTotal() != null) {

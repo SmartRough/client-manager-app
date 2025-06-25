@@ -9,6 +9,7 @@ public class Estimate {
 	private LocalDate date;
 	private Long companyId;
 	private Long customerId;
+	private String approved_by;
 	private String jobDescription;
 	private BigDecimal total;
 	private List<EstimateItem> items;
@@ -17,12 +18,13 @@ public class Estimate {
 	public Estimate() {
 	}
 
-	public Estimate(Long id, LocalDate date, Long companyId, Long customerId, String jobDescription, BigDecimal total,
-			List<EstimateItem> items, List<String> imageNames) {
+	public Estimate(Long id, LocalDate date, Long companyId, Long customerId, String approved_by, String jobDescription,
+			BigDecimal total, List<EstimateItem> items, List<String> imageNames) {
 		this.id = id;
 		this.date = date;
 		this.companyId = companyId;
 		this.customerId = customerId;
+		this.approved_by = approved_by;
 		this.jobDescription = jobDescription;
 		this.total = total;
 		this.items = items;
@@ -61,6 +63,14 @@ public class Estimate {
 
 	public void setCustomerId(Long customerId) {
 		this.customerId = customerId;
+	}
+
+	public String getApproved_by() {
+		return approved_by;
+	}
+
+	public void setApproved_by(String approved_by) {
+		this.approved_by = approved_by;
 	}
 
 	public String getJobDescription() {

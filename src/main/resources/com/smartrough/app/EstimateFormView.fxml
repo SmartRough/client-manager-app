@@ -30,6 +30,9 @@
 
             <Label text="Job Description:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
             <TextArea fx:id="jobDescriptionArea" GridPane.rowIndex="3" GridPane.columnIndex="1" prefRowCount="3"/>
+            
+            <Label text="Approved By:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <TextField fx:id="approvedByField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
         </GridPane>
 
         <Label text="Items" style="-fx-font-size: 16px; -fx-font-weight: bold;" />

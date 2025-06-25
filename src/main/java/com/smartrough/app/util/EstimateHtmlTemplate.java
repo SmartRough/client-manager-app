@@ -94,7 +94,8 @@ public class EstimateHtmlTemplate {
 				String base64 = loadEstimateImageBase64(estimate, customer, imageName);
 				if (base64 != null) {
 					System.out.println("Image loaded: " + imageName + " => size: " + base64.length());
-					sb.append("<img src='data:image/jpeg;base64,").append(base64).append("' alt='Estimate Image' />");
+					sb.append("<img src='data:image/jpeg;base64,").append(base64).append(
+							"' alt='Estimate Image' style='width: 48%; max-height: 200px; object-fit: contain; border: 1px solid #ccc; padding: 4px; border-radius: 4px;'/>");
 				}
 			}
 			sb.append("</div></div>");
@@ -103,6 +104,29 @@ public class EstimateHtmlTemplate {
 		sb.append(
 				"<div style='text-align: center; font-size: 18px; font-weight: bold; margin-top: 60px; color: #444;'>");
 		sb.append("Thank you for considering us.");
+		sb.append("</div>");
+
+		sb.append("<div style='margin-top: 60px;'>");
+		sb.append("<table style='width: 100%; margin-top: 30px; font-size: 14px;'>");
+		sb.append("<tr>");
+
+		// Firma de la empresa
+		sb.append("<td style='width: 50%; text-align: left;'>");
+		sb.append("<strong>").append(company.getName()).append("</strong><br/>");
+		sb.append("Approved by: ").append(company.getRepresentative() != null ? company.getRepresentative() : "")
+				.append("<br/><br/>");
+		sb.append("<div style='border-bottom: 1px solid #000; width: 200px; height: 40px;'></div>");
+		sb.append("</td>");
+
+		// Firma del cliente
+		sb.append("<td style='width: 50%; text-align: right;'>");
+		sb.append("<strong>").append(customer.getName()).append("</strong><br/>");
+		sb.append("Approved by: ").append(estimate.getApproved_by()).append("<br/><br/>");
+		sb.append("<div style='border-bottom: 1px solid #000; width: 200px; height: 40px; float: right;'></div>");
+		sb.append("</td>");
+
+		sb.append("</tr>");
+		sb.append("</table>");
 		sb.append("</div>");
 
 		sb.append("</div></body></html>");
@@ -116,10 +140,11 @@ public class EstimateHtmlTemplate {
 
 			// Usar el mismo nombre "seguro" que usaste al guardar las imágenes
 			String safeCustomerName = customer.getName().replaceAll("[^a-zA-Z0-9_\\-]", "_");
-			
+
 			String contractName = "estimates_" + estimate.getId();
 
-			Path path = Path.of(System.getProperty("user.dir"), "estimates", folder, safeCustomerName, contractName, imageName);
+			Path path = Path.of(System.getProperty("user.dir"), "estimates", folder, safeCustomerName, contractName,
+					imageName);
 
 			if (!path.toFile().exists()) {
 				System.err.println("⚠️ Archivo no encontrado: " + path);

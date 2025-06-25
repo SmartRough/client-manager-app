@@ -84,6 +84,7 @@ public class Database {
 						date DATE NOT NULL,
 						company_id INTEGER NOT NULL,
 						customer_id INTEGER NOT NULL,
+						approved_by TEXT,
 						job_description TEXT,
 						total REAL NOT NULL,
 						image_names TEXT,

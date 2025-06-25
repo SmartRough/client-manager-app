@@ -30,6 +30,8 @@ public class EstimateFormController {
 	@FXML
 	private ComboBox<Company> customerComboBox;
 	@FXML
+	private TextField approvedByField;
+	@FXML
 	private TextArea jobDescriptionArea;
 	@FXML
 	private TableView<EstimateItem> itemTable;
@@ -56,6 +58,8 @@ public class EstimateFormController {
 		setupCompanyCombos();
 		setupItemTable();
 		prepareNewEstimate();
+		
+		restrictToDecimalInput(totalField);
 	}
 
 	private void setupCompanyCombos() {
@@ -112,6 +116,7 @@ public class EstimateFormController {
 		if (!companyComboBox.getItems().isEmpty())
 			companyComboBox.getSelectionModel().select(0);
 		customerComboBox.getSelectionModel().clearSelection();
+		approvedByField.clear();
 		jobDescriptionArea.clear();
 		newDescriptionField.clear();
 		imageNames.clear();
@@ -166,6 +171,7 @@ public class EstimateFormController {
 		estimate.setDate(datePicker.getValue());
 		estimate.setCompanyId(companyComboBox.getValue().getId());
 		estimate.setCustomerId(customerComboBox.getValue().getId());
+		estimate.setApproved_by(approvedByField.getText());
 		estimate.setJobDescription(jobDescriptionArea.getText());
 		estimate.setTotal(new BigDecimal(totalField.getText()));
 		estimate.setItems(new ArrayList<>(items));
@@ -250,8 +256,8 @@ public class EstimateFormController {
 			return showError("Date is required.");
 		if (companyComboBox.getValue() == null || customerComboBox.getValue() == null)
 			return showError("Company and customer must be selected.");
-		if (jobDescriptionArea.getText().isBlank())
-			return showError("Job description is required.");
+		if (approvedByField.getText().isBlank())
+			return showError("Approved by is required.");
 		if (items.isEmpty())
 			return showError("At least one item is required.");
 		if (imageFiles.isEmpty() && imageNames.isEmpty())
@@ -284,6 +290,7 @@ public class EstimateFormController {
 				.ifPresent(companyComboBox.getSelectionModel()::select);
 		customerComboBox.getItems().stream().filter(c -> c.getId() == estimate.getCustomerId()).findFirst()
 				.ifPresent(customerComboBox.getSelectionModel()::select);
+		approvedByField.setText(estimate.getApproved_by());
 		jobDescriptionArea.setText(estimate.getJobDescription());
 		totalField.setText(estimate.getTotal().toString());
 		items.setAll(EstimateItemDAO.findByEstimateId(estimate.getId()));
@@ -357,5 +364,12 @@ public class EstimateFormController {
 		if (folder.exists() && folder.isDirectory() && folder.listFiles() != null && folder.listFiles().length == 0) {
 			folder.delete();
 		}
+	}
+
+	private void restrictToDecimalInput(TextField field) {
+		field.setTextFormatter(new TextFormatter<>(change -> {
+			String newText = change.getControlNewText();
+			return newText.matches("\\d*(\\.\\d{0,2})?") ? change : null;
+		}));
 	}
 }

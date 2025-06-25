@@ -55,7 +55,7 @@
                     <columns>
                         <TableColumn fx:id="dateCol" text="Date" prefWidth="120" />
                         <TableColumn fx:id="clientCol" text="Client" prefWidth="250" />
-                        <TableColumn fx:id="jobCol" text="Job Description" prefWidth="300" />
+                        <TableColumn fx:id="approvedByCol" text="Approved By" prefWidth="200" />
                         <TableColumn fx:id="totalCol" text="Total" prefWidth="120" />
                         <TableColumn fx:id="actionCol" text="Actions" prefWidth="150" />
                     </columns>
