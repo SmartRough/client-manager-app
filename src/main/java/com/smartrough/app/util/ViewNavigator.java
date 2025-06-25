@@ -75,7 +75,7 @@ public class ViewNavigator {
 	
 	public static void loadView(String fxml, Contract contract) {
 		try {
-			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/view/" + fxml));
+			FXMLLoader loader = new FXMLLoader(ViewNavigator.class.getResource("/com/smartrough/app/" + fxml));
 			Parent view = loader.load();
 			ContractFormController controller = loader.getController();
 			controller.loadContract(contract);
