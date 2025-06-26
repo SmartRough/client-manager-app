@@ -133,17 +133,17 @@ public class ContractHtmlTemplate {
 		// Tabla de cláusulas
 		sb.append("<table style='width: 100%; border-collapse: collapse; font-size: 13px;'>");
 
-		String intBox = "<div style='width: 40px; height: 25px; border: 1px solid #000; text-align: center; font-size: 10px; line-height: 25px;'>INT.</div>";
+		String intBox = "<div style='width: 40px; height: 25px; border: 1px solid red; text-align: center; font-size: 10px; line-height: 25px; color: red;'>INT.</div>";
 
 		// Clause 1
 		sb.append("<tr><td style='width: 60px; vertical-align: top; padding: 8px;'>").append(intBox)
-				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc;'>")
+				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc; color: red;'>")
 				.append("<strong>1.</strong> This Agreement constitutes the complete agreement between the parties and may not be modified except in writing signed by all parties hereto. ORAL REPRESENTATIONS BY EITHER PARTY ARE NOT BINDING AND SHOULD NOT BE RELIED UPON. The Contractor will not provide any services not specifically outlined in this agreement.")
 				.append("</td></tr>");
 
 		// Clause 2
 		sb.append("<tr><td style='width: 60px; vertical-align: top; padding: 8px;'>").append(intBox)
-				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc;'>")
+				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc; color: red;'>")
 				.append("<strong>2.</strong> Permits. The Owner agrees that the owner shall pay for all permits required for the work. All such costs shall be in addition to the Total price listed in this agreement. The Owner shall be responsible for and shall pay the cost of acquiring HOA approval. It is the Owner's responsibility to be present for any inspections necessary for permitting or HOA purposes.")
 				.append("</td></tr>");
 
@@ -151,14 +151,14 @@ public class ContractHtmlTemplate {
 		String range = (startDate.isEmpty() || endDate.isEmpty()) ? "__________________________"
 				: startDate + " - " + endDate;
 		sb.append("<tr><td style='width: 60px; vertical-align: top; padding: 8px;'>").append(intBox)
-				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc;'>")
+				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc; color: red;'>")
 				.append("<strong>3.</strong> The Commencement date will be between <u>").append(range)
 				.append("</u> after approval of measure, the issuance of permits, financing and/or HOA approval.")
 				.append("</td></tr>");
 
 		// Clause 4
 		sb.append("<tr><td style='width: 60px; vertical-align: top; padding: 8px;'>").append(intBox)
-				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc;'>")
+				.append("</td><td style='padding: 8px; border-bottom: 1px solid #ccc; color: red;'>")
 				.append("<strong>4.</strong> Lead Safe Paint Practices. The Owner acknowledges receipt of a copy of the \"Renovate Right: Important Lead Hazard Information for families, Child Care providers and schools\" pamphlet. The Owner is aware of the potential risk of lead hazard exposure from renovation activity to be performed in the home.")
 				.append("</td></tr>");
 
@@ -182,15 +182,6 @@ public class ContractHtmlTemplate {
 		sb.append(
 				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Balance Due Upon Substantial Completion</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
 				.append(format(contract.getBalanceDue())).append("</td></tr>");
-		sb.append(
-				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Amount Financed</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
-				.append(format(contract.getAmountFinanced())).append("</td></tr>");
-		sb.append(
-				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Card Info</td><td style='border: 1px solid #ccc; padding: 8px;'>")
-				.append("Type: ").append(safe(contract.getCardType())).append(" &#160;&#160; Zip Code: ")
-				.append(safe(contract.getCardZip())).append("<br/>Number: ").append(safe(contract.getCardNumber()))
-				.append("<br/>CVC #: ").append(safe(contract.getCardCVC())).append(" &#160;&#160; Exp: ")
-				.append(safe(contract.getCardExp())).append("</td></tr>");
 
 		sb.append("</table>");
 		sb.append("</div>");
