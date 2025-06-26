@@ -117,6 +117,7 @@ public class InvoiceFormController {
 					InvoiceItem item = getTableView().getItems().get(getIndex());
 					items.remove(item);
 					recalculateTotals();
+					System.out.println("After delete, items.size = " + items.size()); // DEBUG opcional
 				});
 
 				deleteButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
@@ -142,8 +143,7 @@ public class InvoiceFormController {
 
 		customerComboBox.getSelectionModel().clearSelection();
 
-		items.clear();
-		itemTable.getItems().clear();
+		items.clear(); // Limpieza segura, itemTable está vinculado
 
 		subtotalField.clear();
 		taxRateField.clear();
@@ -197,6 +197,7 @@ public class InvoiceFormController {
 		notesField.setText(invoice.getNotes() != null ? invoice.getNotes() : "");
 
 		items.setAll(InvoiceItemDAO.findByInvoiceId(invoice.getId()));
+		System.out.println("After load, items.size = " + items.size()); // DEBUG opcional
 	}
 
 	@FXML
@@ -219,6 +220,7 @@ public class InvoiceFormController {
 
 		InvoiceItem item = new InvoiceItem(null, null, desc, amt);
 		items.add(item);
+		System.out.println("After add, items.size = " + items.size()); // DEBUG opcional
 
 		newDescriptionField.clear();
 		newAmountField.clear();
@@ -254,9 +256,8 @@ public class InvoiceFormController {
 
 	@FXML
 	private void handleSave() {
-		if (!validateForm()) {
+		if (!validateForm())
 			return;
-		}
 
 		Invoice invoice = invoiceBeingEdited != null ? invoiceBeingEdited : new Invoice();
 		invoice.setInvoiceNumber(invoiceNumberField.getText());
@@ -270,29 +271,26 @@ public class InvoiceFormController {
 		invoice.setNotes(notesField.getText());
 
 		if (invoiceBeingEdited == null) {
-			// Guardar factura nueva
 			long invoiceId = InvoiceDAO.save(invoice);
 			invoice.setId(invoiceId);
 
-			// Guardar ítems asociados
 			for (InvoiceItem item : items) {
 				item.setInvoiceId(invoice.getId());
 				InvoiceItemDAO.save(item);
 			}
 
-			prepareNewInvoice(); // limpiar formulario
+			prepareNewInvoice();
 
 		} else {
-			// Actualizar factura existente
 			InvoiceDAO.update(invoice);
-			InvoiceItemDAO.delete(invoice.getId()); // eliminar ítems antiguos
+			InvoiceItemDAO.delete(invoice.getId());
 
 			for (InvoiceItem item : items) {
 				item.setInvoiceId(invoice.getId());
 				InvoiceItemDAO.save(item);
 			}
 
-			handleCancel(); // volver al listado
+			handleCancel();
 		}
 	}
 
