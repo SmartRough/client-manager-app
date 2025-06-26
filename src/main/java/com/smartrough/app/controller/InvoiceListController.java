@@ -5,6 +5,7 @@ import com.smartrough.app.dao.InvoiceDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Invoice;
 import com.smartrough.app.util.InvoiceExporter;
+import com.smartrough.app.util.NumberFieldHelper;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -17,6 +18,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -81,11 +83,8 @@ public class InvoiceListController {
 		});
 
 		subtotalCol.setCellValueFactory(cellData -> {
-			if (cellData.getValue().getSubtotal() != null) {
-				return new ReadOnlyStringWrapper(
-						"$" + cellData.getValue().getSubtotal().setScale(2, RoundingMode.HALF_UP));
-			}
-			return new ReadOnlyStringWrapper("");
+			BigDecimal value = cellData.getValue().getSubtotal();
+			return new ReadOnlyStringWrapper(value != null ? "$" + NumberFieldHelper.format(value) : "");
 		});
 
 		taxCol.setCellValueFactory(cellData -> {
@@ -97,19 +96,13 @@ public class InvoiceListController {
 		});
 
 		additionalCol.setCellValueFactory(cellData -> {
-			if (cellData.getValue().getAdditionalCosts() != null) {
-				return new ReadOnlyStringWrapper(
-						"$" + cellData.getValue().getAdditionalCosts().setScale(2, RoundingMode.HALF_UP));
-			}
-			return new ReadOnlyStringWrapper("");
+			BigDecimal value = cellData.getValue().getAdditionalCosts();
+			return new ReadOnlyStringWrapper(value != null ? "$" + NumberFieldHelper.format(value) : "");
 		});
 
 		totalCol.setCellValueFactory(cellData -> {
-			if (cellData.getValue().getTotal() != null) {
-				return new ReadOnlyStringWrapper(
-						"$" + cellData.getValue().getTotal().setScale(2, RoundingMode.HALF_UP));
-			}
-			return new ReadOnlyStringWrapper("");
+			BigDecimal value = cellData.getValue().getTotal();
+			return new ReadOnlyStringWrapper(value != null ? "$" + NumberFieldHelper.format(value) : "");
 		});
 
 		actionCol.setCellFactory(col -> new TableCell<>() {

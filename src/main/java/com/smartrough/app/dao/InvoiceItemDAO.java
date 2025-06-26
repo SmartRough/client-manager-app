@@ -62,4 +62,15 @@ public class InvoiceItemDAO {
 		}
 	}
 
+	public static boolean deleteByInvoiceId(long invoiceId) {
+		String sql = "DELETE FROM Invoice_Item WHERE invoice_id = ?";
+		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setLong(1, invoiceId);
+			return stmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			System.err.println("Error deleting items by invoice_id: " + e.getMessage());
+			return false;
+		}
+	}
+
 }

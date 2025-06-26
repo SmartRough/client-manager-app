@@ -5,6 +5,7 @@ import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Invoice;
 import com.smartrough.app.model.InvoiceItem;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class InvoiceHtmlTemplate {
@@ -97,10 +98,14 @@ public class InvoiceHtmlTemplate {
 
 		// Ítems
 		for (InvoiceItem item : items) {
-			sb.append("<tr><td>").append(item.getDescription()).append("</td>");
-			sb.append("<td style='text-align: right;'>").append(
-					item.getAmount() != null && item.getAmount().doubleValue() > 0 ? "$" + item.getAmount() : "")
-					.append("</td></tr>");
+			sb.append("<tr>");
+			sb.append("<td>").append(item.getDescription()).append("</td>");
+			sb.append("<td style='text-align: right;'>")
+					.append(item.getAmount() != null && item.getAmount().doubleValue() > 0
+							? "$" + NumberFieldHelper.format(item.getAmount())
+							: "")
+					.append("</td>");
+			sb.append("</tr>");
 		}
 
 		// Agregar filas vacías para dar espacio visual
@@ -113,29 +118,31 @@ public class InvoiceHtmlTemplate {
 		sb.append("<tr><td style='text-align: right; font-weight: bold; border: none;'>Subtotal</td>");
 		sb.append("<td style='text-align: right; border: none;'>")
 				.append(invoice.getSubtotal() != null && invoice.getSubtotal().doubleValue() > 0
-						? "$" + invoice.getSubtotal()
+						? "$" + NumberFieldHelper.format(invoice.getSubtotal())
 						: "")
 				.append("</td></tr>");
 
+		BigDecimal taxAmount = invoice.getTaxRate() != null && invoice.getSubtotal() != null
+				? invoice.getSubtotal().multiply(invoice.getTaxRate()).divide(BigDecimal.valueOf(100))
+				: BigDecimal.ZERO;
+
 		sb.append("<tr><td style='text-align: right; font-weight: bold; border: none;'>Tax</td>");
 		sb.append("<td style='text-align: right; border: none;'>")
-				.append(invoice.getTaxRate() != null && invoice.getTaxRate().doubleValue() > 0
-						? "$" + invoice.getTaxRate()
-						: "")
+				.append(taxAmount.doubleValue() > 0 ? "$" + NumberFieldHelper.format(taxAmount) : "")
 				.append("</td></tr>");
 
 		sb.append("<tr><td style='text-align: right; font-weight: bold; border: none;'>Additional Costs</td>");
 		sb.append("<td style='text-align: right; border: none;'>")
 				.append(invoice.getAdditionalCosts() != null && invoice.getAdditionalCosts().doubleValue() > 0
-						? "$" + invoice.getAdditionalCosts()
+						? "$" + NumberFieldHelper.format(invoice.getAdditionalCosts())
 						: "")
 				.append("</td></tr>");
 
 		// Total final destacado
 		sb.append("<tr style='background-color: #0056b3; color: white;'>");
 		sb.append("<td style='text-align: right; font-weight: bold;'>Total</td>");
-		sb.append("<td style='text-align: right; font-weight: bold;'>$").append(invoice.getTotal())
-				.append("</td></tr>");
+		sb.append("<td style='text-align: right; font-weight: bold;'>$")
+				.append(NumberFieldHelper.format(invoice.getTotal())).append("</td></tr>");
 
 		sb.append("</table>");
 

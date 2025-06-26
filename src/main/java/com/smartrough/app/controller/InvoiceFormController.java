@@ -6,6 +6,7 @@ import com.smartrough.app.dao.InvoiceItemDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Invoice;
 import com.smartrough.app.model.InvoiceItem;
+import com.smartrough.app.util.NumberFieldHelper;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,7 +16,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.util.Locale;
 
 public class InvoiceFormController {
 
@@ -61,12 +64,12 @@ public class InvoiceFormController {
 		setupCompanyCombos();
 		setupItemTable();
 
-		restrictToIntegerInput(invoiceNumberField);
-		restrictToDecimalInput(newAmountField);
-		restrictToDecimalInput(subtotalField);
-		restrictToDecimalInput(taxRateField);
-		restrictToDecimalInput(additionalCostsField);
-		restrictToDecimalInput(totalField);
+		NumberFieldHelper.applyIntegerFormat(invoiceNumberField);
+		NumberFieldHelper.applyDecimalFormat(newAmountField);
+		NumberFieldHelper.applyDecimalFormat(subtotalField);
+		NumberFieldHelper.applyDecimalFormat(taxRateField);
+		NumberFieldHelper.applyDecimalFormat(additionalCostsField);
+		NumberFieldHelper.applyDecimalFormat(totalField);
 
 		if (!editing) {
 			prepareNewInvoice();
@@ -102,6 +105,16 @@ public class InvoiceFormController {
 		amountColumn.setCellValueFactory(
 				data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getAmount()));
 
+		NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.US);
+
+		amountColumn.setCellFactory(column -> new TableCell<>() {
+			@Override
+			protected void updateItem(BigDecimal amount, boolean empty) {
+				super.updateItem(amount, empty);
+				setText(empty || amount == null ? "" : currencyFormat.format(amount));
+			}
+		});
+
 		actionColumn.setCellFactory(col -> new TableCell<>() {
 			private final Button deleteButton = new Button();
 
@@ -112,15 +125,12 @@ public class InvoiceFormController {
 				deleteButton.setGraphic(deleteIcon);
 				deleteButton.getStyleClass().add("icon-button");
 				deleteButton.setTooltip(new Tooltip("Delete item"));
-
+				deleteButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 				deleteButton.setOnAction(e -> {
 					InvoiceItem item = getTableView().getItems().get(getIndex());
 					items.remove(item);
 					recalculateTotals();
-					System.out.println("After delete, items.size = " + items.size()); // DEBUG opcional
 				});
-
-				deleteButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
 			}
 
 			@Override
@@ -134,16 +144,16 @@ public class InvoiceFormController {
 	}
 
 	private void prepareNewInvoice() {
+		editing = false;
+		invoiceBeingEdited = null;
 		datePicker.setValue(LocalDate.now());
 		initializeInvoiceNumber();
-
-		if (!companyComboBox.getItems().isEmpty()) {
+		if (!companyComboBox.getItems().isEmpty())
 			companyComboBox.getSelectionModel().select(0);
-		}
-
 		customerComboBox.getSelectionModel().clearSelection();
 
-		items.clear(); // Limpieza segura, itemTable está vinculado
+		items.clear();
+		itemTable.refresh();
 
 		subtotalField.clear();
 		taxRateField.clear();
@@ -152,9 +162,6 @@ public class InvoiceFormController {
 		newDescriptionField.clear();
 		newAmountField.clear();
 		notesField.clear();
-
-		invoiceBeingEdited = null;
-		editing = false;
 		invoiceNumberField.setDisable(false);
 	}
 
@@ -171,33 +178,21 @@ public class InvoiceFormController {
 		invoiceNumberField.setDisable(true);
 		datePicker.setValue(invoice.getDate());
 
-		if (!companyComboBox.getItems().isEmpty()) {
-			companyComboBox.getSelectionModel().select(0);
-		}
+		companyComboBox.getItems().stream().filter(c -> c.getId() == invoice.getCompanyId()).findFirst()
+				.ifPresent(companyComboBox.getSelectionModel()::select);
 
-		for (Company c : companyComboBox.getItems()) {
-			if (c.getId() == invoice.getCompanyId()) {
-				companyComboBox.getSelectionModel().select(c);
-				break;
-			}
-		}
+		customerComboBox.getItems().stream().filter(c -> c.getId() == invoice.getCustomerId()).findFirst()
+				.ifPresent(customerComboBox.getSelectionModel()::select);
 
-		for (Company c : customerComboBox.getItems()) {
-			if (c.getId() == invoice.getCustomerId()) {
-				customerComboBox.getSelectionModel().select(c);
-				break;
-			}
-		}
-
-		subtotalField.setText(invoice.getSubtotal() != null ? invoice.getSubtotal().toString() : "");
+		subtotalField.setText(NumberFieldHelper.format(invoice.getSubtotal()));
 		taxRateField.setText(invoice.getTaxRate() != null ? invoice.getTaxRate().toString() : "");
-		additionalCostsField
-				.setText(invoice.getAdditionalCosts() != null ? invoice.getAdditionalCosts().toString() : "");
-		totalField.setText(invoice.getTotal() != null ? invoice.getTotal().toString() : "");
+		additionalCostsField.setText(NumberFieldHelper.format(invoice.getAdditionalCosts()));
+		totalField.setText(NumberFieldHelper.format(invoice.getTotal()));
 		notesField.setText(invoice.getNotes() != null ? invoice.getNotes() : "");
 
-		items.setAll(InvoiceItemDAO.findByInvoiceId(invoice.getId()));
-		System.out.println("After load, items.size = " + items.size()); // DEBUG opcional
+		items.clear();
+		items.addAll(InvoiceItemDAO.findByInvoiceId(invoice.getId()));
+		itemTable.refresh();
 	}
 
 	@FXML
@@ -208,20 +203,15 @@ public class InvoiceFormController {
 			return;
 		}
 
-		BigDecimal amt = BigDecimal.ZERO;
-		if (!newAmountField.getText().isBlank()) {
-			try {
-				amt = new BigDecimal(newAmountField.getText());
-			} catch (NumberFormatException e) {
-				showAlert("Invalid amount. Leave blank if unknown.");
-				return;
-			}
+		BigDecimal amt;
+		try {
+			amt = newAmountField.getText().isBlank() ? BigDecimal.ZERO : new BigDecimal(newAmountField.getText());
+		} catch (NumberFormatException e) {
+			showAlert("Invalid amount.");
+			return;
 		}
 
-		InvoiceItem item = new InvoiceItem(null, null, desc, amt);
-		items.add(item);
-		System.out.println("After add, items.size = " + items.size()); // DEBUG opcional
-
+		items.add(new InvoiceItem(null, null, desc, amt));
 		newDescriptionField.clear();
 		newAmountField.clear();
 		recalculateTotals();
@@ -236,7 +226,7 @@ public class InvoiceFormController {
 		}
 
 		BigDecimal subtotal = items.stream().map(InvoiceItem::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-		subtotalField.setText(subtotal.toString());
+		subtotalField.setText(NumberFieldHelper.format(subtotal));
 
 		BigDecimal tax = BigDecimal.ZERO;
 		try {
@@ -251,7 +241,7 @@ public class InvoiceFormController {
 		}
 
 		BigDecimal total = subtotal.add(tax).add(additional);
-		totalField.setText(total.toString());
+		totalField.setText(NumberFieldHelper.format(total));
 	}
 
 	@FXML
@@ -259,45 +249,36 @@ public class InvoiceFormController {
 		if (!validateForm())
 			return;
 
-		Invoice invoice = invoiceBeingEdited != null ? invoiceBeingEdited : new Invoice();
+		Invoice invoice = editing ? invoiceBeingEdited : new Invoice();
 		invoice.setInvoiceNumber(invoiceNumberField.getText());
 		invoice.setDate(datePicker.getValue());
 		invoice.setCompanyId(companyComboBox.getValue().getId());
 		invoice.setCustomerId(customerComboBox.getValue().getId());
-		invoice.setSubtotal(parseDecimalOrZero(subtotalField.getText()));
+		invoice.setSubtotal(NumberFieldHelper.parse(subtotalField.getText()));
 		invoice.setTaxRate(parseDecimalOrNull(taxRateField.getText()));
-		invoice.setAdditionalCosts(parseDecimalOrNull(additionalCostsField.getText()));
-		invoice.setTotal(parseDecimalOrZero(totalField.getText()));
+		invoice.setAdditionalCosts(NumberFieldHelper.parse(additionalCostsField.getText()));
+		invoice.setTotal(NumberFieldHelper.parse(totalField.getText()));
 		invoice.setNotes(notesField.getText());
 
-		if (invoiceBeingEdited == null) {
+		if (!editing) {
 			long invoiceId = InvoiceDAO.save(invoice);
 			invoice.setId(invoiceId);
-
-			for (InvoiceItem item : items) {
-				item.setInvoiceId(invoice.getId());
-				InvoiceItemDAO.save(item);
-			}
-
-			prepareNewInvoice();
-
 		} else {
 			InvoiceDAO.update(invoice);
-			InvoiceItemDAO.delete(invoice.getId());
-
-			for (InvoiceItem item : items) {
-				item.setInvoiceId(invoice.getId());
-				InvoiceItemDAO.save(item);
-			}
-
-			handleCancel();
+			InvoiceItemDAO.deleteByInvoiceId(invoice.getId());
 		}
+
+		for (InvoiceItem item : items) {
+			item.setId(null); 
+			item.setInvoiceId(invoice.getId());
+			InvoiceItemDAO.save(item);
+		}
+
+		ViewNavigator.loadView("InvoiceListView.fxml");
 	}
 
 	@FXML
 	private void handleCancel() {
-		editing = false;
-		invoiceBeingEdited = null;
 		ViewNavigator.loadView("InvoiceListView.fxml");
 	}
 
@@ -305,26 +286,10 @@ public class InvoiceFormController {
 		new Alert(Alert.AlertType.INFORMATION, msg).showAndWait();
 	}
 
-	private BigDecimal parseDecimalOrZero(String value) {
-		if (value == null || value.isBlank())
-			return BigDecimal.ZERO;
-		try {
-			return new BigDecimal(value);
-		} catch (NumberFormatException e) {
-			showAlert("Invalid number format: " + value);
-			throw e;
-		}
-	}
-
 	private BigDecimal parseDecimalOrNull(String value) {
 		if (value == null || value.isBlank())
 			return null;
-		try {
-			return new BigDecimal(value);
-		} catch (NumberFormatException e) {
-			showAlert("Invalid number format: " + value);
-			throw e;
-		}
+		return NumberFieldHelper.parse(value);
 	}
 
 	private boolean validateForm() {
@@ -332,7 +297,7 @@ public class InvoiceFormController {
 			showAlert("Invoice number is required.");
 			return false;
 		}
-		if (InvoiceDAO.existsInvoiceNumber(invoiceNumberField.getText()) && invoiceBeingEdited == null) {
+		if (!editing && InvoiceDAO.existsInvoiceNumber(invoiceNumberField.getText())) {
 			showAlert("Invoice number already exists.");
 			return false;
 		}
@@ -340,45 +305,25 @@ public class InvoiceFormController {
 			showAlert("Date is required.");
 			return false;
 		}
-		if (companyComboBox.getValue() == null) {
-			showAlert("Please select your company.");
-			return false;
-		}
-		if (customerComboBox.getValue() == null) {
-			showAlert("Please select a customer.");
+		if (companyComboBox.getValue() == null || customerComboBox.getValue() == null) {
+			showAlert("Company and customer are required.");
 			return false;
 		}
 		if (items.isEmpty()) {
 			showAlert("Please add at least one item.");
 			return false;
 		}
-
 		boolean hasAmount = items.stream()
 				.anyMatch(item -> item.getAmount() != null && item.getAmount().compareTo(BigDecimal.ZERO) > 0);
 		if (!hasAmount) {
 			showAlert("At least one item must have a valid amount.");
 			return false;
 		}
-
-		if (totalField.getText().isBlank() || new BigDecimal(totalField.getText()).compareTo(BigDecimal.ZERO) <= 0) {
-			showAlert("Total cannot be blank or zero.");
+		BigDecimal total = NumberFieldHelper.parse(totalField.getText());
+		if (total.compareTo(BigDecimal.ZERO) <= 0) {
+			showAlert("Total must be greater than zero.");
 			return false;
 		}
-
 		return true;
-	}
-
-	private void restrictToDecimalInput(TextField field) {
-		field.setTextFormatter(new TextFormatter<>(change -> {
-			String newText = change.getControlNewText();
-			return newText.matches("\\d*(\\.\\d{0,2})?") ? change : null;
-		}));
-	}
-
-	private void restrictToIntegerInput(TextField field) {
-		field.setTextFormatter(new TextFormatter<>(change -> {
-			String newText = change.getControlNewText();
-			return newText.matches("\\d*") ? change : null;
-		}));
 	}
 }
