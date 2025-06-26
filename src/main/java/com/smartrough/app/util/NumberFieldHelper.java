@@ -70,4 +70,16 @@ public class NumberFieldHelper {
 		formatter.setMaximumFractionDigits(2);
 		return formatter.format(value);
 	}
+
+	public static void restrictToIntegerInput(TextField field, int maxLength) {
+		field.setTextFormatter(new TextFormatter<>(change -> {
+			String newText = change.getControlNewText();
+			return newText.matches("\\d{0," + maxLength + "}") ? change : null;
+		}));
+	}
+
+	public static String format(double value) {
+		return format(BigDecimal.valueOf(value));
+	}
+
 }

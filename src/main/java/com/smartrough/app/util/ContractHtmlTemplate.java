@@ -5,6 +5,7 @@ import com.smartrough.app.model.Contract;
 import com.smartrough.app.model.ContractItem;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class ContractHtmlTemplate {
 
@@ -295,7 +296,7 @@ public class ContractHtmlTemplate {
 	}
 
 	private static String format(Double d) {
-		return d != null ? String.format("%.2f", d) : "-";
+		return d != null ? String.format(Locale.US, "%,.2f", d) : "-";
 	}
 
 	private static String safe(String s) {

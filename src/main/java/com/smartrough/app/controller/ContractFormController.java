@@ -4,6 +4,7 @@ import com.smartrough.app.dao.ContractDAO;
 import com.smartrough.app.model.Contract;
 import com.smartrough.app.model.ContractAttachment;
 import com.smartrough.app.model.ContractItem;
+import com.smartrough.app.util.NumberFieldHelper;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,6 +15,7 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,16 +120,16 @@ public class ContractFormController {
 		mfhCheck.setToggleGroup(propertyTypeGroup);
 		commercialCheck.setToggleGroup(propertyTypeGroup);
 
-		restrictToIntegerInput(zipField, 5);
+		NumberFieldHelper.restrictToIntegerInput(zipField, 5);
 
-		restrictToDecimalInput(totalPriceField);
-		restrictToDecimalInput(depositField);
-		restrictToDecimalInput(balanceField);
-		restrictToDecimalInput(amountFinancedField);
+		NumberFieldHelper.applyDecimalFormat(totalPriceField);
+		NumberFieldHelper.applyDecimalFormat(depositField);
+		NumberFieldHelper.applyDecimalFormat(balanceField);
+		NumberFieldHelper.applyDecimalFormat(amountFinancedField);
 
-		restrictToIntegerInput(cardNumberField, 11);
-		restrictToIntegerInput(cardZipField, 5);
-		restrictToIntegerInput(cardCvcField, 3);
+		NumberFieldHelper.restrictToIntegerInput(cardNumberField, 11);
+		NumberFieldHelper.restrictToIntegerInput(cardZipField, 5);
+		NumberFieldHelper.restrictToIntegerInput(cardCvcField, 3);
 
 		if (!editing) {
 			houseCheck.setSelected(true);
@@ -318,10 +320,10 @@ public class ContractFormController {
 		commercialCheck.setSelected(contract.isCommercial());
 		hoaCheck.setSelected(contract.isHasHOA());
 
-		totalPriceField.setText(String.valueOf(contract.getTotalPrice()));
-		depositField.setText(String.valueOf(contract.getDeposit()));
-		balanceField.setText(String.valueOf(contract.getBalanceDue()));
-		amountFinancedField.setText(String.valueOf(contract.getAmountFinanced()));
+		totalPriceField.setText(NumberFieldHelper.format(BigDecimal.valueOf(contract.getTotalPrice())));
+		depositField.setText(NumberFieldHelper.format(BigDecimal.valueOf(contract.getDeposit())));
+		balanceField.setText(NumberFieldHelper.format(BigDecimal.valueOf(contract.getBalanceDue())));
+		amountFinancedField.setText(NumberFieldHelper.format(BigDecimal.valueOf(contract.getAmountFinanced())));
 
 		cardTypeField.setValue(contract.getCardType());
 		cardNumberField.setText(contract.getCardNumber());
@@ -365,10 +367,10 @@ public class ContractFormController {
 		c.setMFH(mfhCheck.isSelected());
 		c.setCommercial(commercialCheck.isSelected());
 		c.setHasHOA(hoaCheck.isSelected());
-		c.setTotalPrice(Double.parseDouble(totalPriceField.getText()));
-		c.setDeposit(Double.parseDouble(depositField.getText()));
-		c.setBalanceDue(Double.parseDouble(balanceField.getText()));
-		c.setAmountFinanced(Double.parseDouble(amountFinancedField.getText()));
+		c.setTotalPrice(NumberFieldHelper.parse(totalPriceField.getText()).doubleValue());
+		c.setDeposit(NumberFieldHelper.parse(depositField.getText()).doubleValue());
+		c.setBalanceDue(NumberFieldHelper.parse(balanceField.getText()).doubleValue());
+		c.setAmountFinanced(NumberFieldHelper.parse(amountFinancedField.getText()).doubleValue());
 		c.setCardType(cardTypeField.getValue());
 		c.setCardNumber(cardNumberField.getText());
 		c.setCardZip(cardZipField.getText());
@@ -504,19 +506,5 @@ public class ContractFormController {
 		String poNumber = contract.getPoNumber().replaceAll("[^a-zA-Z0-9_\\-]", "_");
 		return System.getProperty("user.dir") + File.separator + "contracts" + File.separator + folderName
 				+ File.separator + poNumber;
-	}
-
-	private void restrictToDecimalInput(TextField field) {
-		field.setTextFormatter(new TextFormatter<>(change -> {
-			String newText = change.getControlNewText();
-			return newText.matches("\\d*(\\.\\d{0,2})?") ? change : null;
-		}));
-	}
-
-	private void restrictToIntegerInput(TextField field, int maxLength) {
-		field.setTextFormatter(new TextFormatter<>(change -> {
-			String newText = change.getControlNewText();
-			return newText.matches("\\d{0," + maxLength + "}") ? change : null;
-		}));
 	}
 }

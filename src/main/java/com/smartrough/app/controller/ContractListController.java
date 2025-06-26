@@ -3,6 +3,7 @@ package com.smartrough.app.controller;
 import com.smartrough.app.dao.ContractDAO;
 import com.smartrough.app.model.Contract;
 import com.smartrough.app.util.ContractExporter;
+import com.smartrough.app.util.NumberFieldHelper;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -66,7 +67,7 @@ public class ContractListController {
 		homePhoneCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
 				data.getValue().getHomePhone() != null ? data.getValue().getHomePhone() : "-"));
 		totalCol.setCellValueFactory(
-				data -> new ReadOnlyStringWrapper(String.format("$%.2f", data.getValue().getTotalPrice())));
+				data -> new ReadOnlyStringWrapper(NumberFieldHelper.format(data.getValue().getTotalPrice())));
 	}
 
 	private void loadContracts() {
