@@ -6,6 +6,7 @@ import com.smartrough.app.dao.EstimateItemDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Estimate;
 import com.smartrough.app.model.EstimateItem;
+import com.smartrough.app.util.NumberFieldHelper;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,7 +17,6 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +58,8 @@ public class EstimateFormController {
 		setupCompanyCombos();
 		setupItemTable();
 		prepareNewEstimate();
-		
-		restrictToDecimalInput(totalField);
+
+		NumberFieldHelper.applyDecimalFormat(totalField);
 	}
 
 	private void setupCompanyCombos() {
@@ -173,7 +173,7 @@ public class EstimateFormController {
 		estimate.setCustomerId(customerComboBox.getValue().getId());
 		estimate.setApproved_by(approvedByField.getText());
 		estimate.setJobDescription(jobDescriptionArea.getText());
-		estimate.setTotal(new BigDecimal(totalField.getText()));
+		estimate.setTotal(NumberFieldHelper.parse(totalField.getText()));
 		estimate.setItems(new ArrayList<>(items));
 		estimate.setImageNames(new ArrayList<>(imageNames));
 
@@ -265,7 +265,7 @@ public class EstimateFormController {
 		if (totalField.getText().isBlank())
 			return showError("Total is required.");
 		try {
-			new BigDecimal(totalField.getText());
+			NumberFieldHelper.parse(totalField.getText());
 		} catch (Exception e) {
 			return showError("Total must be a valid number.");
 		}
@@ -292,7 +292,8 @@ public class EstimateFormController {
 				.ifPresent(customerComboBox.getSelectionModel()::select);
 		approvedByField.setText(estimate.getApproved_by());
 		jobDescriptionArea.setText(estimate.getJobDescription());
-		totalField.setText(estimate.getTotal().toString());
+		totalField.setText(NumberFieldHelper.format(estimate.getTotal()));
+		items.clear();
 		items.setAll(EstimateItemDAO.findByEstimateId(estimate.getId()));
 
 		imageNames.clear();
@@ -366,10 +367,4 @@ public class EstimateFormController {
 		}
 	}
 
-	private void restrictToDecimalInput(TextField field) {
-		field.setTextFormatter(new TextFormatter<>(change -> {
-			String newText = change.getControlNewText();
-			return newText.matches("\\d*(\\.\\d{0,2})?") ? change : null;
-		}));
-	}
 }

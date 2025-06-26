@@ -6,8 +6,10 @@ import com.smartrough.app.model.Estimate;
 import com.smartrough.app.model.EstimateItem;
 
 import java.nio.file.Path;
+import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 public class EstimateHtmlTemplate {
 
@@ -18,6 +20,11 @@ public class EstimateHtmlTemplate {
 		String formattedDate = estimate.getDate() != null
 				? estimate.getDate().format(DateTimeFormatter.ofPattern("MM/dd/yyyy"))
 				: "-";
+		
+		NumberFormat currencyFormatter = NumberFormat.getNumberInstance(Locale.US);
+		currencyFormatter.setMinimumFractionDigits(2);
+		currencyFormatter.setMaximumFractionDigits(2);
+		String formattedTotal = currencyFormatter.format(estimate.getTotal());
 
 		sb.append("<!DOCTYPE html>");
 		sb.append("<html xmlns='http://www.w3.org/1999/xhtml'>");
@@ -85,7 +92,7 @@ public class EstimateHtmlTemplate {
 
 		// Total
 		sb.append("<div style='text-align: right; font-size: 16px; margin-top: 30px;'>");
-		sb.append("<strong>Total:</strong> $").append(estimate.getTotal());
+		sb.append("<strong>Total:</strong> $").append(formattedTotal);
 		sb.append("</div>");
 
 		if (estimate.getImageNames() != null && !estimate.getImageNames().isEmpty()) {

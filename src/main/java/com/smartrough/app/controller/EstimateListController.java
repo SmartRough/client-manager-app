@@ -5,6 +5,7 @@ import com.smartrough.app.dao.EstimateDAO;
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Estimate;
 import com.smartrough.app.util.EstimateExporter;
+import com.smartrough.app.util.NumberFieldHelper;
 import com.smartrough.app.util.ViewNavigator;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -16,7 +17,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 
 import java.io.File;
-import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -73,7 +73,8 @@ public class EstimateListController {
 
 		totalCol.setCellValueFactory(e -> {
 			if (e.getValue().getTotal() != null) {
-				return new ReadOnlyStringWrapper("$" + e.getValue().getTotal().setScale(2, RoundingMode.HALF_UP));
+				String formatted = NumberFieldHelper.format(e.getValue().getTotal());
+				return new ReadOnlyStringWrapper("$" + formatted);
 			}
 			return new ReadOnlyStringWrapper("-");
 		});
