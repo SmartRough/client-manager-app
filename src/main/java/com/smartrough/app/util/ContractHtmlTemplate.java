@@ -167,22 +167,35 @@ public class ContractHtmlTemplate {
 		// Espacio antes de los costos
 		sb.append("<div style='height: 40px;'></div>");
 
-		// Project Cost centrado
+		// Título centrado
 		sb.append("<div style='text-align: center; page-break-inside: avoid;'>");
-		sb.append("<h4 style='margin-bottom: 10px;'>Project Cost</h4>");
-		sb.append(
-				"<table style='margin: 0 auto; border-collapse: collapse; font-size: 14px; page-break-inside: avoid;'>");
+		sb.append("<h4 style='margin-bottom: 20px; font-size: 18px; color: #333;'>Project Cost</h4>");
 
+		// Tabla estilizada
 		sb.append(
-				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Total Price</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
+				"<table style='margin: 0 auto; width: 80%; border-collapse: collapse; font-size: 14px; color: #333; box-shadow: 0 2px 6px rgba(0,0,0,0.1);'>");
+
+		// Encabezado
+		sb.append("<thead><tr style='background-color: #1f4e79; color: #fff;'>");
+		sb.append("<th style='text-align: center; padding: 12px; border: 1px solid #ddd;'>Description</th>");
+		sb.append("<th style='text-align: center; padding: 12px; border: 1px solid #ddd;'>Amount</th>");
+		sb.append("</tr></thead>");
+
+		// Cuerpo
+		sb.append("<tbody>");
+		sb.append("<tr><td style='padding: 12px; border: 1px solid #eee;'>Total Price</td>")
+				.append("<td style='padding: 12px; border: 1px solid #eee; text-align: right;'>$")
 				.append(format(contract.getTotalPrice())).append("</td></tr>");
-		sb.append(
-				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Deposit</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
+
+		sb.append("<tr><td style='padding: 12px; border: 1px solid #eee;'>Deposit</td>")
+				.append("<td style='padding: 12px; border: 1px solid #eee; text-align: right;'>$")
 				.append(format(contract.getDeposit())).append("</td></tr>");
-		sb.append(
-				"<tr><td style='border: 1px solid #ccc; padding: 8px;'>Balance Due Upon Substantial Completion</td><td style='border: 1px solid #ccc; padding: 8px;'>$")
+
+		sb.append("<tr><td style='padding: 12px; border: 1px solid #eee;'>Balance Due Upon Substantial Completion</td>")
+				.append("<td style='padding: 12px; border: 1px solid #eee; text-align: right;'>$")
 				.append(format(contract.getBalanceDue())).append("</td></tr>");
 
+		sb.append("</tbody>");
 		sb.append("</table>");
 		sb.append("</div>");
 		// end centered block

@@ -68,13 +68,18 @@ public class ImageToAnnexPdfConverter {
 			float pageWidth = PDRectangle.LETTER.getWidth();
 			float pageHeight = PDRectangle.LETTER.getHeight();
 
-			float maxWidth = pageWidth - 80;
-			float maxHeight = pageHeight - 120;
+			// ✅ Nuevo: fijamos un tamaño máximo más razonable para mostrar anexos
+			float maxDisplayWidth = 200; // ancho máximo del anexo
+			float maxDisplayHeight = 300; // alto máximo del anexo
 
-			float scale = Math.min(maxWidth / pdImage.getWidth(), maxHeight / pdImage.getHeight());
+			float imgWidth = pdImage.getWidth();
+			float imgHeight = pdImage.getHeight();
 
-			float width = pdImage.getWidth() * scale;
-			float height = pdImage.getHeight() * scale;
+			// Escalamos proporcionalmente dentro del límite
+			float scale = Math.min(maxDisplayWidth / imgWidth, maxDisplayHeight / imgHeight);
+
+			float width = imgWidth * scale;
+			float height = imgHeight * scale;
 
 			float x = (pageWidth - width) / 2;
 			float titleY = pageHeight - 50;
@@ -84,12 +89,14 @@ public class ImageToAnnexPdfConverter {
 				imageY = 20;
 
 			try (PDPageContentStream stream = new PDPageContentStream(doc, page)) {
+				// Título del anexo
 				stream.beginText();
 				stream.setFont(PDType1Font.HELVETICA_BOLD, 14);
 				stream.newLineAtOffset(60, titleY);
 				stream.showText(annexTitle);
 				stream.endText();
 
+				// Imagen centrada
 				stream.drawImage(pdImage, x, imageY, width, height);
 			}
 
