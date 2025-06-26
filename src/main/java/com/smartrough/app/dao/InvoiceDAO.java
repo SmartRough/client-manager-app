@@ -28,7 +28,7 @@ public class InvoiceDAO {
 
 	public static List<Invoice> findAll() {
 		List<Invoice> list = new ArrayList<>();
-		String sql = "SELECT * FROM Invoice ORDER BY date ASC";
+		String sql = "SELECT * FROM Invoice ORDER BY id DESC";
 
 		try (Connection conn = Database.connect();
 				PreparedStatement stmt = conn.prepareStatement(sql);

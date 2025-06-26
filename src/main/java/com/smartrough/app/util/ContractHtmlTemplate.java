@@ -2,7 +2,6 @@ package com.smartrough.app.util;
 
 import com.smartrough.app.model.Company;
 import com.smartrough.app.model.Contract;
-import com.smartrough.app.model.ContractItem;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -116,13 +115,14 @@ public class ContractHtmlTemplate {
 
 		sb.append("<table style='width: 100%; border-collapse: collapse; font-size: 14px;'>");
 		if (contract.getItems() != null) {
-			for (ContractItem item : contract.getItems()) {
+			contract.getItems().stream().sorted((a, b) -> Integer.compare(a.getOrder(), b.getOrder())).forEach(item -> {
 				sb.append("<tr>");
 				sb.append("<td style='border-bottom: 1px solid #ccc; padding: 8px;'>")
 						.append(safe(item.getDescription())).append("</td>");
 				sb.append("</tr>");
-			}
+			});
 		}
+
 		sb.append("</table></div>");
 
 		// Clauses and Cost

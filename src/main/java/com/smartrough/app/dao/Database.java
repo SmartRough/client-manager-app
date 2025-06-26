@@ -140,6 +140,7 @@ public class Database {
 						id INTEGER PRIMARY KEY AUTOINCREMENT,
 						contract_id INTEGER NOT NULL,
 						description TEXT,
+						"order" INTEGER NOT NULL,
 						FOREIGN KEY(contract_id) REFERENCES Contract(id) ON DELETE CASCADE
 					);
 				""";

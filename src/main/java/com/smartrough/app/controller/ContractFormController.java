@@ -12,6 +12,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -108,7 +112,7 @@ public class ContractFormController {
 	public void initialize() {
 		itemDescriptionCol.setCellValueFactory(
 				data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
-		itemActionCol.setCellFactory(col -> createDeleteButton(itemTable, items));
+		itemActionCol.setCellFactory(col -> createEditDeleteButton(itemTable, items));
 		itemTable.setItems(items);
 
 		cardTypeField.getItems().addAll("Debit", "Credit");
@@ -144,28 +148,85 @@ public class ContractFormController {
 		});
 
 		updateAttachmentTable();
+
+		itemTable.setRowFactory(tv -> {
+			TableRow<ContractItem> row = new TableRow<>();
+
+			row.setOnDragDetected(event -> {
+				if (!row.isEmpty()) {
+					Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
+					ClipboardContent cc = new ClipboardContent();
+					cc.putString(Integer.toString(row.getIndex()));
+					db.setContent(cc);
+					event.consume();
+				}
+			});
+
+			row.setOnDragOver(event -> {
+				Dragboard db = event.getDragboard();
+				if (db.hasString()) {
+					event.acceptTransferModes(TransferMode.MOVE);
+					event.consume();
+				}
+			});
+
+			row.setOnDragDropped(event -> {
+				Dragboard db = event.getDragboard();
+				if (db.hasString()) {
+					int draggedIndex = Integer.parseInt(db.getString());
+					ContractItem draggedItem = itemTable.getItems().remove(draggedIndex);
+
+					int dropIndex = row.isEmpty() ? itemTable.getItems().size() : row.getIndex();
+					itemTable.getItems().add(dropIndex, draggedItem);
+					event.setDropCompleted(true);
+					itemTable.refresh();
+					event.consume();
+				}
+			});
+
+			return row;
+		});
+
 	}
 
-	private <T> TableCell<T, Void> createDeleteButton(TableView<T> table, ObservableList<T> list) {
+	private <T> TableCell<T, Void> createEditDeleteButton(TableView<T> table, ObservableList<T> list) {
 		return new TableCell<>() {
 			private final Button deleteButton = new Button();
+			private final Button editButton = new Button();
+			private final HBox actionButtons = new HBox(5);
 
 			{
-				ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
-				icon.setFitHeight(16);
-				icon.setFitWidth(16);
-				deleteButton.setGraphic(icon);
+				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
+				deleteIcon.setFitHeight(16);
+				deleteIcon.setFitWidth(16);
+				deleteButton.setGraphic(deleteIcon);
 				deleteButton.getStyleClass().add("icon-button");
+
+				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/edit.png")));
+				editIcon.setFitHeight(16);
+				editIcon.setFitWidth(16);
+				editButton.setGraphic(editIcon);
+				editButton.getStyleClass().add("icon-button");
+
 				deleteButton.setOnAction(e -> {
 					T item = table.getItems().get(getIndex());
 					list.remove(item);
 				});
+
+				editButton.setOnAction(e -> {
+					T item = table.getItems().get(getIndex());
+					if (item instanceof ContractItem contractItem) {
+						showEditItemDialog(contractItem);
+					}
+				});
+
+				actionButtons.getChildren().addAll(editButton, deleteButton);
 			}
 
 			@Override
 			protected void updateItem(Void item, boolean empty) {
 				super.updateItem(item, empty);
-				setGraphic(empty ? null : deleteButton);
+				setGraphic(empty ? null : actionButtons);
 			}
 		};
 	}
@@ -177,7 +238,12 @@ public class ContractFormController {
 			showAlert("Item description is required.");
 			return;
 		}
-		items.add(new ContractItem(null, null, desc));
+
+		int nextOrder = items.size();
+		ContractItem newItem = new ContractItem(null, null, desc, nextOrder);
+		newItem.setOrder(nextOrder);
+
+		items.add(newItem);
 		newItemField.clear();
 	}
 
@@ -209,6 +275,39 @@ public class ContractFormController {
 		}
 
 		updateAttachmentTable();
+	}
+
+	private void showEditItemDialog(ContractItem item) {
+		Dialog<String> dialog = new Dialog<>();
+		dialog.setTitle("Edit Item Description");
+		dialog.setHeaderText("Edit the item description:");
+
+		// Botones OK y Cancelar
+		ButtonType okButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().addAll(okButtonType, ButtonType.CANCEL);
+
+		// Área de texto
+		TextArea textArea = new TextArea();
+		textArea.setWrapText(true);
+		textArea.setPrefRowCount(6);
+		textArea.setText(item.getDescription());
+
+		dialog.getDialogPane().setContent(textArea);
+
+		// Devuelve el contenido al presionar OK
+		dialog.setResultConverter(dialogButton -> {
+			if (dialogButton == okButtonType) {
+				return textArea.getText();
+			}
+			return null;
+		});
+
+		dialog.showAndWait().ifPresent(newDescription -> {
+			if (!newDescription.isBlank()) {
+				item.setDescription(newDescription);
+				itemTable.refresh(); // Actualiza visualmente
+			}
+		});
 	}
 
 	private void updateAttachmentTable() {
@@ -332,7 +431,7 @@ public class ContractFormController {
 		cardExpField.setText(contract.getCardExp());
 
 		items.clear();
-		items.addAll(contract.getItems());
+		contract.getItems().stream().sorted((a, b) -> Integer.compare(a.getOrder(), b.getOrder())).forEach(items::add);
 
 		attachments.clear();
 		attachments.addAll(contract.getAttachments());
@@ -376,7 +475,14 @@ public class ContractFormController {
 		c.setCardZip(cardZipField.getText());
 		c.setCardCVC(cardCvcField.getText());
 		c.setCardExp(cardExpField.getText());
-		c.setItems(new ArrayList<>(items));
+		List<ContractItem> orderedItems = new ArrayList<>();
+		for (int i = 0; i < items.size(); i++) {
+			ContractItem item = items.get(i);
+			item.setOrder(i);
+			orderedItems.add(item);
+		}
+		c.setItems(orderedItems);
+
 		c.setAttachments(new ArrayList<>(attachments));
 
 		if (!editing) {

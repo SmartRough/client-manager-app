@@ -10,10 +10,11 @@ public class ContractItemDAO {
 
 	// Método SAVE con conexión explícita
 	public static long save(Connection conn, ContractItem item) throws SQLException {
-		String sql = "INSERT INTO Contract_Item (contract_id, description) VALUES (?, ?)";
+		String sql = "INSERT INTO Contract_Item (contract_id, description, \"order\") VALUES (?, ?, ?)";
 		try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 			stmt.setLong(1, item.getContractId());
 			stmt.setString(2, item.getDescription());
+			stmt.setInt(3, item.getOrder());
 			stmt.executeUpdate();
 
 			ResultSet keys = stmt.getGeneratedKeys();
@@ -36,7 +37,7 @@ public class ContractItemDAO {
 
 	public static List<ContractItem> findByContractId(long contractId) {
 		List<ContractItem> list = new ArrayList<>();
-		String sql = "SELECT * FROM Contract_Item WHERE contract_id = ?";
+		String sql = "SELECT * FROM Contract_Item WHERE contract_id = ? ORDER BY \"order\" ASC";
 
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, contractId);
@@ -73,11 +74,30 @@ public class ContractItemDAO {
 		}
 	}
 
+	public static boolean delete(Connection conn, long id) throws SQLException {
+		String sql = "DELETE FROM Contract_Item WHERE id = ?";
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setLong(1, id);
+			return stmt.executeUpdate() > 0;
+		}
+	}
+
+	public static boolean update(Connection conn, ContractItem item) throws SQLException {
+		String sql = "UPDATE Contract_Item SET description = ?, \"order\" = ? WHERE id = ?";
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setString(1, item.getDescription());
+			stmt.setInt(2, item.getOrder());
+			stmt.setLong(3, item.getId());
+			return stmt.executeUpdate() > 0;
+		}
+	}
+
 	private static ContractItem mapResultSet(ResultSet rs) throws SQLException {
 		ContractItem item = new ContractItem();
 		item.setId(rs.getLong("id"));
 		item.setContractId(rs.getLong("contract_id"));
 		item.setDescription(rs.getString("description"));
+		item.setOrder(rs.getInt("order"));
 		return item;
 	}
 }

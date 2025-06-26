@@ -5,16 +5,18 @@ public class ContractItem {
 	private Long id;
 	private Long contractId;
 	private String description;
+	private Integer order;
 
 	public ContractItem() {
 		super();
 	}
 
-	public ContractItem(Long id, Long contractId, String description) {
+	public ContractItem(Long id, Long contractId, String description, Integer order) {
 		super();
 		this.id = id;
 		this.contractId = contractId;
 		this.description = description;
+		this.order = order;
 	}
 
 	public Long getId() {
@@ -39,5 +41,13 @@ public class ContractItem {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Integer getOrder() {
+		return order;
+	}
+
+	public void setOrder(Integer order) {
+		this.order = order;
 	}
 }

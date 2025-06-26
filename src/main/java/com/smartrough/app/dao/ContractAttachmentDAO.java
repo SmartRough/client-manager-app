@@ -74,6 +74,14 @@ public class ContractAttachmentDAO {
 		}
 	}
 
+	public static boolean delete(Connection conn, long id) throws SQLException {
+		String sql = "DELETE FROM Contract_Attachment WHERE id = ?";
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setLong(1, id);
+			return stmt.executeUpdate() > 0;
+		}
+	}
+
 	private static ContractAttachment mapResultSet(ResultSet rs) throws SQLException {
 		ContractAttachment attachment = new ContractAttachment();
 		attachment.setId(rs.getLong("id"));

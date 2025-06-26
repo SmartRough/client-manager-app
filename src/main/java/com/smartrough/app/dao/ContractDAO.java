@@ -101,35 +101,70 @@ public class ContractDAO {
 
 				long contractId = contract.getId();
 
-				if (!ContractItemDAO.deleteByContractId(conn, contractId)) {
-					conn.rollback();
-					System.err.println(">> ERROR al eliminar ítems existentes.");
-					return false;
-				}
+				// 1. Obtener los ítems actuales desde BD
+				List<ContractItem> existingItems = ContractItemDAO.findByContractId(contractId);
 
-				if (!ContractAttachmentDAO.deleteByContractId(conn, contractId)) {
-					conn.rollback();
-					System.err.println(">> ERROR al eliminar adjuntos existentes.");
-					return false;
-				}
+				// 2. Marcar los que se deben eliminar (los que ya no están en la nueva lista)
+				List<Long> currentIds = contract.getItems().stream().filter(i -> i.getId() != null)
+						.map(ContractItem::getId).toList();
 
-				if (contract.getItems() != null) {
-					for (ContractItem item : contract.getItems()) {
-						item.setContractId(contractId);
-						if (ContractItemDAO.save(conn, item) == -1) {
+				for (ContractItem oldItem : existingItems) {
+					if (!currentIds.contains(oldItem.getId())) {
+						if (!ContractItemDAO.delete(conn, oldItem.getId())) {
 							conn.rollback();
-							System.err.println(">> ERROR al insertar ítem.");
+							System.err.println(">> ERROR al eliminar ítem con id: " + oldItem.getId());
 							return false;
 						}
 					}
 				}
 
-				if (contract.getAttachments() != null) {
-					for (ContractAttachment attachment : contract.getAttachments()) {
-						attachment.setContractId(contractId);
-						if (ContractAttachmentDAO.save(conn, attachment) == -1) {
+				// 3. Crear o actualizar según sea necesario
+				for (ContractItem item : contract.getItems()) {
+					item.setContractId(contractId);
+					if (item.getId() == null || item.getId() == 0) {
+						if (ContractItemDAO.save(conn, item) == -1) {
 							conn.rollback();
-							System.err.println(">> ERROR al insertar adjunto.");
+							System.err.println(">> ERROR al crear ítem nuevo.");
+							return false;
+						}
+					} else {
+						if (!ContractItemDAO.update(conn, item)) {
+							conn.rollback();
+							System.err.println(">> ERROR al actualizar ítem con id: " + item.getId());
+							return false;
+						}
+					}
+				}
+
+				// 4. Manejo de adjuntos
+				List<ContractAttachment> existingAttachments = ContractAttachmentDAO.findByContractId(contractId);
+
+				List<String> currentAttachmentNames = contract.getAttachments().stream()
+						.map(a -> a.getName() + "." + a.getExtension()).toList();
+
+				List<String> existingAttachmentNames = existingAttachments.stream()
+						.map(a -> a.getName() + "." + a.getExtension()).toList();
+
+				// Eliminar los adjuntos que ya no están
+				for (ContractAttachment oldAtt : existingAttachments) {
+					String fullOldName = oldAtt.getName() + "." + oldAtt.getExtension();
+					if (!currentAttachmentNames.contains(fullOldName)) {
+						if (!ContractAttachmentDAO.delete(conn, oldAtt.getId())) {
+							conn.rollback();
+							System.err.println(">> ERROR al eliminar adjunto: " + fullOldName);
+							return false;
+						}
+					}
+				}
+
+				// Agregar los nuevos adjuntos
+				for (ContractAttachment att : contract.getAttachments()) {
+					String fullNewName = att.getName() + "." + att.getExtension();
+					if (!existingAttachmentNames.contains(fullNewName)) {
+						att.setContractId(contractId);
+						if (ContractAttachmentDAO.save(conn, att) == -1) {
+							conn.rollback();
+							System.err.println(">> ERROR al insertar nuevo adjunto: " + fullNewName);
 							return false;
 						}
 					}
@@ -170,7 +205,7 @@ public class ContractDAO {
 
 	public static List<Contract> findAll() {
 		List<Contract> list = new ArrayList<>();
-		String sql = "SELECT * FROM Contract ORDER BY measure_date ASC";
+		String sql = "SELECT * FROM Contract ORDER BY id DESC";
 		try (Connection conn = Database.connect();
 				PreparedStatement stmt = conn.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery()) {
