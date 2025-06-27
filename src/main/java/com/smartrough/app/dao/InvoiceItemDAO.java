@@ -9,15 +9,15 @@ import java.util.List;
 public class InvoiceItemDAO {
 
 	public static long save(InvoiceItem item) {
-		String[] columns = { "invoice_id", "description", "amount" };
-		Object[] values = { item.getInvoiceId(), item.getDescription(), item.getAmount() };
-		int[] types = { Types.BIGINT, Types.VARCHAR, Types.DECIMAL };
+		String[] columns = { "invoice_id", "description", "amount", "\"order\"" };
+		Object[] values = { item.getInvoiceId(), item.getDescription(), item.getAmount(), item.getOrder() };
+		int[] types = { Types.BIGINT, Types.VARCHAR, Types.DECIMAL, Types.INTEGER };
 		return CRUDHelper.create("Invoice_Item", columns, values, types);
 	}
 
 	public static List<InvoiceItem> findByInvoiceId(long invoiceId) {
 		List<InvoiceItem> items = new ArrayList<>();
-		String sql = "SELECT * FROM Invoice_Item WHERE invoice_id = ?";
+		String sql = "SELECT * FROM Invoice_Item WHERE invoice_id = ? ORDER BY \"order\" ASC";
 
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setLong(1, invoiceId);
@@ -29,6 +29,7 @@ public class InvoiceItemDAO {
 				item.setInvoiceId(rs.getLong("invoice_id"));
 				item.setDescription(rs.getString("description"));
 				item.setAmount(rs.getBigDecimal("amount"));
+				item.setOrder(rs.getInt("order"));
 				items.add(item);
 			}
 		} catch (SQLException e) {
@@ -39,11 +40,12 @@ public class InvoiceItemDAO {
 	}
 
 	public static boolean update(InvoiceItem item) {
-		String sql = "UPDATE Invoice_Item SET description = ?, amount = ? WHERE id = ?";
+		String sql = "UPDATE Invoice_Item SET description = ?, amount = ?, \"order\" = ? WHERE id = ?";
 		try (Connection conn = Database.connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, item.getDescription());
 			stmt.setBigDecimal(2, item.getAmount());
-			stmt.setLong(3, item.getId());
+			stmt.setInt(3, item.getOrder());
+			stmt.setLong(4, item.getId());
 			return stmt.executeUpdate() > 0;
 		} catch (SQLException e) {
 			System.err.println("Error updating invoice item: " + e.getMessage());

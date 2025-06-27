@@ -96,6 +96,9 @@ public class InvoiceHtmlTemplate {
 		sb.append("<table style='width: 100%; border-collapse: collapse; margin-bottom: 30px;'>");
 		sb.append("<tr><th>Description</th><th>Amount</th></tr>");
 
+		// Ordenar por campo `order` antes de mostrar
+		items.sort(java.util.Comparator.comparingInt(InvoiceItem::getOrder));
+		
 		// Ítems
 		for (InvoiceItem item : items) {
 			sb.append("<tr>");

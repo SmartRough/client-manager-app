@@ -8,17 +8,28 @@ import com.smartrough.app.model.Invoice;
 import com.smartrough.app.model.InvoiceItem;
 import com.smartrough.app.util.NumberFieldHelper;
 import com.smartrough.app.util.ViewNavigator;
+
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 public class InvoiceFormController {
 
@@ -100,13 +111,10 @@ public class InvoiceFormController {
 	}
 
 	private void setupItemTable() {
-		descriptionColumn.setCellValueFactory(
-				data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
-		amountColumn.setCellValueFactory(
-				data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getAmount()));
+		descriptionColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDescription()));
+		amountColumn.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getAmount()));
 
 		NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.US);
-
 		amountColumn.setCellFactory(column -> new TableCell<>() {
 			@Override
 			protected void updateItem(BigDecimal amount, boolean empty) {
@@ -117,30 +125,120 @@ public class InvoiceFormController {
 
 		actionColumn.setCellFactory(col -> new TableCell<>() {
 			private final Button deleteButton = new Button();
+			private final Button editButton = new Button();
+			private final HBox buttons = new HBox(5);
 
 			{
 				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
-				deleteIcon.setFitHeight(16);
 				deleteIcon.setFitWidth(16);
+				deleteIcon.setFitHeight(16);
 				deleteButton.setGraphic(deleteIcon);
-				deleteButton.getStyleClass().add("icon-button");
-				deleteButton.setTooltip(new Tooltip("Delete item"));
-				deleteButton.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+				deleteButton.setStyle("-fx-background-color: transparent;");
 				deleteButton.setOnAction(e -> {
 					InvoiceItem item = getTableView().getItems().get(getIndex());
 					items.remove(item);
+					updateItemOrders();
 					recalculateTotals();
 				});
+
+				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/edit.png")));
+				editIcon.setFitWidth(16);
+				editIcon.setFitHeight(16);
+				editButton.setGraphic(editIcon);
+				editButton.setStyle("-fx-background-color: transparent;");
+				editButton.setOnAction(e -> showEditItemDialog(getTableView().getItems().get(getIndex())));
+
+				buttons.getChildren().addAll(editButton, deleteButton);
 			}
 
 			@Override
 			protected void updateItem(Void item, boolean empty) {
 				super.updateItem(item, empty);
-				setGraphic(empty ? null : deleteButton);
+				setGraphic(empty ? null : buttons);
 			}
 		});
 
 		itemTable.setItems(items);
+		enableItemDragAndDrop();
+	}
+
+	private void enableItemDragAndDrop() {
+		itemTable.setRowFactory(tv -> {
+			TableRow<InvoiceItem> row = new TableRow<>();
+
+			row.setOnDragDetected(event -> {
+				if (!row.isEmpty()) {
+					Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
+					ClipboardContent cc = new ClipboardContent();
+					cc.putString(Integer.toString(row.getIndex()));
+					db.setContent(cc);
+					event.consume();
+				}
+			});
+
+			row.setOnDragOver(event -> {
+				if (event.getGestureSource() != row && event.getDragboard().hasString()) {
+					event.acceptTransferModes(TransferMode.MOVE);
+				}
+				event.consume();
+			});
+
+			row.setOnDragDropped(event -> {
+				Dragboard db = event.getDragboard();
+				if (db.hasString()) {
+					int draggedIndex = Integer.parseInt(db.getString());
+					InvoiceItem draggedItem = itemTable.getItems().remove(draggedIndex);
+					int dropIndex = row.isEmpty() ? itemTable.getItems().size() : row.getIndex();
+					itemTable.getItems().add(dropIndex, draggedItem);
+					updateItemOrders();
+					itemTable.refresh();
+					event.setDropCompleted(true);
+				}
+				event.consume();
+			});
+
+			return row;
+		});
+	}
+
+	private void updateItemOrders() {
+		for (int i = 0; i < items.size(); i++) {
+			items.get(i).setOrder(i);
+		}
+	}
+
+	private void showEditItemDialog(InvoiceItem item) {
+		Dialog<ButtonType> dialog = new Dialog<>();
+		dialog.setTitle("Edit Item");
+
+		TextArea descriptionArea = new TextArea(item.getDescription());
+		NumberFormat currencyFormat = NumberFormat.getNumberInstance(Locale.US);
+		currencyFormat.setMinimumFractionDigits(2);
+		currencyFormat.setMaximumFractionDigits(2);
+
+		TextField amountField = new TextField(item.getAmount() != null ? currencyFormat.format(item.getAmount()) : "");
+		NumberFieldHelper.applyDecimalFormat(amountField);
+
+		VBox content = new VBox(10, new Label("Description:"), descriptionArea, new Label("Amount:"), amountField);
+		dialog.getDialogPane().setContent(content);
+
+		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+		dialog.setResultConverter(button -> {
+			if (button == ButtonType.OK) {
+				item.setDescription(descriptionArea.getText());
+				try {
+					item.setAmount(new BigDecimal(amountField.getText()));
+				} catch (NumberFormatException e) {
+					showAlert("Invalid amount.");
+				}
+				recalculateTotals();
+				itemTable.refresh();
+			}
+			return null;
+		});
+
+		dialog.showAndWait();
 	}
 
 	private void prepareNewInvoice() {
@@ -211,7 +309,11 @@ public class InvoiceFormController {
 			return;
 		}
 
-		items.add(new InvoiceItem(null, null, desc, amt));
+		int nextOrder = items.size();
+		InvoiceItem newItem = new InvoiceItem(null, null, desc, amt, nextOrder);
+		newItem.setOrder(nextOrder);
+
+		items.add(newItem);
 		newDescriptionField.clear();
 		newAmountField.clear();
 		recalculateTotals();
@@ -249,6 +351,8 @@ public class InvoiceFormController {
 		if (!validateForm())
 			return;
 
+		updateItemOrders(); // asegúrate de tener orden correcto
+
 		Invoice invoice = editing ? invoiceBeingEdited : new Invoice();
 		invoice.setInvoiceNumber(invoiceNumberField.getText());
 		invoice.setDate(datePicker.getValue());
@@ -261,17 +365,39 @@ public class InvoiceFormController {
 		invoice.setNotes(notesField.getText());
 
 		if (!editing) {
-			long invoiceId = InvoiceDAO.save(invoice);
-			invoice.setId(invoiceId);
+			long id = InvoiceDAO.save(invoice);
+			invoice.setId(id);
+			for (InvoiceItem item : items) {
+				item.setInvoiceId(id);
+				InvoiceItemDAO.save(item);
+			}
 		} else {
 			InvoiceDAO.update(invoice);
-			InvoiceItemDAO.deleteByInvoiceId(invoice.getId());
-		}
+			List<InvoiceItem> existingItems = InvoiceItemDAO.findByInvoiceId(invoice.getId());
+			Map<Long, InvoiceItem> existingMap = new java.util.HashMap<>();
+			for (InvoiceItem it : existingItems) {
+				if (it.getId() != null)
+					existingMap.put(it.getId(), it);
+			}
 
-		for (InvoiceItem item : items) {
-			item.setId(null); 
-			item.setInvoiceId(invoice.getId());
-			InvoiceItemDAO.save(item);
+			for (InvoiceItem item : items) {
+				item.setInvoiceId(invoice.getId());
+				if (item.getId() == null) {
+					InvoiceItemDAO.save(item);
+				} else if (existingMap.containsKey(item.getId())) {
+					InvoiceItem original = existingMap.get(item.getId());
+					if (!item.getDescription().equals(original.getDescription())
+							|| item.getAmount().compareTo(original.getAmount()) != 0
+							|| item.getOrder() != original.getOrder()) {
+						InvoiceItemDAO.update(item);
+					}
+					existingMap.remove(item.getId());
+				}
+			}
+
+			for (Long removedId : existingMap.keySet()) {
+				InvoiceItemDAO.delete(removedId);
+			}
 		}
 
 		ViewNavigator.loadView("InvoiceListView.fxml");

@@ -7,17 +7,19 @@ public class InvoiceItem {
 	private Long invoiceId;
 	private String description;
 	private BigDecimal amount;
+	private Integer order;
 
 	public InvoiceItem() {
 		super();
 	}
 
-	public InvoiceItem(Long id, Long invoiceId, String description, BigDecimal amount) {
+	public InvoiceItem(Long id, Long invoiceId, String description, BigDecimal amount, Integer order) {
 		super();
 		this.id = id;
 		this.invoiceId = invoiceId;
 		this.description = description;
 		this.amount = amount;
+		this.order = order;
 	}
 
 	public Long getId() {
@@ -52,4 +54,11 @@ public class InvoiceItem {
 		this.amount = amount;
 	}
 
+	public Integer getOrder() {
+		return order;
+	}
+
+	public void setOrder(Integer order) {
+		this.order = order;
+	}
 }
