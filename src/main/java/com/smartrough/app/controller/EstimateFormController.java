@@ -14,12 +14,18 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import javafx.scene.layout.HBox;
 
 public class EstimateFormController {
 
@@ -88,25 +94,122 @@ public class EstimateFormController {
 	private void setupItemTable() {
 		descriptionColumn.setCellValueFactory(
 				data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getDescription()));
+
 		actionColumn.setCellFactory(col -> new TableCell<>() {
 			private final Button deleteButton = new Button();
+			private final Button editButton = new Button();
+			private final HBox buttonBox = new HBox(5);
 
 			{
-				ImageView icon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
-				icon.setFitHeight(16);
-				icon.setFitWidth(16);
-				deleteButton.setGraphic(icon);
+				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
+				deleteIcon.setFitHeight(16);
+				deleteIcon.setFitWidth(16);
+				deleteButton.setGraphic(deleteIcon);
 				deleteButton.getStyleClass().add("icon-button");
-				deleteButton.setOnAction(e -> items.remove(getTableView().getItems().get(getIndex())));
+
+				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/edit.png")));
+				editIcon.setFitHeight(16);
+				editIcon.setFitWidth(16);
+				editButton.setGraphic(editIcon);
+				editButton.getStyleClass().add("icon-button");
+
+				deleteButton.setOnAction(e -> {
+					items.remove(getTableView().getItems().get(getIndex()));
+					updateItemOrders();
+				});
+
+				editButton.setOnAction(e -> {
+					EstimateItem item = getTableView().getItems().get(getIndex());
+					showEditItemDialog(item);
+				});
+
+				buttonBox.getChildren().addAll(editButton, deleteButton);
 			}
 
 			@Override
 			protected void updateItem(Void item, boolean empty) {
 				super.updateItem(item, empty);
-				setGraphic(empty ? null : deleteButton);
+				setGraphic(empty ? null : buttonBox);
 			}
 		});
+
 		itemTable.setItems(items);
+		enableItemDragAndDrop();
+	}
+
+	private void enableItemDragAndDrop() {
+		itemTable.setRowFactory(tv -> {
+			TableRow<EstimateItem> row = new TableRow<>();
+
+			row.setOnDragDetected(event -> {
+				if (!row.isEmpty()) {
+					Dragboard db = row.startDragAndDrop(TransferMode.MOVE);
+					ClipboardContent cc = new ClipboardContent();
+					cc.putString(Integer.toString(row.getIndex()));
+					db.setContent(cc);
+					event.consume();
+				}
+			});
+
+			row.setOnDragOver(event -> {
+				if (event.getGestureSource() != row && event.getDragboard().hasString()) {
+					event.acceptTransferModes(TransferMode.MOVE);
+				}
+				event.consume();
+			});
+
+			row.setOnDragDropped(event -> {
+				Dragboard db = event.getDragboard();
+				if (db.hasString()) {
+					int draggedIndex = Integer.parseInt(db.getString());
+					EstimateItem draggedItem = itemTable.getItems().remove(draggedIndex);
+
+					int dropIndex = row.isEmpty() ? itemTable.getItems().size() : row.getIndex();
+					itemTable.getItems().add(dropIndex, draggedItem);
+
+					event.setDropCompleted(true);
+					itemTable.refresh();
+					updateItemOrders();
+				}
+				event.consume();
+			});
+
+			return row;
+		});
+	}
+
+	private void updateItemOrders() {
+		for (int i = 0; i < items.size(); i++) {
+			items.get(i).setOrder(i);
+		}
+	}
+
+	private void showEditItemDialog(EstimateItem item) {
+		Dialog<String> dialog = new Dialog<>();
+		dialog.setTitle("Edit Description");
+		dialog.setHeaderText("Edit the item description:");
+
+		ButtonType okButton = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().addAll(okButton, ButtonType.CANCEL);
+
+		TextArea textArea = new TextArea(item.getDescription());
+		textArea.setWrapText(true);
+		textArea.setPrefRowCount(5);
+		dialog.getDialogPane().setContent(textArea);
+
+		dialog.setResultConverter(dialogButton -> {
+			if (dialogButton == okButton) {
+				return textArea.getText();
+			}
+			return null;
+		});
+
+		dialog.showAndWait().ifPresent(newDesc -> {
+			if (!newDesc.isBlank()) {
+				item.setDescription(newDesc);
+				itemTable.refresh();
+			}
+		});
 	}
 
 	private void prepareNewEstimate() {
@@ -133,7 +236,11 @@ public class EstimateFormController {
 			showAlert("Description is required.");
 			return;
 		}
-		items.add(new EstimateItem(null, null, desc));
+		int nextOrder = items.size();
+		EstimateItem newItem = new EstimateItem(null, null, desc, nextOrder);
+		newItem.setOrder(nextOrder);
+
+		items.add(newItem);
 		newDescriptionField.clear();
 	}
 
@@ -166,6 +273,7 @@ public class EstimateFormController {
 			System.out.println("Validación fallida.");
 			return;
 		}
+		updateItemOrders();
 
 		Estimate estimate = editing ? estimateBeingEdited : new Estimate();
 		estimate.setDate(datePicker.getValue());
@@ -191,10 +299,31 @@ public class EstimateFormController {
 		} else {
 			System.out.println("Actualizando estimado existente ID: " + estimate.getId());
 			EstimateDAO.update(estimate);
-			EstimateItemDAO.delete(estimate.getId());
-			for (EstimateItem item : items) {
-				item.setEstimateId(estimate.getId());
-				EstimateItemDAO.save(item);
+			List<EstimateItem> existingItems = EstimateItemDAO.findByEstimateId(estimate.getId());
+			Map<Long, EstimateItem> existingMap = new java.util.HashMap<>();
+			for (EstimateItem it : existingItems) {
+				if (it.getId() != null)
+					existingMap.put(it.getId(), it);
+			}
+
+			for (EstimateItem current : items) {
+				current.setEstimateId(estimate.getId());
+
+				if (current.getId() == null) {
+					EstimateItemDAO.save(current);
+				} else if (existingMap.containsKey(current.getId())) {
+					EstimateItem original = existingMap.get(current.getId());
+					if (!original.getDescription().equals(current.getDescription())
+							|| original.getOrder() != current.getOrder()) {
+						EstimateItemDAO.update(current);
+					}
+					existingMap.remove(current.getId()); // ya fue manejado
+				}
+			}
+
+			// lo que quedó en el mapa son ítems eliminados
+			for (Long id : existingMap.keySet()) {
+				EstimateItemDAO.deleteById(id);
 			}
 		}
 

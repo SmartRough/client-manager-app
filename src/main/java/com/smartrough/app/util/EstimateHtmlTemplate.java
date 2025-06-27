@@ -20,7 +20,7 @@ public class EstimateHtmlTemplate {
 		String formattedDate = estimate.getDate() != null
 				? estimate.getDate().format(DateTimeFormatter.ofPattern("MM/dd/yyyy"))
 				: "-";
-		
+
 		NumberFormat currencyFormatter = NumberFormat.getNumberInstance(Locale.US);
 		currencyFormatter.setMinimumFractionDigits(2);
 		currencyFormatter.setMaximumFractionDigits(2);
@@ -83,11 +83,10 @@ public class EstimateHtmlTemplate {
 		sb.append("</div>");
 
 		sb.append("<ul style='margin-top: 10px; padding-left: 40px; font-size: 14px;'>");
-		for (EstimateItem item : estimate.getItems()) {
-			if (item.getDescription() != null && !item.getDescription().trim().isEmpty()) {
-				sb.append("<li>").append(escapeHtml(item.getDescription())).append("</li>");
-			}
-		}
+		estimate.getItems().stream().sorted((a, b) -> Integer.compare(a.getOrder(), b.getOrder()))
+				.filter(item -> item.getDescription() != null && !item.getDescription().trim().isEmpty())
+				.forEach(item -> sb.append("<li>").append(escapeHtml(item.getDescription())).append("</li>"));
+
 		sb.append("</ul>");
 
 		// Total

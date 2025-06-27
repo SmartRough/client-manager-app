@@ -4,14 +4,16 @@ public class EstimateItem {
 	private Long id;
 	private Long estimateId;
 	private String description;
+	private Integer order;
 
 	public EstimateItem() {
 	}
 
-	public EstimateItem(Long id, Long estimateId, String description) {
+	public EstimateItem(Long id, Long estimateId, String description, Integer order) {
 		this.id = id;
 		this.estimateId = estimateId;
 		this.description = description;
+		this.order = order;
 	}
 
 	// Getters y Setters
@@ -38,5 +40,13 @@ public class EstimateItem {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Integer getOrder() {
+		return order;
+	}
+
+	public void setOrder(Integer order) {
+		this.order = order;
 	}
 }

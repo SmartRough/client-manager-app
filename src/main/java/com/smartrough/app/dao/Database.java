@@ -74,6 +74,7 @@ public class Database {
 						invoice_id INTEGER NOT NULL,
 						description TEXT NOT NULL,
 						amount REAL NOT NULL,
+						"order" INTEGER NOT NULL,
 						FOREIGN KEY(invoice_id) REFERENCES Invoice(id) ON DELETE CASCADE
 					);
 				""";
@@ -98,6 +99,7 @@ public class Database {
 						id INTEGER PRIMARY KEY AUTOINCREMENT,
 						estimate_id INTEGER NOT NULL,
 						description TEXT NOT NULL,
+						"order" INTEGER NOT NULL,
 						FOREIGN KEY(estimate_id) REFERENCES Estimate(id) ON DELETE CASCADE
 					);
 				""";
