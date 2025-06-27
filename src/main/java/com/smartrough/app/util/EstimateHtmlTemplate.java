@@ -107,11 +107,6 @@ public class EstimateHtmlTemplate {
 			sb.append("</div></div>");
 		}
 
-		sb.append(
-				"<div style='text-align: center; font-size: 18px; font-weight: bold; margin-top: 60px; color: #444;'>");
-		sb.append("Thank you for considering us.");
-		sb.append("</div>");
-
 		sb.append("<div style='margin-top: 60px;'>");
 		sb.append("<table style='width: 100%; margin-top: 30px; font-size: 14px;'>");
 		sb.append("<tr>");
@@ -132,6 +127,17 @@ public class EstimateHtmlTemplate {
 		sb.append("</td>");
 
 		sb.append("</tr>");
+
+		sb.append("<tr>");
+		sb.append("<td></td>"); // columna izquierda vacía
+		sb.append("<td style='text-align: right; padding-top: 30px;'>");
+		sb.append(
+				"<div style='margin-bottom: 20px;'>Date: <span style='display: inline-block; border-bottom: 1px solid #000; width: 160px;'> </span></div>");
+		sb.append(
+				"<div>PO/CRO: <span style='display: inline-block; border-bottom: 1px solid #000; width: 140px;'> </span></div>");
+		sb.append("</td>");
+		sb.append("</tr>");
+
 		sb.append("</table>");
 		sb.append("</div>");
 
