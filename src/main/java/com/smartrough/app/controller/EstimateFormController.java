@@ -389,8 +389,6 @@ public class EstimateFormController {
 			return showError("Approved by is required.");
 		if (items.isEmpty())
 			return showError("At least one item is required.");
-		if (imageFiles.isEmpty() && imageNames.isEmpty())
-			return showError("At least one image must be attached.");
 		if (totalField.getText().isBlank())
 			return showError("Total is required.");
 		try {
