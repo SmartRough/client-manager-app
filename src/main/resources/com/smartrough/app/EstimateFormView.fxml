@@ -57,17 +57,26 @@
         </HBox>
 
         <HBox spacing="10" alignment="CENTER_LEFT">
-            <Label text="Attach Images:"/>
-            <Button fx:id="btnAddImage" onAction="#handleAddImage" prefHeight="30" prefWidth="30" styleClass="icon-button">
-                <graphic>
-                    <ImageView fitHeight="20" fitWidth="20">
-                        <image><Image url="@/img/upload.png" /></image>
-                    </ImageView>
-                </graphic>
-                <tooltip><Tooltip text="Add Image" /></tooltip>
-            </Button>
-            <Label fx:id="imageCountLabel" text="0 images attached"/>
-        </HBox>
+    <Label text="Attach Images:"/>
+    <Button fx:id="btnAddImage" onAction="#handleAddImage" prefHeight="30" prefWidth="30" styleClass="icon-button">
+        <graphic>
+            <ImageView fitHeight="20" fitWidth="20">
+                <image><Image url="@/img/upload.png" /></image>
+            </ImageView>
+        </graphic>
+        <tooltip><Tooltip text="Add Image" /></tooltip>
+    </Button>
+    <Button fx:id="btnClearImages" onAction="#handleClearImages" prefHeight="30" prefWidth="30" styleClass="icon-button">
+        <graphic>
+            <ImageView fitHeight="20" fitWidth="20">
+                <image><Image url="@/img/delete.png" /></image> <!-- Usa un icono de basura o cruz -->
+            </ImageView>
+        </graphic>
+        <tooltip><Tooltip text="Clear Images" /></tooltip>
+	    </Button>
+	    <Label fx:id="imageCountLabel" text="0 images attached"/>
+	</HBox>
+
 
         <GridPane hgap="10" vgap="10">
             <Label text="Total:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>

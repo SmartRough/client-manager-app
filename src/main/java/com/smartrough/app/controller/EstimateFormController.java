@@ -380,6 +380,14 @@ public class EstimateFormController {
 		ViewNavigator.loadView("EstimateListView.fxml");
 	}
 
+	@FXML
+	private void handleClearImages() {
+		imageFiles.clear();
+		imageNames.clear();
+		imageCountLabel.setText("0 images attached");
+		System.out.println("✅ Imágenes eliminadas manualmente por el usuario.");
+	}
+
 	private boolean validateForm() {
 		if (datePicker.getValue() == null)
 			return showError("Date is required.");
