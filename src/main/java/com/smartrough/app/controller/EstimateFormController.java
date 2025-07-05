@@ -147,9 +147,17 @@ public class EstimateFormController {
 		imageNameColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue()));
 
 		imageActionColumn.setCellFactory(col -> new TableCell<>() {
-			private final Button deleteButton = new Button("Delete");
+			private final Button deleteButton = new Button();
+			private final HBox buttonBox = new HBox(deleteButton);
 
 			{
+				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/img/delete.png")));
+				deleteIcon.setFitHeight(16);
+				deleteIcon.setFitWidth(16);
+				deleteButton.setGraphic(deleteIcon);
+				deleteButton.getStyleClass().add("icon-button");
+				deleteButton.setTooltip(new Tooltip("Remove Image"));
+
 				deleteButton.setOnAction(e -> {
 					String filename = getTableView().getItems().get(getIndex());
 					int index = imageObservableNames.indexOf(filename);
@@ -158,12 +166,15 @@ public class EstimateFormController {
 						imageFiles.remove(index);
 					}
 				});
+
+				buttonBox.setSpacing(5);
+				buttonBox.setStyle("-fx-alignment: center;");
 			}
 
 			@Override
 			protected void updateItem(Void item, boolean empty) {
 				super.updateItem(item, empty);
-				setGraphic(empty ? null : deleteButton);
+				setGraphic(empty ? null : buttonBox);
 			}
 		});
 
