@@ -48,10 +48,15 @@ public class EstimateFormController {
 	@FXML
 	private TextField newDescriptionField;
 	@FXML
-	private Label imageCountLabel;
-	@FXML
 	private TextField totalField;
+	@FXML
+	private TableView<String> imageTable;
+	@FXML
+	private TableColumn<String, String> imageNameColumn;
+	@FXML
+	private TableColumn<String, Void> imageActionColumn;
 
+	private final ObservableList<String> imageObservableNames = FXCollections.observableArrayList();
 	private final ObservableList<EstimateItem> items = FXCollections.observableArrayList();
 	private final List<String> imageNames = new ArrayList<>();
 	private final List<File> imageFiles = new ArrayList<>();
@@ -64,6 +69,7 @@ public class EstimateFormController {
 		setupCompanyCombos();
 		setupItemTable();
 		prepareNewEstimate();
+		setupImageTable();
 
 		NumberFieldHelper.applyDecimalFormat(totalField);
 	}
@@ -135,6 +141,33 @@ public class EstimateFormController {
 
 		itemTable.setItems(items);
 		enableItemDragAndDrop();
+	}
+
+	private void setupImageTable() {
+		imageNameColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue()));
+
+		imageActionColumn.setCellFactory(col -> new TableCell<>() {
+			private final Button deleteButton = new Button("Delete");
+
+			{
+				deleteButton.setOnAction(e -> {
+					String filename = getTableView().getItems().get(getIndex());
+					int index = imageObservableNames.indexOf(filename);
+					if (index >= 0) {
+						imageObservableNames.remove(index);
+						imageFiles.remove(index);
+					}
+				});
+			}
+
+			@Override
+			protected void updateItem(Void item, boolean empty) {
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : deleteButton);
+			}
+		});
+
+		imageTable.setItems(imageObservableNames);
 	}
 
 	private void enableItemDragAndDrop() {
@@ -225,7 +258,6 @@ public class EstimateFormController {
 		imageNames.clear();
 		imageFiles.clear();
 		items.clear();
-		imageCountLabel.setText("0 images attached");
 		totalField.clear();
 	}
 
@@ -255,15 +287,13 @@ public class EstimateFormController {
 		if (selected == null)
 			return;
 
-		imageFiles.clear();
-		imageNames.clear();
-
 		for (File file : selected) {
-			imageFiles.add(file);
-			imageNames.add(file.getName());
+			if (!imageNames.contains(file.getName())) {
+				imageFiles.add(file);
+				imageObservableNames.add(file.getName());
+				imageNames.add(file.getName());
+			}
 		}
-		System.out.println("Nuevas imágenes seleccionadas. Se reemplazaron las anteriores.");
-		imageCountLabel.setText(imageNames.size() + " images attached");
 	}
 
 	@FXML
@@ -283,7 +313,7 @@ public class EstimateFormController {
 		estimate.setJobDescription(jobDescriptionArea.getText());
 		estimate.setTotal(NumberFieldHelper.parse(totalField.getText()));
 		estimate.setItems(new ArrayList<>(items));
-		estimate.setImageNames(new ArrayList<>(imageNames));
+		estimate.setImageNames(new ArrayList<>(imageObservableNames));
 
 		String oldFolderPath = editing && estimateBeingEdited != null ? getEstimateFolderPath(estimateBeingEdited)
 				: null;
@@ -361,7 +391,7 @@ public class EstimateFormController {
 
 		if (editing && oldFolderPath != null) {
 			File oldFolder = new File(oldFolderPath);
-			cleanupOldImages(oldFolder, imageNames);
+			cleanupOldImages(oldFolder, new ArrayList<>(imageObservableNames));
 			cleanupFolderIfEmpty(oldFolder);
 		}
 
@@ -373,7 +403,7 @@ public class EstimateFormController {
 
 	@FXML
 	private void handleCancel() {
-		if (!editing && !imageNames.isEmpty())
+		if (!editing && !imageObservableNames.isEmpty())
 			cleanupTemporaryImages();
 		imageFiles.clear();
 		imageNames.clear();
@@ -384,8 +414,8 @@ public class EstimateFormController {
 	private void handleClearImages() {
 		imageFiles.clear();
 		imageNames.clear();
-		imageCountLabel.setText("0 images attached");
-		System.out.println("✅ Imágenes eliminadas manualmente por el usuario.");
+		imageObservableNames.clear();
+		System.out.println("✅ Todas las imágenes fueron eliminadas.");
 	}
 
 	private boolean validateForm() {
@@ -432,8 +462,12 @@ public class EstimateFormController {
 		items.setAll(EstimateItemDAO.findByEstimateId(estimate.getId()));
 
 		imageNames.clear();
-		imageNames.addAll(estimate.getImageNames());
+		imageObservableNames.clear();
 		imageFiles.clear();
+
+		imageNames.addAll(estimate.getImageNames());
+		imageObservableNames.addAll(imageNames);
+
 		String folderPath = getEstimateFolderPath(estimate);
 		for (String name : imageNames) {
 			File file = new File(folderPath, name);
@@ -441,7 +475,6 @@ public class EstimateFormController {
 				imageFiles.add(file);
 			}
 		}
-		imageCountLabel.setText(imageNames.size() + " images attached");
 	}
 
 	private String getEstimateFolderPath(Estimate estimate) {
@@ -478,7 +511,7 @@ public class EstimateFormController {
 	}
 
 	private void cleanupTemporaryImages() {
-		if (imageNames.isEmpty() || datePicker.getValue() == null || customerComboBox.getValue() == null)
+		if (imageObservableNames.isEmpty() || datePicker.getValue() == null || customerComboBox.getValue() == null)
 			return;
 
 		File folder = new File(getEstimateFolderPath(new Estimate() {
@@ -488,7 +521,7 @@ public class EstimateFormController {
 			}
 		}));
 
-		for (String name : imageNames) {
+		for (String name : imageObservableNames) {
 			File file = new File(folder, name);
 			if (file.exists())
 				file.delete();
